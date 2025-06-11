@@ -2,9 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Remove or modify this default route
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/', function () {
+    return view('welcome');
+});
 
-// Add your application routes here
+// Demo routes for testing the layout
+Route::get('/dashboard', function () {
+    return view('welcome');
+})->name('dashboard');
+
+Route::get('/profile', function () {
+    return view('welcome');
+})->name('profile.index');
