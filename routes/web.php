@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Remove or modify this default route
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+// Add your application routes here
