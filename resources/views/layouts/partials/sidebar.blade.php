@@ -17,7 +17,7 @@
             @if($isPublic)
                 <!-- PUBLIC USER MENU -->
                 
-                <!-- 1. Inquiry Submission -->
+                <!-- 2. Inquiry Submission -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('inquiry-submission')">
                         <span>Inquiry Submission</span>
@@ -32,7 +32,7 @@
                     </ul>
                 </li>
 
-                <!-- 2. Assignment Status -->
+                <!-- 3. Assignment Status -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('assignment-status')">
                         <span>Assignment Status</span>
@@ -46,7 +46,7 @@
                     </ul>
                 </li>
 
-                <!-- 3. Progress Tracking -->
+                <!-- 4. Progress Tracking -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('progress-tracking')">
                         <span>Progress Tracking</span>
@@ -65,7 +65,7 @@
             @if($isAdmin)
                 <!-- MCMC ADMIN MENU -->
 
-                <!-- 1. Manage Inquiries -->
+                <!-- 2. Manage Inquiries -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('manage-inquiries')">
                         <span>Manage Inquiries</span>
@@ -74,14 +74,12 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="manage-inquiries">
-                        <li><a href="#">View New Inquiries</a></li>
-                        <li><a href="#">Filter & Validate</a></li>
-                        <li><a href="#">Previous Inquiries</a></li>
+                        <li><a href="#">View Inquiries</a></li>
                         <li><a href="#">Generate Reports</a></li>
                     </ul>
                 </li>
 
-                <!-- 2. Assign Inquiries -->
+                <!-- 3. Assign Inquiries -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('assign-inquiries')">
                         <span>Assign Inquiries</span>
@@ -97,7 +95,7 @@
                     </ul>
                 </li>
 
-                <!-- 3. Monitor Progress -->
+                <!-- 4. Monitor Progress -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('monitor-progress')">
                         <span>Monitor Progress</span>
@@ -117,7 +115,7 @@
             @if($isAgency)
                 <!-- AGENCY STAFF MENU -->
 
-                <!-- 1. Inquiry Access -->
+                <!-- 2. Inquiry Access -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('inquiry-access')">
                         <span>Inquiry Access</span>
@@ -126,13 +124,11 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="inquiry-access">
-                        <li><a href="#">Previous Inquiries</a></li>
-                        <li><a href="#">Search & Filter</a></li>
-                        <li><a href="#">Inquiry History</a></li>
+                        <li><a href="#">Assigned Inquiries</a></li>
                     </ul>
                 </li>
 
-                <!-- 2. Assignment Management -->
+                <!-- 3. Assignment Management -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('assignment-management')">
                         <span>Assignment Management</span>
@@ -147,7 +143,7 @@
                     </ul>
                 </li>
 
-                <!-- 3. Investigation Updates -->
+                <!-- 4. Investigation Updates -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('investigation-updates')">
                         <span>Investigation Updates</span>
@@ -167,21 +163,8 @@
 </aside>
 
 <style>
-/* 
-  Adjust the margin-top value below to suit your header's height.
-  If your header is, for example, 70px tall, and you want 10px space, 
-  set margin-top to 80px (if the sidebar starts from the very top) 
-  or add to existing margin/padding.
-  
-  If your sidebar uses fixed positioning (e.g., position: fixed;), 
-  you might need to adjust its 'top' property instead of 'margin-top'.
-  e.g., .sidebar { top: 80px; height: calc(100vh - 80px); }
-*/
+
 .sidebar {
-    margin-top: 1rem; /* Provides some spacing from the header. Adjust as needed. */
-    /* Example: if your header is roughly 60-70px, and sidebar was flush, 
-       you might need a more significant margin like:
-       margin-top: 70px; 
-    */
+    margin-top: 1rem;
 }
 </style>
