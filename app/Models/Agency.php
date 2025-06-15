@@ -2,29 +2,30 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Agency extends Model
 {
+    use HasFactory;
+
+    protected $table = 'agencies';
     protected $primaryKey = 'AgencyID';
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
     protected $fillable = [
         'AgencyName',
         'AgencyEmail',
         'AgencyPhoneNum',
-        'AgencyType'
+        'AgencyType',
     ];
 
     /**
-     * Get the inquiries assigned to this agency
-     */
-    public function inquiries()
-    {
-        return $this->hasMany(Inquiry::class, 'AgencyID', 'AgencyID');
-    }
-
-    /**
-     * Get the staff members of this agency
+     * Get staff belonging to this agency.
      */
     public function staff()
     {

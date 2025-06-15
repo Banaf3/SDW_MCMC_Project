@@ -7,19 +7,72 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+# VeriTrack Authentication System
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This Laravel project implements a multi-role authentication system for the VeriTrack application.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Multi-role authentication (Administrator, Agency Staff, Public User)
+- Role detection based on email domain (@admin.com, @agency.com, other)
+- Registration with role-based validation
+- Login with role-based redirection
+- Password recovery and reset
+- Profile editing with profile picture upload
+- Session-based authentication
+
+## Setup Instructions
+
+### Prerequisites
+
+- PHP 8.1 or higher
+- Composer
+- MySQL
+- XAMPP or similar local development environment
+
+### Installation Steps
+
+1. Clone the repository to your local environment
+2. Navigate to the project directory
+3. Install dependencies: `composer install`
+4. Create a `.env` file by copying the example: `cp .env.example .env`
+5. Configure your database in the `.env` file
+6. Generate an application key: `php artisan key:generate`
+7. Run the migrations to create the database tables: `php artisan app:setup-migrations`
+8. Create a symbolic link for file storage: `php artisan app:create-storage-link`
+9. Start the development server: `php artisan serve`
+
+## Usage
+
+### Default Users
+
+The system seeds the following default users:
+
+1. **Administrator**:
+   - Email: admin@admin.com
+   - Password: password123
+
+2. **Agency Staff**:
+   - Email: staff@agency.com
+   - Password: password123
+
+3. **Public User**:
+   - Email: user@example.com
+   - Password: password123
+
+### Password Reset
+
+1. Visit the password reset page at `/password/reset`
+2. Enter your email address
+3. Check your email for a password reset link
+4. Click the link and enter your new password
+
+### Profile Management
+
+1. Click on your profile avatar in the header
+2. Select "Edit Profile"
+3. Update your personal information, profile picture, and password
+4. Click "Save Changes"
 
 ## Learning Laravel
 

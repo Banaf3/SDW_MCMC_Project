@@ -2,58 +2,73 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Administrator extends Model
+class Administrator extends Authenticatable
 {
-    protected $primaryKey = 'AdminID';
+    use HasFactory, Notifiable;
 
+    protected $table = 'administrators';
+    protected $primaryKey = 'AdminID';    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
     protected $fillable = [
         'AdminName',
-        'Password',
         'AdminEmail',
+        'Password',
         'AdminRole',
         'AdminPhoneNum',
         'AdminAddress',
-        'LoginHistory'
+        'LoginHistory',
+        'ProfilePicture',
     ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
     protected $hidden = [
-        'Password'
-    ];
-
-    protected $casts = [
-        'LoginHistory' => 'array',
-        'Password' => 'hashed'
+        'Password',
     ];
 
     /**
-     * Get inquiries directly managed by this administrator
+     * Get the name of the unique identifier for the user.
+     *
+     * @return string
      */
-    public function inquiries(): HasMany
+    public function getAuthIdentifierName()
     {
-        return $this->hasMany(Inquiry::class, 'AdminID', 'AdminID');
+        return 'AdminID';
     }
 
     /**
-     * Get inquiries assigned through assigned_inquiries table
+     * Get the password for the user.
+     *
+     * @return string
      */
-    public function assignedInquiries(): BelongsToMany
+    public function getAuthPassword()
     {
-        return $this->belongsToMany(Inquiry::class, 'assigned_inquiries', 'AdminID', 'InquiryID')
-                    ->withPivot('AgencyID', 'AssignedDate')
-                    ->withTimestamps();
+        return $this->Password;
     }
-
+    
     /**
-     * Get agencies through assigned_inquiries relationship
+     * Get the email attribute mapped to the username.
      */
-    public function assignedAgencies(): BelongsToMany
+    public function getEmailAttribute()
     {
-        return $this->belongsToMany(Agency::class, 'assigned_inquiries', 'AdminID', 'AgencyID')
-                    ->withPivot('InquiryID', 'AssignedDate')
-                    ->withTimestamps();
+        return $this->AdminEmail;
+    }
+    
+    /**
+     * Get the name attribute mapped.
+     */
+    public function getNameAttribute()
+    {
+        return $this->AdminName;
     }
 }
