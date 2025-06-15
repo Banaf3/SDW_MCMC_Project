@@ -41,16 +41,17 @@ class InquiryController extends Controller
         ]);
     }    public function show($id)
     {        $inquiry = Inquiry::with(['timeline', 'assignedAgency', 'administrator', 'assignedStaff', 'user'])
-            ->findOrFail($id);
-
-        $inquiryData = [
+            ->findOrFail($id);        $inquiryData = [
             'id' => $inquiry->InquiryID,
             'title' => $inquiry->InquiryTitle,
             'status' => $inquiry->InquiryStatus,
             'type' => 'Social Media Post',
             'submittedDate' => $inquiry->SubmitionDate->format('F j, Y'),
-            'submittedDateISO' => $inquiry->SubmitionDate->format('Y-m-d'),            'assignedTo' => $inquiry->assignedAgency->AgencyName ?? 'Unassigned',
-            'officerName' => $inquiry->assignedStaff->StaffName ?? null, // Staff name from agency_staff table'userDescription' => $inquiry->InquiryDescription, // User's description of the inquiry
+            'submittedDateISO' => $inquiry->SubmitionDate->format('Y-m-d'),
+            'assignedTo' => $inquiry->assignedAgency->AgencyName ?? 'Unassigned',
+            'agencyDescription' => $inquiry->assignedAgency->AgencyDescription ?? 'No description available', // Added missing field
+            'officerName' => $inquiry->assignedStaff->StaffName ?? null, // Staff name from agency_staff table
+            'userDescription' => $inquiry->InquiryDescription, // User's description of the inquiry
             'agencyComment' => $inquiry->AdminComment ?? null, // Agency's comment/description
             'evidence' => $inquiry->InquiryEvidence ?? null, // Supporting documents/evidence
             'agencySupportingDocs' => $inquiry->ResolvedSupportingDocs ?? null, // Agency's supporting documents
