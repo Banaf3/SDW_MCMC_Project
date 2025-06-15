@@ -177,8 +177,7 @@
 <div class="user-inquiries-container">
     <div class="inquiry-section">
         <div class="section-header">
-            <h1 class="section-title">My Inquiries</h1>
-            <a href="{{ route('test.inquiry.create') }}" class="btn-new-inquiry">
+            <h1 class="section-title">My Inquiries</h1>            <a href="{{ route('inquiries.create') }}" class="btn-new-inquiry">
                 + Submit New Inquiry
             </a>
         </div>
@@ -198,9 +197,8 @@
                     <tbody>
                         @foreach($inquiries as $inquiry)
                             <tr>
-                                <td>#{{ $inquiry->InquiryID }}</td>
-                                <td class="inquiry-title">
-                                    <a href="{{ route('test.inquiries.user.show', $inquiry->InquiryID) }}">
+                                <td>#{{ $inquiry->InquiryID }}</td>                                <td class="inquiry-title">
+                                    <a href="{{ route('inquiries.show', $inquiry->InquiryID) }}">
                                         {{ $inquiry->InquiryTitle }}
                                     </a>
                                 </td>
@@ -211,9 +209,8 @@
                                     <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry->InquiryStatus)) }}">
                                         {{ $inquiry->InquiryStatus }}
                                     </span>
-                                </td>
-                                <td>
-                                    <a href="{{ route('test.inquiries.user.show', $inquiry->InquiryID) }}" style="color: #3b82f6; text-decoration: none;">
+                                </td>                                <td>
+                                    <a href="{{ route('inquiries.show', $inquiry->InquiryID) }}" style="color: #3b82f6; text-decoration: none;">
                                         View Details
                                     </a>
                                 </td>
@@ -228,8 +225,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <h3 class="empty-state-title">No inquiries found</h3>
-                <p class="empty-state-message">You haven't submitted any inquiries yet.</p>
-                <a href="{{ route('test.inquiry.create') }}" class="btn-new-inquiry">
+                <p class="empty-state-message">You haven't submitted any inquiries yet.</p>                <a href="{{ route('inquiries.create') }}" class="btn-new-inquiry">
                     Submit Your First Inquiry
                 </a>
             </div>

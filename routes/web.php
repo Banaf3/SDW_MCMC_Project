@@ -93,3 +93,19 @@ Route::get('/my-inquiries', function() {
 Route::get('/browse-inquiries', function() {
     return redirect()->route('public.inquiries.index');
 });
+
+// Test route to simulate public user login (remove in production)
+Route::get('/test-login/{userId?}', function($userId = 1) {
+    session()->put('user_id', $userId);
+    session()->put('user_type', 'public');
+    session()->put('user_name', 'Test User ' . $userId);
+    session()->put('user_email', 'testuser' . $userId . '@example.com');
+    
+    return redirect()->route('inquiries.index')->with('success', 'Logged in as Test User ' . $userId);
+});
+
+// Test route to logout (remove in production)
+Route::get('/test-logout', function() {
+    session()->flush();
+    return redirect('/')->with('success', 'Logged out successfully');
+});

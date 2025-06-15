@@ -11,13 +11,8 @@
 /* Custom styles for the inquiry form */
 .inquiry-container {
     max-width: 800px;
-    margin: 105px auto 20px auto; /* Added bottom margin to prevent excessive scrolling */
-    margin-right: calc(50% - 515px); /* Move container to the right */
-    padding: 0;
-}
-
-.inquiry-container > .form-section:first-child {
-    margin-top: 0;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 .form-section {
@@ -27,10 +22,6 @@
     padding: 24px;
     margin-bottom: 24px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.form-section:last-child {
-    margin-bottom: 0; /* Remove bottom margin from last section */
 }
 
 .form-section h2 {
@@ -279,8 +270,7 @@
 /* Responsive design */
 @media (max-width: 640px) {
     .inquiry-container {
-        padding: 0;
-        margin: 0 12px;
+        padding: 12px;
     }
     
     .form-section {
@@ -290,8 +280,7 @@
     .form-actions {
         flex-direction: column;
     }
-    
-    .btn {
+      .btn {
         width: 100%;
     }
 }
@@ -375,9 +364,7 @@
         <!-- Supporting Evidence Section -->
         <div class="form-section">
             <h2>Supporting Evidence</h2>
-            <p style="color: #6b7280; margin-bottom: 24px;">Upload documents, images, or other files that support your inquiry. This evidence will help our verification team assess the authenticity of the news.</p>
-            
-            <!-- Supporting Evidence -->
+            <p style="color: #6b7280; margin-bottom: 24px;">Upload documents, images, or other files that support your inquiry. This evidence will help our verification team assess the authenticity of the news.</p>              <!-- Supporting Evidence -->
             <div class="form-group">
                 <label for="inquiry_evidence" class="form-label">Supporting Evidence</label>
                 <div class="file-upload-area" onclick="document.getElementById('inquiry_evidence').click();">
@@ -388,8 +375,7 @@
                     <div class="file-upload-subtext">Upload documents (PDF, DOC, DOCX) or images (JPG, PNG, GIF) up to 10MB each</div>
                     <input id="inquiry_evidence" name="supporting_files[]" type="file" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" multiple>
                 </div>
-                <div id="file-uploads-container" class="mt-4"></div>
-                <div id="file-list-container" class="mt-4">
+                <div id="file-uploads-container" class="mt-4"></div>                <div id="file-list-container" class="mt-4">
                     <div id="file-list" class="file-list-container"></div>
                 </div>
                 @error('supporting_files.*')
@@ -410,12 +396,12 @@
     </form>
 </div>
 
-@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('inquiryForm');
     const visibleFileInput = document.getElementById('inquiry_evidence');
     const fileListContainer = document.getElementById('file-list');
+    const finalFilesInput = document.getElementById('final_files_for_submission'); // The hidden input for submission
 
     let selectedFiles = []; // Array to store File objects
 
@@ -482,6 +468,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const dataTransfer = new DataTransfer();
         selectedFiles.forEach(file => dataTransfer.items.add(file));
         visibleFileInput.files = dataTransfer.files;
+        finalFilesInput.files = dataTransfer.files; // Also update the hidden input
     }
 
     // Form submission loading state
@@ -510,4 +497,4 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCharCounter(); // Initial call
 });
 </script>
-@endpush
+@endsection

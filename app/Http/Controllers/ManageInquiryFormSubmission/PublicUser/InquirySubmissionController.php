@@ -43,8 +43,13 @@ class InquirySubmissionController extends Controller
                 ->withInput();
         }        Log::info('Validation passed.');
         try {
-            // Use the test user we created in the seeder
-            $userId = 1; // Test user ID from seeder
+            // Get the current authenticated user's ID from session
+            $userId = session('user_id');
+            
+            // If no user is logged in, redirect to login
+            if (!$userId) {
+                return redirect()->route('login')->with('error', 'Please log in to submit an inquiry.');
+            }
             
             $evidence = [
                 'files' => [],

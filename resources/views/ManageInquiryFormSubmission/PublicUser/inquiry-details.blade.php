@@ -298,9 +298,8 @@
     }
 </style>
 
-<div class="inquiry-details-container">
-    <!-- Back Button -->
-    <a href="{{ route('test.inquiries.user.index') }}" class="back-button">
+<div class="inquiry-details-container">    <!-- Back Button -->
+    <a href="{{ route('inquiries.index') }}" class="back-button">
         <svg class="back-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>

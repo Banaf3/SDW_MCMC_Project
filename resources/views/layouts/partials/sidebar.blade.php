@@ -40,11 +40,11 @@
                         <svg class="nav-arrow" width="12" height="12" fill="currentColor">
                             <path d="M4 6l4 4 4-4H4z"/>
                         </svg>
-                    </a>
+                    </a>                    
                     <ul class="submenu" id="inquiry-submission">
-                        <li><a href="#">Submit New Inquiry</a></li>
-                        <li><a href="{{ url('/inquiry_list') }}" class="active">View My Inquiries</a></li>
-                        <li><a href="#">Browse Public Inquiries</a></li>
+                        <li><a href="{{ route('inquiries.create') }}">Submit New Inquiry</a></li>
+                        <li><a href="{{ route('inquiries.index') }}">View My Inquiries</a></li>
+                        <li><a href="{{ route('public.inquiries.index') }}">Browse Public Inquiries</a></li>
                     </ul>
                 </li>
 
