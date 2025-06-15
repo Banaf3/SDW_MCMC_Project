@@ -56,4 +56,9 @@ class Inquiry extends Model
     {
         return $this->hasMany(Notification::class, 'inquiry_id', 'InquiryID');
     }
+
+    public function assignment()
+    {
+        return $this->hasOne(AssignedInquiry::class, 'InquiryID', 'InquiryID');
+    }
 }

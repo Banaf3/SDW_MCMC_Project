@@ -15,8 +15,10 @@ class InquiryAuditLog extends Model
         'InquiryID'
     ];
 
-    protected $dates = [
-        'ActionDate'
+    protected $casts = [
+        'ActionDate' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     /**

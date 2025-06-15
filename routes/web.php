@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NewPasswordResetController as PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AgencyRegistrationController;
+use App\Http\Controllers\MCMCController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -65,3 +66,16 @@ Route::get('/admin/agency/register', [AgencyRegistrationController::class, 'show
 Route::post('/admin/agency/register', [AgencyRegistrationController::class, 'register']);
 Route::get('/admin/agency/management', [AgencyRegistrationController::class, 'showAgencyManagement'])->name('admin.agency.management');
 Route::post('/admin/agency/create', [AgencyRegistrationController::class, 'createAgency'])->name('admin.agency.create');
+
+// MCMC Module 3 Routes (Assignment Management)
+Route::prefix('mcmc')->group(function () {
+    Route::get('/unassigned-inquiries', [MCMCController::class, 'unassignedInquiries'])->name('mcmc.unassigned.inquiries');
+    Route::post('/assign-inquiry/{inquiryId}', [MCMCController::class, 'assignInquiry'])->name('mcmc.assign.inquiry');
+    Route::get('/inquiry-details/{inquiryId}', [MCMCController::class, 'getInquiryDetails'])->name('mcmc.inquiry.details');
+    
+    // Additional MCMC routes for sidebar navigation
+    Route::get('/assigned-inquiries', function() { return redirect('/all-inquiries'); })->name('mcmc.assigned.inquiries');
+    Route::get('/assignment-reports', function() { return view('welcome'); })->name('mcmc.assignment.reports');
+    Route::get('/analytics', function() { return view('welcome'); })->name('mcmc.analytics');
+    Route::get('/progress-monitoring', function() { return view('welcome'); })->name('mcmc.progress.monitoring');
+});
