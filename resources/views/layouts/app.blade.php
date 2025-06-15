@@ -87,7 +87,7 @@
         /* Main Container */
         .main-container { 
             display: flex; 
-            min-height: 100vh;
+            min-height: calc(100% - 60px); /* Adjust min-height to account for header */
             padding-top: 60px; /* Account for fixed header */
         }
         
@@ -107,7 +107,7 @@
         /* Content Area */
         .content { 
             flex: 1; 
-            padding: 2rem; 
+            padding: 2rem 2rem 0 2rem; /* Removed bottom padding */
             margin-left: 250px;
             background-color: #f8f9fa;
         }

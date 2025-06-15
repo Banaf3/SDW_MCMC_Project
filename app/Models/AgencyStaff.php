@@ -2,82 +2,46 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Model;
 
-class AgencyStaff extends Authenticatable
+class AgencyStaff extends Model
 {
-    use HasFactory, Notifiable;
-
     protected $table = 'agency_staff';
     protected $primaryKey = 'StaffID';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'StaffName',
-        'staffEmail',
         'Password',
+        'staffEmail',
         'staffPhoneNum',
         'ProfilePic',
         'LoginHistory',
-        'AgencyID',
+        'AgencyID'
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
-        'Password',
+        'Password'
+    ];
+
+    protected $casts = [
+        'LoginHistory' => 'array',
+        'Password' => 'hashed'
     ];
 
     /**
-     * Get the name of the unique identifier for the user.
-     *
-     * @return string
-     */
-    public function getAuthIdentifierName()
-    {
-        return 'StaffID';
-    }
-
-    /**
-     * Get the password for the user.
-     *
-     * @return string
-     */
-    public function getAuthPassword()
-    {
-        return $this->Password;
-    }
-    
-    /**
-     * Get the email attribute mapped to the username.
-     */
-    public function getEmailAttribute()
-    {
-        return $this->staffEmail;
-    }
-    
-    /**
-     * Get the name attribute mapped.
-     */
-    public function getNameAttribute()
-    {
-        return $this->StaffName;
-    }
-    
-    /**
-     * Get the agency this staff belongs to.
+     * Get the agency that this staff member belongs to
      */
     public function agency()
     {
         return $this->belongsTo(Agency::class, 'AgencyID', 'AgencyID');
+    }
+
+    /**
+     * Get inquiries handled by this staff member
+     * Assuming AdminID in inquiries table refers to StaffID
+     */
+    public function inquiries()
+    {
+        return $this->hasMany(Inquiry::class, 'AdminID', 'StaffID');
     }
 }

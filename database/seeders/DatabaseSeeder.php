@@ -17,35 +17,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create default agency
-        Agency::create([
-            'AgencyName' => 'Default Agency',
-            'AgencyEmail' => 'contact@default-agency.com',
-            'AgencyPhoneNum' => '0123456789',
-            'AgencyType' => 'Default', // This matches the actual column from the migration
-        ]);
-
-        // Create additional agencies for testing
-        Agency::create([
-            'AgencyName' => 'Malaysian Maritime Enforcement Agency',
-            'AgencyEmail' => 'info@mmea.gov.my',
-            'AgencyPhoneNum' => '0321234567',
-            'AgencyType' => 'Government',
-        ]);
-
-        Agency::create([
-            'AgencyName' => 'Port Klang Authority',
-            'AgencyEmail' => 'contact@pka.gov.my',
-            'AgencyPhoneNum' => '0387654321',
-            'AgencyType' => 'Government',
-        ]);
-
-        Agency::create([
-            'AgencyName' => 'Johor Port Authority',
-            'AgencyEmail' => 'admin@jpa.gov.my',
-            'AgencyPhoneNum' => '0712345678',
-            'AgencyType' => 'Government',
-        ]);
+        // Call the AgencySeeder
+        $this->call(AgencySeeder::class);
 
         // Sample admin user
         Administrator::create([
@@ -86,9 +59,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Regular user for Laravel auth
-        User::factory()->create([
+        User::create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'password' => Hash::make('password123'),
+            'email_verified_at' => now(),
         ]);
     }
 }
