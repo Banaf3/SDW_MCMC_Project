@@ -8,6 +8,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NewPasswordResetController as PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AgencyRegistrationController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
 use App\Http\Controllers\MCMCController;
 
 Route::get('/', function () {
@@ -67,15 +70,43 @@ Route::post('/admin/agency/register', [AgencyRegistrationController::class, 'reg
 Route::get('/admin/agency/management', [AgencyRegistrationController::class, 'showAgencyManagement'])->name('admin.agency.management');
 Route::post('/admin/agency/create', [AgencyRegistrationController::class, 'createAgency'])->name('admin.agency.create');
 
-// MCMC Module 3 Routes (Assignment Management)
-Route::prefix('mcmc')->group(function () {
-    Route::get('/unassigned-inquiries', [MCMCController::class, 'unassignedInquiries'])->name('mcmc.unassigned.inquiries');
-    Route::post('/assign-inquiry/{inquiryId}', [MCMCController::class, 'assignInquiry'])->name('mcmc.assign.inquiry');
-    Route::get('/inquiry-details/{inquiryId}', [MCMCController::class, 'getInquiryDetails'])->name('mcmc.inquiry.details');
+// Routes for Public User Inquiry Submission
+Route::get('/inquiries/submit', [InquirySubmissionController::class, 'create'])->name('inquiries.create');
+Route::post('/inquiries', [InquirySubmissionController::class, 'store'])->name('inquiries.store');
+
+// User Inquiries Management Routes
+Route::prefix('inquiries')->group(function() {
+    Route::get('/', [UserInquiriesController::class, 'index'])->name('inquiries.index');
+    Route::get('/{id}', [UserInquiriesController::class, 'show'])->name('inquiries.show');
+});
+
+// Public Inquiries Routes (Browse all inquiries without personal info)
+Route::prefix('public-inquiries')->group(function() {
+    Route::get('/', [PublicInquiriesController::class, 'index'])->name('public.inquiries.index');
+    Route::get('/{id}', [PublicInquiriesController::class, 'show'])->name('public.inquiries.show');
+});
+
+// Easy access routes
+Route::get('/my-inquiries', function() {
+    return redirect()->route('inquiries.index');
+});
+
+Route::get('/browse-inquiries', function() {
+    return redirect()->route('public.inquiries.index');
+});
+
+// Test route to simulate public user login (remove in production)
+Route::get('/test-login/{userId?}', function($userId = 1) {
+    session()->put('user_id', $userId);
+    session()->put('user_type', 'public');
+    session()->put('user_name', 'Test User ' . $userId);
+    session()->put('user_email', 'testuser' . $userId . '@example.com');
     
-    // Additional MCMC routes for sidebar navigation
-    Route::get('/assigned-inquiries', function() { return redirect('/all-inquiries'); })->name('mcmc.assigned.inquiries');
-    Route::get('/assignment-reports', function() { return view('welcome'); })->name('mcmc.assignment.reports');
-    Route::get('/analytics', function() { return view('welcome'); })->name('mcmc.analytics');
-    Route::get('/progress-monitoring', function() { return view('welcome'); })->name('mcmc.progress.monitoring');
+    return redirect()->route('inquiries.index')->with('success', 'Logged in as Test User ' . $userId);
+});
+
+// Test route to logout (remove in production)
+Route::get('/test-logout', function() {
+    session()->flush();
+    return redirect('/')->with('success', 'Logged out successfully');
 });
