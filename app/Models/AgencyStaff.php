@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class PublicUser extends Authenticatable
+class AgencyStaff extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $table = 'public_users';
-    protected $primaryKey = 'UserID';
+    protected $table = 'agency_staff';
+    protected $primaryKey = 'StaffID';
 
     /**
      * The attributes that are mass assignable.
@@ -19,13 +19,13 @@ class PublicUser extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'UserName',
-        'UserPhoneNum',
-        'Useraddress',
-        'ProfilePic',
-        'UserEmail',
+        'StaffName',
+        'staffEmail',
         'Password',
+        'staffPhoneNum',
+        'ProfilePic',
         'LoginHistory',
+        'AgencyID',
     ];
 
     /**
@@ -44,7 +44,7 @@ class PublicUser extends Authenticatable
      */
     public function getAuthIdentifierName()
     {
-        return 'UserID';
+        return 'StaffID';
     }
 
     /**
@@ -62,7 +62,7 @@ class PublicUser extends Authenticatable
      */
     public function getEmailAttribute()
     {
-        return $this->UserEmail;
+        return $this->staffEmail;
     }
     
     /**
@@ -70,6 +70,14 @@ class PublicUser extends Authenticatable
      */
     public function getNameAttribute()
     {
-        return $this->UserName;
+        return $this->StaffName;
+    }
+    
+    /**
+     * Get the agency this staff belongs to.
+     */
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class, 'AgencyID', 'AgencyID');
     }
 }

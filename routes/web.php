@@ -1,67 +1,44 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NewPasswordResetController as PasswordResetController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AgencyRegistrationController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Testing guide route
+Route::get('/testing-guide', function () {
+    return view('testing-guide');
+})->name('testing.guide');
 
 // Demo routes for testing the layout
 Route::get('/dashboard', function () {
     return view('welcome');
 })->name('dashboard');
 
-Route::get('/profile', function () {
-    return view('welcome');
-})->name('profile.index');
+// Authentication Routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Routes for Public User Inquiry Submission
-Route::middleware(['auth'])->group(function () {
-    Route::get('/inquiries/submit', [InquirySubmissionController::class, 'create'])->name('inquiries.create');
-    Route::post('/inquiries', [InquirySubmissionController::class, 'store'])->name('inquiries.store');
-});
+// Password Reset Routes
+Route::get('/password/reset', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
+Route::post('/password/email', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
+Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name('password.update');
 
-// Test routes without authentication (remove in production)
-Route::get('/test/inquiry/create', [InquirySubmissionController::class, 'create'])->name('test.inquiry.create');
-Route::post('/test/inquiry', [InquirySubmissionController::class, 'store'])->name('test.inquiry.store');
+// Profile Routes
+Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 
-// User Inquiries Management Routes
-use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
-Route::prefix('inquiries')->group(function() {
-    // Routes that would normally require authentication
-    Route::get('/', [UserInquiriesController::class, 'index'])->name('inquiries.index');
-    Route::get('/{id}', [UserInquiriesController::class, 'show'])->name('inquiries.show');
-    
-    // Test versions without authentication
-    Route::get('/test/list', [UserInquiriesController::class, 'index'])->name('test.inquiries.user.index');
-    Route::get('/test/view/{id}', [UserInquiriesController::class, 'show'])->name('test.inquiries.user.show');
-});
-
-// Public Inquiries Routes (Browse all inquiries without personal info)
-use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
-Route::prefix('public-inquiries')->group(function() {
-    Route::get('/', [PublicInquiriesController::class, 'index'])->name('public.inquiries.index');
-    Route::get('/{id}', [PublicInquiriesController::class, 'show'])->name('public.inquiries.show');
-});
-
-// Easy access route for testing - redirects to the test form
-Route::get('/test-form', function() {
-    return redirect()->route('test.inquiry.create');
-});
-
-// Easy access to user's inquiries list
-Route::get('/my-inquiries', function() {
-    return redirect()->route('test.inquiries.user.index');
-});
-
-// Easy access to public inquiries
-Route::get('/browse-inquiries', function() {
-    return redirect()->route('public.inquiries.index');
-});
-
-// Test route to view inquiries
-Route::get('/test-inquiries', function () {
-    $inquiries = \App\Models\Inquiry::orderBy('SubmitionDate', 'desc')->get();
-    return view('test-inquiries', compact('inquiries'));
-})->name('test.inquiries.index');
+// Admin Agency Management Routes (only accessible by admins)
+Route::get('/admin/agency/register', [AgencyRegistrationController::class, 'showRegistrationForm'])->name('admin.agency.register');
+Route::post('/admin/agency/register', [AgencyRegistrationController::class, 'register']);
+Route::get('/admin/agency/management', [AgencyRegistrationController::class, 'showAgencyManagement'])->name('admin.agency.management');
+Route::post('/admin/agency/create', [AgencyRegistrationController::class, 'createAgency'])->name('admin.agency.create');
