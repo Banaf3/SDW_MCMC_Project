@@ -1,22 +1,33 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\AgencyController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/inquiry_list', [App\Http\Controllers\InquiryController::class, 'index']);
+// Use the InquiryController to fetch real data from database
+Route::get('/inquiry_list', [InquiryController::class, 'index']);
 
-Route::get('/inquirylist', function () {
-    // You can pass data here if needed
-    return view('inquiry_list');
-});
+// All inquiries view (Module4-MCMC)
+Route::get('/all-inquiries', [InquiryController::class, 'allInquiries']);
 
-Route::get('/inquiry-detail/{id}', function ($id) {
-    // In a real app, fetch inquiry details from DB using $id
-    return view('inquiry_detail', ['id' => $id]);
-});
+Route::get('/inquiry-detail/{id}', [InquiryController::class, 'show']);
+
+// Notification API routes
+Route::get('/api/notifications', [NotificationController::class, 'index']);
+Route::post('/api/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+Route::post('/api/notifications/{id}/mark-read', [NotificationController::class, 'markAsRead']);
+Route::get('/api/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+
+// Agency routes
+Route::get('/agency/inquiries/assigned', [AgencyController::class, 'assignedInquiries'])->name('agency.inquiries.assigned');
+Route::get('/agency/inquiry-edit/{id}', [AgencyController::class, 'editInquiry']);
+Route::put('/agency/inquiry-update/{id}', [AgencyController::class, 'updateInquiry']);
+Route::put('/agency/inquiry-status-update/{id}', [AgencyController::class, 'updateInquiryStatus']);
 
 // Demo routes for testing the layout
 Route::get('/dashboard', function () {

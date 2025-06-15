@@ -27,7 +27,7 @@
                     </a>
                     <ul class="submenu" id="inquiry-submission">
                         <li><a href="#">Submit New Inquiry</a></li>
-                        <li><a href="#">View My Inquiries</a></li>
+                        <li><a href="{{ url('/inquiry_list') }}" class="active">View My Inquiries</a></li>
                         <li><a href="#">Browse Public Inquiries</a></li>
                     </ul>
                 </li>
@@ -163,8 +163,19 @@
 </aside>
 
 <style>
-
 .sidebar {
     margin-top: 1rem;
+}
+
+.submenu li a.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-weight: 600;
+    border-left: 3px solid #45c649;
+    padding-left: 2.75rem;
+}
+
+.submenu li a.active:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }
 </style>

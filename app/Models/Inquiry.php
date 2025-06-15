@@ -37,15 +37,23 @@ class Inquiry extends Model
     public function assignedAgency()
     {
         return $this->belongsTo(Agency::class, 'AgencyID', 'AgencyID');
-    }
-
-    public function administrator()
+    }    public function administrator()
     {
         return $this->belongsTo(Administrator::class, 'AdminID', 'AdminID');
+    }
+
+    public function assignedStaff()
+    {
+        return $this->belongsTo(AgencyStaff::class, 'AdminID', 'StaffID');
     }
 
     public function user()
     {
         return $this->belongsTo(PublicUser::class, 'UserID', 'UserID');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'inquiry_id', 'InquiryID');
     }
 }
