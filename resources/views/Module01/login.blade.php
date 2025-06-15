@@ -197,8 +197,7 @@
             pointer-events: auto !important;
             cursor: pointer !important;
         }
-        
-        .forgot-btn {
+          .forgot-btn {
             background: rgba(247, 151, 30, 0.08);
             color: #f7971e;
             border: 1.5px solid #f7971e;
@@ -211,50 +210,7 @@
             text-decoration: none !important;
             pointer-events: auto !important;
             cursor: pointer !important;
-        }.email-input-container {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin: 0 auto;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-            border-radius: 10px;
-        }        .email-prefix {
-            flex: 3;
-            margin-right: 0;
-            margin-left: 0;
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-            min-width: 0;
-            width: 100%;
-            height: 3.2rem;
-            border-right: 0;
-            padding: 0.8rem 1rem;
-            border: 1.5px solid #e2e8f0;
-            font-size: 1rem;
-            background: #f8fafc;
-            transition: all 0.3s ease;
-        }
-        .email-domain {
-            flex: 2;
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-left: 0;
-            border-radius: 0 10px 10px 0;
-            padding: 0 1rem;
-            height: 3.2rem;
-            line-height: 1.6rem;
-            font-size: 1rem;
-            color: #718096;
-            min-width: 110px;
-            text-align: left;
-            display: none;
-            font-weight: 500;
-            box-sizing: border-box;
-            /* Match the exact styling of form-control */
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-        }        .alert {
+        }.alert {
             padding: 1rem 1.25rem;
             border-radius: 10px;
             margin-bottom: 2rem;
@@ -318,73 +274,28 @@
                 <div class="alert alert-success">
                     {{ session('status') }}
                 </div>
-            @endif
-            <form method="POST" action="{{ route('login') }}">
+            @endif            <form method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="form-group">
-                    <label for="identity">Login as</label>
-                    <select name="identity" id="identity" class="form-control" onchange="setEmailDomain()" required>
-                        <option value="public">Public User</option>
-                        <option value="admin">MCMC Admin</option>
-                        <option value="agency">Agency Staff</option>
-                    </select>
-                </div>                <div class="form-group">
-                    <label for="email">Email</label>
-                    <div class="email-input-container">
-                        <input type="text" name="email_prefix" id="email_prefix" class="form-control email-prefix" placeholder="Enter email" required autofocus>
-                        <span id="email_domain" class="email-domain">@</span>
-                    </div>
-                    <input type="hidden" name="email" id="email_full">
+                    <label for="email">Email or Username</label>
+                    <input type="text" name="email" id="email" class="form-control" placeholder="Enter your email or username" required autofocus>
                 </div>
+                
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" class="form-control" required>
-                </div>                <button type="submit" class="btn btn-primary btn-block">Login</button>            </form>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+            </form>
             
             <div class="auth-buttons">
                 <a href="{{ route('register') }}" class="register-btn">Register</a>
                 <a href="{{ route('password.request') }}" class="forgot-btn">Forgot Password?</a>
             </div>
         </div>
-    </div>
-    <script>
-        function setEmailDomain() {
-            const identity = document.getElementById('identity').value;
-            const domainSpan = document.getElementById('email_domain');
-            const emailPrefix = document.getElementById('email_prefix');
-              if(identity === 'admin') {
-                domainSpan.textContent = '@admin.com';
-                domainSpan.style.display = 'flex';
-                emailPrefix.style.borderRadius = '10px 0 0 10px';
-            } else if(identity === 'agency') {
-                domainSpan.textContent = '@agency.com';
-                domainSpan.style.display = 'flex';
-                emailPrefix.style.borderRadius = '10px 0 0 10px';
-            } else {
-                domainSpan.style.display = 'none';
-                emailPrefix.style.borderRadius = '10px';
-                emailPrefix.style.borderRight = '1.5px solid #e2e8f0';
-            }
-            
-            document.getElementById('email_prefix').value = '';
-            updateFullEmail();
-        }
-
-        function updateFullEmail() {
-            const prefix = document.getElementById('email_prefix').value;
-            const identity = document.getElementById('identity').value;
-            
-            if(identity === 'admin') {
-                document.getElementById('email_full').value = prefix + '@admin.com';
-            } else if(identity === 'agency') {
-                document.getElementById('email_full').value = prefix + '@agency.com';
-            } else {
-                document.getElementById('email_full').value = prefix;
-            }
-        }        document.getElementById('email_prefix').addEventListener('input', updateFullEmail);
-        document.getElementById('identity').addEventListener('change', setEmailDomain);
-        window.onload = setEmailDomain;
-          // Ensure buttons remain clickable
+    </div>    <script>
+        // Ensure buttons remain clickable
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 const registerBtn = document.querySelector('.register-btn');

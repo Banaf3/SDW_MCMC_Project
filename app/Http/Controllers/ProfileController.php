@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Administrator;
 use App\Models\AgencyStaff;
 use App\Models\PublicUser;
+use App\Models\Agency;
 
 class ProfileController extends Controller
 {
@@ -29,11 +30,13 @@ class ProfileController extends Controller
         if (!$user) {
             return redirect()->route('login')->with('error', 'User not found.');
         }
-        
-        // Format the user object to have consistent property names for the view
+          // Format the user object to have consistent property names for the view
         $formattedUser = $this->formatUserData($user, $userType);
         
-        return view('Module01.profile.edit', ['user' => $formattedUser]);
+        // Determine which view to show based on user type
+        $viewPath = $this->getEditProfileViewPath($userType);
+        
+        return view($viewPath, ['user' => $formattedUser]);
     }
     
     /**
@@ -46,17 +49,15 @@ class ProfileController extends Controller
         
         if (!$userId || !$userType) {
             return redirect()->route('login')->with('error', 'You must be logged in to access this page.');
-        }
-        
-        // Validate common fields
-        $request->validate([
-            'name' => 'required|string|max:255',
+        }        // Validate common fields - make all fields optional except for file validation
+        $validationRules = [
+            'name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
             'profile_pic' => 'nullable|image|max:2048', // 2MB max
-            'current_password' => 'nullable|string',
-            'new_password' => 'nullable|string|min:6|confirmed',
-        ]);
+            'address' => 'nullable|string|max:500',
+        ];
+        
+        $request->validate($validationRules);
         
         // Get the user model based on type
         $user = $this->getUserData($userId, $userType);
@@ -78,48 +79,73 @@ class ProfileController extends Controller
         }
         
         // Update user data based on type
-        switch ($userType) {
-            case 'admin':
-                $userData = [
-                    'AdminName' => $request->name,
-                    'AdminPhoneNum' => $request->phone,
-                    'AdminAddress' => $request->address,
-                ];
+        switch ($userType) {            case 'admin':
+                $userData = [];
+                
+                if ($request->filled('name')) {
+                    $userData['AdminName'] = $request->name;
+                    $request->session()->put('user_name', $request->name);
+                }
+                
+                if ($request->filled('phone')) {
+                    $userData['AdminPhoneNum'] = $request->phone;
+                }
+                
+                if ($request->filled('address')) {
+                    $userData['AdminAddress'] = $request->address;
+                }
                 
                 if ($profilePicPath) {
                     $userData['ProfilePicture'] = $profilePicPath;
                 }
                 
-                Administrator::where('AdminID', $userId)->update($userData);
-                $request->session()->put('user_name', $request->name);
-                break;
-                
+                if (!empty($userData)) {
+                    Administrator::where('AdminID', $userId)->update($userData);
+                }
+                break;                
             case 'agency':
-                $userData = [
-                    'StaffName' => $request->name,
-                    'staffPhoneNum' => $request->phone,
-                ];
-                  if ($profilePicPath) {
-                    $userData['ProfilePic'] = $profilePicPath;
+                $userData = [];
+                
+                if ($request->filled('name')) {
+                    $userData['StaffName'] = $request->name;
+                    $request->session()->put('user_name', $request->name);
                 }
                 
-                AgencyStaff::where('StaffID', $userId)->update($userData);
-                $request->session()->put('user_name', $request->name);
-                break;
-                
-            case 'public':
-                $userData = [
-                    'UserName' => $request->name,
-                    'UserPhoneNum' => $request->phone,
-                    'Useraddress' => $request->address,
-                ];
+                if ($request->filled('phone')) {
+                    $userData['staffPhoneNum'] = $request->phone;
+                }
                 
                 if ($profilePicPath) {
                     $userData['ProfilePic'] = $profilePicPath;
                 }
                 
-                PublicUser::where('UserID', $userId)->update($userData);
-                $request->session()->put('user_name', $request->name);
+                if (!empty($userData)) {
+                    AgencyStaff::where('StaffID', $userId)->update($userData);
+                }
+                break;
+                  case 'public':
+                $userData = [];
+                
+                if ($request->filled('name')) {
+                    $userData['UserName'] = $request->name;
+                    $request->session()->put('user_name', $request->name);
+                }
+                
+                if ($request->filled('phone')) {
+                    $userData['UserPhoneNum'] = $request->phone;
+                }
+                
+                if ($request->filled('address')) {
+                    $userData['Useraddress'] = $request->address;
+                }
+                
+                if ($profilePicPath) {
+                    $userData['ProfilePic'] = $profilePicPath;
+                }
+                
+                if (!empty($userData)) {
+                    PublicUser::where('UserID', $userId)->update($userData);
+                }
                 break;
         }
         
@@ -136,7 +162,23 @@ class ProfileController extends Controller
         
         return back()->with('success', 'Profile updated successfully!');
     }
-    
+      /**
+     * Get the appropriate edit profile view path based on user type
+     */
+    private function getEditProfileViewPath($userType)
+    {
+        switch ($userType) {
+            case 'admin':
+                return 'Module01.MCMC_Admin.edit-profile';
+            case 'agency':
+                return 'Module01.Agency.edit-profile';
+            case 'public':
+                return 'Module01.Public_user.edit-profile';
+            default:
+                return 'Module01.edit'; // Fallback to shared view
+        }
+    }
+
     /**
      * Get user data based on type and ID
      */
@@ -153,8 +195,7 @@ class ProfileController extends Controller
                 return null;
         }
     }
-    
-    /**
+      /**
      * Format user data for consistent property names in view
      */
     private function formatUserData($user, $userType)
@@ -166,14 +207,22 @@ class ProfileController extends Controller
                 $formatted->name = $user->AdminName;
                 $formatted->email = $user->AdminEmail;
                 $formatted->phone = $user->AdminPhoneNum;
-                $formatted->address = $user->AdminAddress;                $formatted->profile_pic = $user->ProfilePicture;
+                $formatted->address = $user->AdminAddress;
+                $formatted->admin_role = $user->AdminRole;
+                $formatted->profile_pic = $user->ProfilePicture;
                 break;
                 
             case 'agency':
                 $formatted->name = $user->StaffName;
                 $formatted->email = $user->staffEmail;
                 $formatted->phone = $user->staffPhoneNum;
-                $formatted->address = ''; // Agency staff might not have address in DB                $formatted->profile_pic = $user->ProfilePic;
+                $formatted->address = ''; // Agency staff might not have address in DB
+                $formatted->profile_pic = $user->ProfilePic;
+                
+                // Get agency information
+                $agency = \App\Models\Agency::where('AgencyID', $user->AgencyID)->first();
+                $formatted->agency_name = $agency ? $agency->AgencyName : 'N/A';
+                $formatted->agency_type = $agency ? $agency->AgencyType : 'N/A';
                 break;
                 
             case 'public':
