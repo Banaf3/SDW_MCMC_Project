@@ -1,9 +1,25 @@
 @php
-    // Determine user permissions based on role from header
-    $userRole = request('role') === 'admin' ? 'Administrator' : (request('role') === 'agency' ? 'Agency Staff' : 'Public User');
-    $isPublic = $userRole === 'Public User';
-    $isAdmin = $userRole === 'Administrator';
-    $isAgency = $userRole === 'Agency Staff';
+    // Get user data from session (same as header for consistency)
+    $userId = session('user_id', '');
+    $userType = session('user_type', '');
+    $userName = session('user_name', 'Guest');
+    $userEmail = session('user_email', '');
+    
+    // Convert user type to role display name
+    $userRole = 'Guest';
+    if ($userType === 'admin') {
+        $userRole = 'Administrator';
+    } elseif ($userType === 'agency') {
+        $userRole = 'Agency Staff';
+    } elseif ($userType === 'public') {
+        $userRole = 'Public User';
+    }
+    
+    // Determine permissions
+    $isPublic = $userType === 'public';
+    $isAdmin = $userType === 'admin';
+    $isAgency = $userType === 'agency';
+    $isLoggedIn = !empty($userId);
 @endphp
 
 <aside class="sidebar">
@@ -64,6 +80,21 @@
 
             @if($isAdmin)
                 <!-- MCMC ADMIN MENU -->
+
+                <!-- 1. User Management -->
+                <li class="nav-item">
+                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('user-management')">
+                        <span>User Management</span>
+                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
+                            <path d="M4 6l4 4 4-4H4z"/>
+                        </svg>
+                    </a>
+                    <ul class="submenu" id="user-management">
+                        <li><a href="{{ route('admin.agency.register') }}">Register Agency Staff</a></li>
+                        <li><a href="{{ route('admin.agency.management') }}">Manage Agencies</a></li>
+                        <li><a href="#">User Reports</a></li>
+                    </ul>
+                </li>
 
                 <!-- 2. Manage Inquiries -->
                 <li class="nav-item">
