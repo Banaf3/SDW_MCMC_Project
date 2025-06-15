@@ -2,22 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Model;
 
-class PublicUser extends Authenticatable
+class PublicUser extends Model
 {
-    use HasFactory, Notifiable;
-
     protected $table = 'public_users';
     protected $primaryKey = 'UserID';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'UserName',
         'UserPhoneNum',
@@ -25,51 +16,32 @@ class PublicUser extends Authenticatable
         'ProfilePic',
         'UserEmail',
         'Password',
-        'LoginHistory',
+        'LoginHistory'
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'Password',
     ];
 
+    protected $casts = [
+        'LoginHistory' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+
     /**
-     * Get the name of the unique identifier for the user.
-     *
-     * @return string
+     * Get the inquiries created by this user
      */
-    public function getAuthIdentifierName()
+    public function inquiries()
     {
-        return 'UserID';
+        return $this->hasMany(Inquiry::class, 'UserID', 'UserID');
     }
 
     /**
-     * Get the password for the user.
-     *
-     * @return string
+     * Get the notifications for this user
      */
-    public function getAuthPassword()
+    public function notifications()
     {
-        return $this->Password;
-    }
-    
-    /**
-     * Get the email attribute mapped to the username.
-     */
-    public function getEmailAttribute()
-    {
-        return $this->UserEmail;
-    }
-    
-    /**
-     * Get the name attribute mapped.
-     */
-    public function getNameAttribute()
-    {
-        return $this->UserName;
+        return $this->hasMany(Notification::class, 'user_id', 'UserID');
     }
 }

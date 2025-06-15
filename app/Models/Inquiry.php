@@ -6,45 +6,54 @@ use Illuminate\Database\Eloquent\Model;
 
 class Inquiry extends Model
 {
-    protected $table = 'inquiries';
     protected $primaryKey = 'InquiryID';
-    public $timestamps = false; // Since we're using custom SubmissionDate
-    
+
     protected $fillable = [
         'InquiryTitle',
-        'SubmitionDate', 
+        'SubmitionDate',
         'InquiryStatus',
+        'StatusHistory',
         'InquiryDescription',
         'InquiryEvidence',
         'AdminComment',
         'ResolvedExplanation',
         'ResolvedSupportingDocs',
         'AgencyRejectionComment',
-        'AdminID',
         'AgencyID',
+        'AdminID',
         'UserID'
+    ];    protected $casts = [
+        'SubmitionDate' => 'datetime',
+        'StatusHistory' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
-    protected $casts = [
-        'InquiryEvidence' => 'array',
-        'SubmissionDate' => 'datetime',
-    ];
+    public function timeline()
+    {
+        return $this->hasMany(InquiryAuditLog::class, 'InquiryID')->orderBy('ActionDate');
+    }
 
-    // Relationship with PublicUser
+    public function assignedAgency()
+    {
+        return $this->belongsTo(Agency::class, 'AgencyID', 'AgencyID');
+    }    public function administrator()
+    {
+        return $this->belongsTo(Administrator::class, 'AdminID', 'AdminID');
+    }
+
+    public function assignedStaff()
+    {
+        return $this->belongsTo(AgencyStaff::class, 'AdminID', 'StaffID');
+    }
+
     public function user()
     {
         return $this->belongsTo(PublicUser::class, 'UserID', 'UserID');
     }
 
-    // Relationship with Administrator
-    public function administrator()
+    public function notifications()
     {
-        return $this->belongsTo(Administrator::class, 'AdminID', 'AdminID');
-    }
-
-    // Relationship with Agency
-    public function agency()
-    {
-        return $this->belongsTo(Agency::class, 'AgencyID', 'AgencyID');
+        return $this->hasMany(Notification::class, 'inquiry_id', 'InquiryID');
     }
 }

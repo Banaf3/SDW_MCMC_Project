@@ -40,10 +40,11 @@
                         <svg class="nav-arrow" width="12" height="12" fill="currentColor">
                             <path d="M4 6l4 4 4-4H4z"/>
                         </svg>
-                    </a>                    <ul class="submenu" id="inquiry-submission">
-                        <li><a href="{{ route('inquiries.create') }}">Submit New Inquiry</a></li>
-                        <li><a href="{{ route('inquiries.index') }}">View My Inquiries</a></li>
-                        <li><a href="{{ route('public.inquiries.index') }}">Browse Public Inquiries</a></li>
+                    </a>
+                    <ul class="submenu" id="inquiry-submission">
+                        <li><a href="#">Submit New Inquiry</a></li>
+                        <li><a href="{{ url('/inquiry_list') }}" class="active">View My Inquiries</a></li>
+                        <li><a href="#">Browse Public Inquiries</a></li>
                     </ul>
                 </li>
 
@@ -193,8 +194,19 @@
 </aside>
 
 <style>
-
 .sidebar {
     margin-top: 1rem;
+}
+
+.submenu li a.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-weight: 600;
+    border-left: 3px solid #45c649;
+    padding-left: 2.75rem;
+}
+
+.submenu li a.active:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }
 </style>
