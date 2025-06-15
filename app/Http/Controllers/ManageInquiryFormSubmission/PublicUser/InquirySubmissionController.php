@@ -14,10 +14,6 @@ use Illuminate\Support\Facades\Validator;
 class InquirySubmissionController extends Controller
 {    public function create()
     {
-        // Determine which view to return based on the route name
-        if (request()->route()->getName() == 'test.inquiry.create') {
-            return view('ManageInquiryFormSubmission.PublicUser.submit-inquiry-test');
-        }
         return view('ManageInquiryFormSubmission.PublicUser.submit-inquiry');
     }
 

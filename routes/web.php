@@ -5,6 +5,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NewPasswordResetController as PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AgencyRegistrationController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -42,3 +45,28 @@ Route::get('/admin/agency/register', [AgencyRegistrationController::class, 'show
 Route::post('/admin/agency/register', [AgencyRegistrationController::class, 'register']);
 Route::get('/admin/agency/management', [AgencyRegistrationController::class, 'showAgencyManagement'])->name('admin.agency.management');
 Route::post('/admin/agency/create', [AgencyRegistrationController::class, 'createAgency'])->name('admin.agency.create');
+
+// Routes for Public User Inquiry Submission
+Route::get('/inquiries/submit', [InquirySubmissionController::class, 'create'])->name('inquiries.create');
+Route::post('/inquiries', [InquirySubmissionController::class, 'store'])->name('inquiries.store');
+
+// User Inquiries Management Routes
+Route::prefix('inquiries')->group(function() {
+    Route::get('/', [UserInquiriesController::class, 'index'])->name('inquiries.index');
+    Route::get('/{id}', [UserInquiriesController::class, 'show'])->name('inquiries.show');
+});
+
+// Public Inquiries Routes (Browse all inquiries without personal info)
+Route::prefix('public-inquiries')->group(function() {
+    Route::get('/', [PublicInquiriesController::class, 'index'])->name('public.inquiries.index');
+    Route::get('/{id}', [PublicInquiriesController::class, 'show'])->name('public.inquiries.show');
+});
+
+// Easy access routes
+Route::get('/my-inquiries', function() {
+    return redirect()->route('inquiries.index');
+});
+
+Route::get('/browse-inquiries', function() {
+    return redirect()->route('public.inquiries.index');
+});

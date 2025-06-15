@@ -42,7 +42,7 @@
                         </svg>
                     </a>                    <ul class="submenu" id="inquiry-submission">
                         <li><a href="{{ route('inquiries.create') }}">Submit New Inquiry</a></li>
-                        <li><a href="{{ route('test.inquiries.user.index') }}">View My Inquiries</a></li>
+                        <li><a href="{{ route('inquiries.index') }}">View My Inquiries</a></li>
                         <li><a href="{{ route('public.inquiries.index') }}">Browse Public Inquiries</a></li>
                     </ul>
                 </li>

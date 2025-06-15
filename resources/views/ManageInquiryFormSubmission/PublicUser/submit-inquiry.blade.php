@@ -2,13 +2,22 @@
 
 @section('title', 'Submit New Inquiry')
 
+@push('meta')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endpush
+
 @section('content')
 <style>
 /* Custom styles for the inquiry form */
 .inquiry-container {
     max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+    margin: 105px auto 20px auto; /* Added bottom margin to prevent excessive scrolling */
+    margin-right: calc(50% - 515px); /* Move container to the right */
+    padding: 0;
+}
+
+.inquiry-container > .form-section:first-child {
+    margin-top: 0;
 }
 
 .form-section {
@@ -18,6 +27,10 @@
     padding: 24px;
     margin-bottom: 24px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-section:last-child {
+    margin-bottom: 0; /* Remove bottom margin from last section */
 }
 
 .form-section h2 {
@@ -194,10 +207,80 @@
     color: #4b5563;
 }
 
+.file-list-container {
+    margin-top: 10px;
+}
+
+.file-item {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.file-item-name {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.file-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    color: #64748b;
+}
+
+.file-name {
+    font-size: 13px;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+.file-size {
+    font-size: 12px;
+    color: #64748b;
+    margin-left: 8px;
+}
+
+.file-delete {
+    background-color: #fee2e2;
+    color: #ef4444;
+    border: none;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.file-delete:hover {
+    background-color: #fecaca;
+}
+
+.mt-3 {
+    margin-top: 12px;
+}
+
+.mt-4 {
+    margin-top: 16px;
+}
+
 /* Responsive design */
 @media (max-width: 640px) {
     .inquiry-container {
-        padding: 12px;
+        padding: 0;
+        margin: 0 12px;
     }
     
     .form-section {
@@ -241,7 +324,7 @@
     @endif
 
     <!-- Inquiry Form -->
-    <form action="{{ route('inquiries.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="inquiryForm" action="{{ route('inquiries.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
         <!-- Basic Information Section -->
@@ -293,7 +376,8 @@
         <div class="form-section">
             <h2>Supporting Evidence</h2>
             <p style="color: #6b7280; margin-bottom: 24px;">Upload documents, images, or other files that support your inquiry. This evidence will help our verification team assess the authenticity of the news.</p>
-              <!-- Supporting Evidence -->
+            
+            <!-- Supporting Evidence -->
             <div class="form-group">
                 <label for="inquiry_evidence" class="form-label">Supporting Evidence</label>
                 <div class="file-upload-area" onclick="document.getElementById('inquiry_evidence').click();">
@@ -302,9 +386,13 @@
                     </svg>
                     <div class="file-upload-text">Click to upload files or drag and drop</div>
                     <div class="file-upload-subtext">Upload documents (PDF, DOC, DOCX) or images (JPG, PNG, GIF) up to 10MB each</div>
-                    <input id="inquiry_evidence" name="inquiry_evidence[]" type="file" style="display: none;" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif">
+                    <input id="inquiry_evidence" name="supporting_files[]" type="file" style="display: none;" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" multiple>
                 </div>
-                @error('inquiry_evidence.*')
+                <div id="file-uploads-container" class="mt-4"></div>
+                <div id="file-list-container" class="mt-4">
+                    <div id="file-list" class="file-list-container"></div>
+                </div>
+                @error('supporting_files.*')
                     <div class="error-text">{{ $message }}</div>
                 @enderror
             </div>
@@ -322,62 +410,94 @@
     </form>
 </div>
 
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // File upload preview functionality
-    const evidenceInput = document.getElementById('inquiry_evidence');
-    
-    function handleFileInput(input) {
-        input.addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length > 0) {
-                updateFilePreview(files, input);
+    const form = document.getElementById('inquiryForm');
+    const visibleFileInput = document.getElementById('inquiry_evidence');
+    const fileListContainer = document.getElementById('file-list');
+
+    let selectedFiles = []; // Array to store File objects
+
+    visibleFileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            addFilesToList(files);
+            e.target.value = ''; // Clear the visible file input
+        }
+    });
+
+    function getFileIcon(fileType) {
+        const fileExtension = fileType.split('.').pop().toLowerCase();
+        if (["pdf", "doc", "docx", "txt", "rtf"].includes(fileExtension)) {
+            return `<svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>`;
+        }
+        if (["jpg", "jpeg", "png", "gif", "bmp"].includes(fileExtension)) {
+            return `<svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`;
+        }
+        return `<svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
+    }
+
+    function addFilesToList(files) {
+        files.forEach(file => {
+            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                selectedFiles.push(file);
             }
         });
+        renderFileList();
     }
-    
-    function updateFilePreview(files, input) {
-        const container = input.closest('.file-upload-area');
-        const existingPreview = container.parentNode.querySelector('.file-preview');
-        
-        if (existingPreview) {
-            existingPreview.remove();
-        }
-        
-        if (files.length > 0) {
-            const preview = document.createElement('div');
-            preview.className = 'file-preview';
-            preview.innerHTML = `
-                <div>
-                    <strong>Selected files (${files.length}):</strong>
-                    <ul class="file-list">
-                        ${files.map(file => `<li>${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</li>`).join('')}
-                    </ul>
+
+    function renderFileList() {
+        fileListContainer.innerHTML = '';
+        selectedFiles.forEach((file, idx) => {
+            const fileId = 'file_' + idx;
+            const fileSize = file.size < 1024 * 1024 
+                ? (file.size / 1024).toFixed(1) + ' KB' 
+                : (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.id = fileId;
+            fileItem.innerHTML = `
+                <div class="file-item-name">
+                    ${getFileIcon(file.name)}
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">(${fileSize})</span>
                 </div>
+                <button type="button" class="file-delete" data-id="${fileId}">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
             `;
-            container.parentNode.appendChild(preview);
-        }
+            fileListContainer.appendChild(fileItem);
+            fileItem.querySelector('.file-delete').addEventListener('click', function() {
+                const idxToRemove = parseInt(this.getAttribute('data-id').replace('file_', ''));
+                selectedFiles.splice(idxToRemove, 1);
+                renderFileList();
+            });
+        });
+        updateInputFiles();
     }
-      handleFileInput(evidenceInput);
-    
+
+    function updateInputFiles() {
+        // Create a new DataTransfer to update the input's files
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        visibleFileInput.files = dataTransfer.files;
+    }
+
     // Form submission loading state
-    const form = document.querySelector('form');
     const submitButton = document.getElementById('submit-btn');
-    
     form.addEventListener('submit', function() {
         submitButton.disabled = true;
         submitButton.textContent = 'Submitting...';
         submitButton.style.opacity = '0.7';
     });
-    
+
     // Character counter for description
     const descriptionTextarea = document.getElementById('inquiry_description');
     const charCounter = document.getElementById('char-counter');
-    
     function updateCharCounter() {
         const length = descriptionTextarea.value.length;
         const minLength = 50;
-        
         if (length < minLength) {
             charCounter.textContent = `${length}/${minLength} characters (minimum required)`;
             charCounter.style.color = '#ef4444';
@@ -386,9 +506,8 @@ document.addEventListener('DOMContentLoaded', function() {
             charCounter.style.color = '#6b7280';
         }
     }
-    
     descriptionTextarea.addEventListener('input', updateCharCounter);
     updateCharCounter(); // Initial call
 });
 </script>
-@endsection
+@endpush
