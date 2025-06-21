@@ -33,7 +33,7 @@
             @if($isPublic)
                 <!-- PUBLIC USER MENU -->
                 
-                <!-- 2. Inquiry Submission -->
+                <!-- 1. Inquiry Submission -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('inquiry-submission')">
                         <span>Inquiry Submission</span>
@@ -146,7 +146,7 @@
             @if($isAgency)
                 <!-- AGENCY STAFF MENU -->
 
-                <!-- 2. Inquiry Access -->
+                <!-- 1. Inquiry Access -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('inquiry-access')">
                         <span>Inquiry Access</span>

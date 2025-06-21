@@ -18,10 +18,8 @@ class AgencyRegistrationController extends Controller
         // Check if user is logged in as admin
         if (!session('user_type') || session('user_type') !== 'admin') {
             return redirect('/login')->with('error', 'Only administrators can access the agency registration page.');
-        }
-
-        $agencies = Agency::all();
-        return view('admin.agency-registration', compact('agencies'));
+        }        $agencies = Agency::all();
+        return view('Module01.MCMC_Admin.agency-registration', compact('agencies'));
     }
 
     /**
@@ -38,15 +36,12 @@ class AgencyRegistrationController extends Controller
             'staff_name' => 'required|string|max:255',
             'agency_id' => 'required|exists:agencies,AgencyID',
             'staff_phone' => 'required|string|max:20',
-        ]);
-
-        // Get the selected agency
+        ]);        // Get the selected agency
         $agency = Agency::findOrFail($request->agency_id);
         
         // Generate unique email and password for the agency staff
         $baseEmail = strtolower(str_replace(' ', '', $request->staff_name));
-        $agencyName = strtolower(str_replace(' ', '', $agency->AgencyName));
-        $email = $baseEmail . '@' . $agencyName . '.agency.com';
+        $email = $baseEmail . '@agency.com';
         
         // Ensure email is unique
         $counter = 1;
@@ -92,10 +87,8 @@ class AgencyRegistrationController extends Controller
         // Check if user is logged in as admin
         if (!session('user_type') || session('user_type') !== 'admin') {
             return redirect('/login')->with('error', 'Only administrators can access agency management.');
-        }
-
-        $agencies = Agency::with('staff')->get();
-        return view('admin.agency-management', compact('agencies'));
+        }        $agencies = Agency::with('staff')->get();
+        return view('Module01.MCMC_Admin.agency-management', compact('agencies'));
     }
 
     /**

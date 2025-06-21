@@ -5,9 +5,10 @@ use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\NewPasswordResetController as PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AgencyRegistrationController;
+use App\Http\Controllers\NewPasswordResetController;
+use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
@@ -16,6 +17,35 @@ use App\Http\Controllers\MCMCController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Authentication Routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Registration Routes
+Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+
+// Profile Routes
+Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+// Password Change Routes
+Route::get('/password/edit', [PasswordController::class, 'edit'])->name('password.edit');
+Route::put('/password', [PasswordController::class, 'update'])->name('password.change');
+
+// Password Reset Routes
+Route::get('/forgot-password', [NewPasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password', [NewPasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/reset-password/{token}', [NewPasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [NewPasswordResetController::class, 'reset'])->name('password.update');
+
+// Agency Registration Routes (Admin only)
+Route::get('/admin/agency/register', [AgencyRegistrationController::class, 'showRegistrationForm'])->name('admin.agency.register');
+Route::post('/admin/agency/register', [AgencyRegistrationController::class, 'register']);
+Route::get('/admin/agency/management', [AgencyRegistrationController::class, 'showAgencyManagement'])->name('admin.agency.management');
+Route::post('/admin/agency/create', [AgencyRegistrationController::class, 'createAgency'])->name('admin.agency.create');
 
 // Use the InquiryController to fetch real data from database
 Route::get('/inquiry_list', [InquiryController::class, 'index']);
@@ -47,28 +77,9 @@ Route::get('/dashboard', function () {
     return view('welcome');
 })->name('dashboard');
 
-// Authentication Routes
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// Password Reset Routes
-Route::get('/password/reset', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
-Route::post('/password/email', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
-Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
-Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name('password.update');
-
-// Profile Routes
-Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
-
-// Admin Agency Management Routes (only accessible by admins)
-Route::get('/admin/agency/register', [AgencyRegistrationController::class, 'showRegistrationForm'])->name('admin.agency.register');
-Route::post('/admin/agency/register', [AgencyRegistrationController::class, 'register']);
-Route::get('/admin/agency/management', [AgencyRegistrationController::class, 'showAgencyManagement'])->name('admin.agency.management');
-Route::post('/admin/agency/create', [AgencyRegistrationController::class, 'createAgency'])->name('admin.agency.create');
+Route::get('/profile', function () {
+    return view('welcome');
+})->name('profile.index');
 
 // Routes for Public User Inquiry Submission
 Route::get('/inquiries/submit', [InquirySubmissionController::class, 'create'])->name('inquiries.create');

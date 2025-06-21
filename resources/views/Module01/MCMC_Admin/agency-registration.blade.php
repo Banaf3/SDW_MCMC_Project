@@ -258,12 +258,10 @@
                         <input type="tel" name="staff_phone" id="staff_phone" class="form-control" 
                                value="{{ old('staff_phone') }}" required 
                                placeholder="Enter phone number (e.g., +60123456789)">
-                    </div>
-
-                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                    </div>                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
                         <h5 style="color: #495057; margin-bottom: 0.5rem;">📋 Registration Process:</h5>
                         <ol style="margin: 0; padding-left: 1.5rem; color: #666;">
-                            <li>Unique email will be auto-generated based on staff name and agency</li>
+                            <li>Unique email will be auto-generated with @agency.com domain (e.g., johnsmith@agency.com)</li>
                             <li>Secure password will be randomly generated</li>
                             <li>Staff credentials will be displayed here (simulated email sending)</li>
                             <li>Staff can login using the generated credentials</li>

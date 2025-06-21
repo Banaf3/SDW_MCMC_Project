@@ -311,8 +311,8 @@
                 sidebar.classList.remove('open');
             }
         });
-        
-        @yield('scripts')
     </script>
+    
+    @yield('scripts')
 </body>
 </html>

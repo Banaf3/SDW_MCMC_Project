@@ -14,12 +14,18 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class NewPasswordResetController extends Controller
-{    public function showRequestForm()
+{    
+    public function showLinkRequestForm()
     {
-        return view('auth.passwords.recovery');
+        return view('Module01.recovery');
+    }
+    
+    public function showRequestForm()
+    {
+        return view('Module01.recovery');
     }
 
-    public function sendResetLink(Request $request)
+    public function sendResetLinkEmail(Request $request)
     {
         try {
             $request->validate(['email' => 'required|email']);
@@ -41,8 +47,7 @@ class NewPasswordResetController extends Controller
                 Log::info('Password reset table check: ' . ($tableExists ? 'Exists' : 'Does not exist'));
                 
                 if (!$tableExists) {
-                    Log::warning('Password resets table does not exist. Attempting to create it.');
-                    Schema::create('password_resets', function ($table) {
+                    Log::warning('Password resets table does not exist. Attempting to create it.');                    Schema::create('password_resets', function ($table) {
                         $table->id();
                         $table->string('email')->index();
                         $table->string('token');
@@ -77,10 +82,15 @@ class NewPasswordResetController extends Controller
             return back()->withErrors(['email' => 'An error occurred. Please try again later.']);
         }
     }
+    
+    public function sendResetLink(Request $request)
+    {
+        return $this->sendResetLinkEmail($request);
+    }
 
     public function showResetForm(Request $request, $token = null)
     {
-        return view('auth.passwords.reset')->with(
+        return view('Module01.reset')->with(
             ['token' => $token, 'email' => $request->email]
         );
     }
