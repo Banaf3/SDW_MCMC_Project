@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InquiryController;
-use App\Http\Controllers\AgencyController;
+use App\Http\Controllers\InquiryAssignment\AgencyController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
@@ -12,7 +12,7 @@ use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
-use App\Http\Controllers\MCMCController;
+use App\Http\Controllers\InquiryAssignment\MCMCController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -63,8 +63,6 @@ Route::get('/api/notifications/unread-count', [NotificationController::class, 'g
 
 // Agency routes
 Route::get('/agency/inquiries/assigned', [AgencyController::class, 'assignedInquiries'])->name('agency.inquiries.assigned');
-Route::get('/agency/inquiry-edit/{id}', [AgencyController::class, 'editInquiry']);
-Route::put('/agency/inquiry-update/{id}', [AgencyController::class, 'updateInquiry']);
 Route::put('/agency/inquiry-status-update/{id}', [AgencyController::class, 'updateInquiryStatus']);
 
 // Testing guide route
@@ -125,7 +123,6 @@ Route::get('/test-logout', function() {
 // Module 3 routes
 Route::get('/mcmc/unassigned-inquiries', [MCMCController::class, 'unassignedInquiries'])->name('mcmc.unassigned.inquiries');
 Route::get('/agency/assigned-inquiries', [AgencyController::class, 'assignedInquiries'])->name('agency.assigned.inquiries');
-Route::get('/mcmc/assigned-inquiries', [MCMCController::class, 'assignedInquiries'])->name('mcmc.assigned.inquiries');
 
 // Assignment route
 Route::post('/mcmc/assign-inquiry/{id}', [MCMCController::class, 'assignInquiry'])->name('mcmc.assign.inquiry');

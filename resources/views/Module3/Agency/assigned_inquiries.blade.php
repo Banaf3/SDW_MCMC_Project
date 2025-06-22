@@ -1600,6 +1600,165 @@
                 width: 90%;
             }
         }
+        /* Status and Priority badges */
+        .status-pending-review, .status-assigned, .status-under-investigation {
+            background: #17a2b8;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .priority-high {
+            background: #dc3545;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .priority-medium {
+            background: #ffc107;
+            color: #212529;
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .priority-normal {
+            background: #28a745;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Stats Summary */
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #2a5298;
+            transform: translateY(-2px);
+        }
+
+        .stat-card.priority-high {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #fff 0%, #ffebee 100%);
+        }
+
+        .stat-card.priority-high:hover {
+            border-color: #c0392b;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        }
+
+        .stat-card.priority-high .stat-number {
+            color: #e74c3c;
+        }
+
+        .stat-card.priority-medium {
+            border-color: #f39c12;
+            background: linear-gradient(135deg, #fff 0%, #fff8e1 100%);
+        }
+
+        .stat-card.priority-medium:hover {
+            border-color: #d68910;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+        }
+
+        .stat-card.priority-medium .stat-number {
+            color: #f39c12;
+        }
+
+        .stat-card.priority-normal {
+            border-color: #27ae60;
+            background: linear-gradient(135deg, #fff 0%, #e8f5e8 100%);
+        }
+
+        .stat-card.priority-normal:hover {
+            border-color: #1e8449;
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+        }
+
+        .stat-card.priority-normal .stat-number {
+            color: #27ae60;
+        }
+
+        .filter-card {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .filter-card.active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .filter-card:not(.active) {
+            opacity: 0.8;
+        }
+
+        .filter-card:hover:not(.active) {
+            opacity: 1;
+        }
+
+        .empty-state-filter {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #666;
+            background: white;
+            border-radius: 12px;
+            border: 2px dashed #e9ecef;
+        }
+
+        .empty-state-filter .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-filter .empty-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .empty-state-filter .empty-message {
+            color: #666;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #1e3c72;
+            display: block;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -1610,16 +1769,35 @@
         <!-- Include Sidebar -->
         @include('layouts.partials.sidebar')
 
-        <div class="content-area">
-            <!-- Main Content -->
+        <div class="content-area">            <!-- Main Content -->
             <div class="main-content">
                 <h1 class="page-title">Assigned Inquiries</h1>
+
+                <!-- Stats Summary -->
+                <div class="stats-summary">
+                    <div class="stat-card filter-card active" data-priority="all">
+                        <span class="stat-number">{{ $totalInquiries }}</span>
+                        <span class="stat-label">All Inquiries</span>
+                    </div>
+                    <div class="stat-card priority-high filter-card" data-priority="High">
+                        <span class="stat-number">{{ $highPriorityCount }}</span>
+                        <span class="stat-label">High Priority</span>
+                    </div>
+                    <div class="stat-card priority-medium filter-card" data-priority="Medium">
+                        <span class="stat-number">{{ $mediumPriorityCount }}</span>
+                        <span class="stat-label">Medium Priority</span>
+                    </div>
+                    <div class="stat-card priority-normal filter-card" data-priority="Normal">
+                        <span class="stat-number">{{ $normalPriorityCount }}</span>
+                        <span class="stat-label">Normal Priority</span>
+                    </div>
+                </div>
 
                 <!-- Inquiries Grid -->
                 <div class="inquiries-grid">
                     @if($assignedInquiries->count() > 0)
                         @foreach($assignedInquiries as $inquiry)
-                        <div class="inquiry-card" data-inquiry-id="{{ $inquiry['InquiryID'] }}">
+                        <div class="inquiry-card" data-inquiry-id="{{ $inquiry['InquiryID'] }}" data-priority="{{ $inquiry['priority'] }}">
                             <div class="inquiry-header">
                                 <span class="inquiry-id">{{ $inquiry['reference_number'] }}</span>
                                 <span class="inquiry-date">{{ $inquiry['submittedDate'] }}</span>
@@ -1629,22 +1807,76 @@
                                 <div class="inquiry-content collapsed" id="content-{{ $inquiry['InquiryID'] }}">
                                     {{ $inquiry['description'] }}
                                 </div>
-                            </div>
-
-                            <div class="inquiry-meta" id="meta-{{ $inquiry['InquiryID'] }}">
+                            </div>                            <div class="inquiry-meta" id="meta-{{ $inquiry['InquiryID'] }}">
+                                <!-- Basic Information Row -->
                                 <div class="meta-item">
                                     <span class="meta-label">Status:</span>
-                                    <span class="meta-value">{{ $inquiry['status'] }}</span>
+                                    <span class="meta-value status-{{ strtolower(str_replace(' ', '-', $inquiry['status'])) }}">{{ $inquiry['status'] }}</span>
                                 </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Priority:</span>
+                                    <span class="meta-value priority-{{ strtolower($inquiry['priority']) }}">{{ $inquiry['priority'] }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Days Pending:</span>
+                                    <span class="meta-value">{{ $inquiry['timePending'] }}</span>
+                                </div>
+                                
+                                <!-- Submitter Information Row -->
                                 <div class="meta-item">
                                     <span class="meta-label">Submitted by:</span>
                                     <span class="meta-value">{{ $inquiry['submittedBy'] }}</span>
                                 </div>
                                 <div class="meta-item">
-                                    <span class="meta-label">Evidence:</span>
-                                    <span class="meta-value">{{ $inquiry['evidence'] }}</span>
+                                    <span class="meta-label">Contact Email:</span>
+                                    <span class="meta-value">{{ $inquiry['submitterEmail'] }}</span>
                                 </div>
-                            </div>                            <div class="inquiry-actions">
+                                <div class="meta-item">
+                                    <span class="meta-label">Phone Number:</span>
+                                    <span class="meta-value">{{ $inquiry['submitterPhone'] }}</span>
+                                </div>
+                                
+                                <!-- Timing Information Row -->
+                                <div class="meta-item">
+                                    <span class="meta-label">Submitted On:</span>
+                                    <span class="meta-value">{{ $inquiry['submittedDateTime'] }}</span>
+                                </div>                                <div class="meta-item">
+                                    <span class="meta-label">MCMC Comment:</span>
+                                    <span class="meta-value">{{ $inquiry['mcmcComment'] }}</span>
+                                </div>
+                                
+                                <!-- Evidence Information -->
+                                @if($inquiry['evidenceData'])
+                                <div class="meta-item evidence-item">
+                                    <span class="meta-label">Evidence Files:</span>
+                                    <div class="meta-value">
+                                        @if(isset($inquiry['evidenceData']['files']) && is_array($inquiry['evidenceData']['files']))
+                                            @foreach($inquiry['evidenceData']['files'] as $file)
+                                                <span class="evidence-file">
+                                                    📎 {{ $file['name'] ?? 'Unknown file' }} 
+                                                    <small>({{ ucfirst($file['type'] ?? 'file') }})</small>
+                                                </span>
+                                            @endforeach
+                                        @else
+                                            <span class="evidence-text">{{ $inquiry['evidence'] }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                @elseif($inquiry['evidence'])
+                                <div class="meta-item evidence-item">
+                                    <span class="meta-label">Evidence:</span>
+                                    <span class="meta-value evidence-text">{{ $inquiry['evidence'] }}</span>
+                                </div>
+                                @endif
+                                
+                                <!-- Address Information -->
+                                @if($inquiry['submitterAddress'] && $inquiry['submitterAddress'] !== 'N/A')
+                                <div class="meta-item address-item">
+                                    <span class="meta-label">Submitter Address:</span>
+                                    <span class="meta-value">{{ $inquiry['submitterAddress'] }}</span>
+                                </div>                                @endif
+                                
+                            </div><div class="inquiry-actions">
                                 <button class="btn btn-view" onclick="toggleContent({{ $inquiry['InquiryID'] }})">
                                     <span>📄</span> View More
                                 </button>
@@ -1844,15 +2076,76 @@
                 submenu.classList.add('show');
                 navItem.classList.add('active');
             }
-        }
-
-        // Close dropdown when clicking outside (for header dropdown)
+        }        // Close dropdown when clicking outside (for header dropdown)
         document.addEventListener('click', function(event) {
             const userInfo = document.querySelector('.header-user-info');
             const dropdown = document.getElementById('userDropdown');
             
             if (dropdown && userInfo && !userInfo.contains(event.target)) {
                 dropdown.classList.remove('show');
+            }
+        });
+
+        // Priority filtering functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterCards = document.querySelectorAll('.filter-card');
+            const inquiryCards = document.querySelectorAll('.inquiry-card');
+
+            // Add click event listeners to filter cards
+            filterCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const priority = this.getAttribute('data-priority');
+                    
+                    // Update active state
+                    filterCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filter inquiry cards
+                    filterInquiries(priority);
+                });
+            });
+
+            function filterInquiries(priority) {
+                inquiryCards.forEach(card => {
+                    const cardPriority = card.getAttribute('data-priority');
+                    
+                    if (priority === 'all' || cardPriority === priority) {
+                        card.style.display = 'block';
+                        // Add a small animation
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                        }, 50);
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Check if no inquiries are visible after filtering
+                const visibleCards = Array.from(inquiryCards).filter(card => 
+                    card.style.display !== 'none'
+                );
+                
+                const inquiriesGrid = document.querySelector('.inquiries-grid');
+                const existingEmpty = inquiriesGrid.querySelector('.empty-state-filter');
+                
+                if (visibleCards.length === 0) {
+                    if (!existingEmpty) {
+                        const priorityLabel = priority === 'all' ? 'inquiries' : 
+                                            priority.toLowerCase() + ' priority inquiries';
+                        inquiriesGrid.insertAdjacentHTML('beforeend', `
+                            <div class="empty-state-filter">
+                                <div class="empty-icon">🔍</div>
+                                <h3 class="empty-title">No ${priorityLabel} found</h3>
+                                <p class="empty-message">There are currently no ${priorityLabel} to display.</p>
+                            </div>
+                        `);
+                    }
+                } else {
+                    if (existingEmpty) {
+                        existingEmpty.remove();
+                    }
+                }
             }
         });
     </script>

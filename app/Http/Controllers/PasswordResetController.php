@@ -3,12 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+use App\Models\Administrator;
+use App\Models\AgencyStaff;
+use App\Models\PublicUser;
+use Illuminate\Support\Facades\Log;
 
 /**
- * This is a delegate class that extends NewPasswordResetController to ensure compatibility
- * with any routes that might still be referencing the old PasswordResetController.
+ * Password Reset Controller for handling password reset functionality
  */
-class PasswordResetController extends NewPasswordResetController
+class PasswordResetController extends Controller
 {
     /**
      * Show the form to request a password reset link
@@ -66,7 +74,7 @@ class PasswordResetController extends NewPasswordResetController
                 ]);
             } catch (\Exception $e) {
                 // If there's a database error, log it and show a user-friendly message
-                \Log::error('Password reset database error: ' . $e->getMessage());
+                Log::error('Password reset database error: ' . $e->getMessage());
                 return back()->withErrors(['email' => 'Database error. Please try again later or contact support.']);
             }
             
@@ -77,7 +85,7 @@ class PasswordResetController extends NewPasswordResetController
             ])->with('status', 'Email verified! You can now reset your password.');
             
         } catch (\Exception $e) {
-            \Log::error('Password reset general error: ' . $e->getMessage());
+            Log::error('Password reset general error: ' . $e->getMessage());
             return back()->withErrors(['email' => 'An error occurred. Please try again later.']);
         }
     }
@@ -121,7 +129,7 @@ class PasswordResetController extends NewPasswordResetController
                     return back()->withErrors(['token' => 'Invalid or expired password reset token.']);
                 }
             } catch (\Exception $e) {
-                \Log::error('Password reset token check error: ' . $e->getMessage());
+                Log::error('Password reset token check error: ' . $e->getMessage());
                 return back()->withErrors(['token' => 'Error validating token. Please try requesting a new password reset.']);
             }
             
@@ -148,12 +156,12 @@ class PasswordResetController extends NewPasswordResetController
                 DB::table('password_resets')->where('email', $email)->delete();
             } catch (\Exception $e) {
                 // If we can't delete the token, log it but continue (non-critical error)
-                \Log::warning('Could not delete password reset token: ' . $e->getMessage());
+                Log::warning('Could not delete password reset token: ' . $e->getMessage());
             }
             
             return redirect()->route('login')->with('status', 'Your password has been reset! You can now log in with your new password.');
         } catch (\Exception $e) {
-            \Log::error('Password reset general error: ' . $e->getMessage());
+            Log::error('Password reset general error: ' . $e->getMessage());
             return back()->withErrors(['email' => 'An error occurred. Please try again later.']);
         }
     }
@@ -175,7 +183,7 @@ class PasswordResetController extends NewPasswordResetController
                 return $exists ? 'public_users' : null;
             }
         } catch (\Exception $e) {
-            \Log::error('User table check error: ' . $e->getMessage());
+            Log::error('User table check error: ' . $e->getMessage());
             return null;
         }
     }

@@ -27,7 +27,8 @@ class AuthController extends Controller
             $request->session()->put('user_name', $admin->AdminName);
             $request->session()->put('user_email', $admin->AdminEmail);
             
-            return redirect()->intended('/dashboard');
+            // Redirect MCMC admin to unassigned inquiries page
+            return redirect()->intended(route('mcmc.unassigned.inquiries'));
         }
         
         // Try to find agency staff by email or StaffName (username)
@@ -41,7 +42,8 @@ class AuthController extends Controller
             $request->session()->put('user_name', $staff->StaffName);
             $request->session()->put('user_email', $staff->staffEmail);
             
-            return redirect()->intended('/dashboard');
+            // Redirect agency staff to their assigned inquiries page
+            return redirect()->intended(route('agency.assigned.inquiries'));
         }
         
         // Try to find public user by email

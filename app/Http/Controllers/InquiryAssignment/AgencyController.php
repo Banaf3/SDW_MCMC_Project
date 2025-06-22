@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\InquiryAssignment;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Inquiry;
 use App\Models\Agency;
@@ -9,7 +10,7 @@ use App\Services\NotificationService;
 use Carbon\Carbon;
 
 /**
- * AgencyController
+ * AgencyController - Module 3: Inquiry Assignment
  * 
  * This controller handles all functionality for the Agency interface.
  * It is responsible for:
