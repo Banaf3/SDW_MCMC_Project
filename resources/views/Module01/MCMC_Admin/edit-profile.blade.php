@@ -28,57 +28,24 @@
                 <span>{{ $errors->first() }}</span>
             </div>
         @endif
-        
-        <form id="profile-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+          <form id="profile-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
             @csrf
-            @method('PUT')
-            
-            <div class="form-section profile-pic-section admin-pic-section">
-                <h3><i class="section-icon">�️</i> Profile Picture</h3>
-                
-                <div class="profile-picture-container">
-                    <div class="profile-pic-wrapper">
-                        @if(isset($user->profile_pic) && $user->profile_pic)
-                            <div class="current-picture" id="profile-pic-display">
-                                <img src="{{ asset('storage/' . $user->profile_pic) }}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
-                            </div>
-                        @else
-                            <div class="current-picture no-image admin-avatar" id="profile-pic-display">
-                                <span>{{ substr($user->name ?? 'A', 0, 1) }}</span>
-                            </div>
-                        @endif
-                    </div>
-                    
-                    <div class="upload-controls">
-                        <div class="form-group">
-                            <button type="button" class="custom-file-upload admin-upload" onclick="triggerFileInput()">
-                                <i class="upload-icon">📁</i> Choose Profile Photo
-                            </button>
-                            <input type="file" name="profile_pic" id="profile_pic" accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
-                            <span class="selected-file-name" id="file-name-display">No file selected</span>
-                            <div class="file-restrictions">Upload a professional photo. JPG, PNG, GIF. Max size: 2MB</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-              <div class="form-section admin-info-section">
+            <div class="form-section admin-info-section">
                 <h3><i class="section-icon">ℹ️</i> Personal Information</h3>
-                
-                <div class="form-group">
+                  <div class="form-group">
                     <label for="name">Full Name</label>
-                    <input type="text" name="name" id="name" class="form-control" value="{{ $user->AdminName ?? '' }}" placeholder="Enter your full name">
+                    <input type="text" name="name" id="name" class="form-control" value="{{ $user['name'] ?? '' }}" placeholder="Enter your full name">
                 </div>
                 
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <input type="email" name="email" id="email" class="form-control" value="{{ $user->AdminEmail ?? '' }}" readonly>
+                    <input type="email" name="email" id="email" class="form-control" value="{{ $user['email'] ?? '' }}" readonly>
                     <span class="form-hint">🔒 Email address cannot be changed</span>
                 </div>
-                
-                <div class="form-group">
+                  <div class="form-group">
                     <label for="role">Administrator Role</label>
-                    <input type="text" name="role" id="role" class="form-control" value="{{ $user->AdminRole ?? '' }}" placeholder="e.g., System Admin, Super Admin">
-                    <span class="form-hint">🔑 Your administrative role</span>
+                    <input type="text" name="role" id="role" class="form-control" value="{{ $user['role'] ?? '' }}" placeholder="e.g., System Admin, Super Admin" readonly>
+                    <span class="form-hint">🔑 Your administrative role (cannot be changed)</span>
                 </div>
             </div>
             
@@ -87,13 +54,13 @@
                 
                 <div class="form-group">
                     <label for="phone">Phone Number</label>
-                    <input type="tel" name="phone" id="phone" class="form-control" value="{{ $user->AdminPhoneNum ?? '' }}" placeholder="+60123456789">
+                    <input type="tel" name="phone" id="phone" class="form-control" value="{{ $user['phone'] ?? '' }}" placeholder="+60123456789">
                     <span class="form-hint">Your direct contact number</span>
                 </div>
                 
                 <div class="form-group">
                     <label for="address">Address</label>
-                    <textarea name="address" id="address" class="form-control" rows="3" placeholder="Your address">{{ $user->AdminAddress ?? '' }}</textarea>
+                    <textarea name="address" id="address" class="form-control" rows="3" placeholder="Your address">{{ $user['address'] ?? '' }}</textarea>
                     <span class="form-hint">Your address (optional)</span>
                 </div>
             </div>
@@ -256,72 +223,6 @@
     border: 1px solid #f5c6cb;
 }
 
-.profile-picture-container {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.profile-pic-wrapper {
-    flex-shrink: 0;
-}
-
-.current-picture {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 4px solid #dc3545;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8f9fa;
-}
-
-.current-picture.no-image {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    color: white;
-    font-size: 2.5rem;
-    font-weight: bold;
-}
-
-.upload-controls {
-    flex: 1;
-}
-
-.custom-file-upload {
-    display: inline-block;
-    padding: 0.6rem 1.2rem;
-    background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-decoration: none;
-    border: none;
-}
-
-.custom-file-upload:hover {
-    background: #c82333;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-}
-
-.selected-file-name {
-    display: block;
-    margin-top: 0.5rem;
-    font-size: 0.85rem;
-    color: #495057;
-}
-
-.file-restrictions {
-    font-size: 0.75rem;
-    color: #6c757d;
-    margin-top: 0.3rem;
-}
-
 .form-actions {
     text-align: center;
     padding-top: 1rem;
@@ -376,64 +277,5 @@
 
 @section('scripts')
 <script>
-function triggerFileInput() {
-    console.log('Button clicked - opening file dialog');
-    document.getElementById('profile_pic').click();
-}
-
-function handleFileSelect(input) {
-    console.log('File input changed:', input.files);
-    const fileNameDisplay = document.getElementById('file-name-display');
-    const profilePicDisplay = document.getElementById('profile-pic-display');
-    
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        console.log('Selected file:', file.name, file.size, file.type);
-        
-        // Update filename display immediately
-        fileNameDisplay.textContent = file.name;
-        fileNameDisplay.style.color = '#28a745';
-        fileNameDisplay.style.fontWeight = 'bold';
-        
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            alert('Please select an image file (JPG, PNG, GIF)');
-            input.value = '';
-            fileNameDisplay.textContent = 'No file selected';
-            fileNameDisplay.style.color = '#dc3545';
-            return;
-        }
-        
-        // Validate file size (2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            alert('File must be smaller than 2MB');
-            input.value = '';
-            fileNameDisplay.textContent = 'No file selected';
-            fileNameDisplay.style.color = '#dc3545';
-            return;
-        }
-        
-        // Show image preview
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            console.log('Creating image preview');
-            profilePicDisplay.innerHTML = '';
-            profilePicDisplay.classList.remove('no-image', 'admin-avatar');
-            
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; border-radius: 50%;';
-            img.alt = 'Profile Picture Preview';
-            
-            profilePicDisplay.appendChild(img);
-            console.log('Image preview updated successfully');
-        };
-        reader.readAsDataURL(file);
-    } else {
-        fileNameDisplay.textContent = 'No file selected';
-        fileNameDisplay.style.color = '#6c757d';
-        fileNameDisplay.style.fontWeight = 'normal';
-    }
-}
 </script>
 @endsection

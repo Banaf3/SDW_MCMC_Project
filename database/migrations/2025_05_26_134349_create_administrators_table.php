@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('administrators', function (Blueprint $table) {
             $table->id('AdminID'); // PK
             $table->string('AdminName', 50);
+            $table->string('Username', 50)->unique(); // Required for login
             $table->string('Password', 255);
             $table->string('AdminEmail', 50)->unique();
             $table->string('AdminRole', 30);

@@ -127,7 +127,7 @@
                     {{ session('status') }}
                 </div>
             @endif
-            <form method="POST" action="{{ route('password.update') }}">
+            <form method="POST" action="{{ route('password.reset.update') }}">
                 @csrf
                 <input type="hidden" name="token" value="{{ $token }}">
                 <input type="hidden" name="email" value="{{ $email }}">

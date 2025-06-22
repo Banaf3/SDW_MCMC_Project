@@ -197,13 +197,13 @@
             pointer-events: auto !important;
             cursor: pointer !important;
         }
-          .forgot-btn {
+        
+        .forgot-btn {
             background: rgba(247, 151, 30, 0.08);
             color: #f7971e;
             border: 1.5px solid #f7971e;
         }
-        
-        .forgot-btn:hover {
+          .forgot-btn:hover {
             background: rgba(247, 151, 30, 0.15) !important;
             box-shadow: 0 2px 8px rgba(247, 151, 30, 0.2) !important;
             transform: translateY(-1px) !important;
@@ -278,14 +278,21 @@
                 @csrf
                 <div class="form-group">
                     <label for="email">Email or Username</label>
-                    <input type="text" name="email" id="email" class="form-control" placeholder="Enter your email or username" required autofocus>
-                </div>
-                
-                <div class="form-group">
+                    <input type="text" name="email" id="email" class="form-control" 
+                           placeholder="Enter your email or username" required autofocus>
+                </div>                <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" name="password" id="password" class="form-control" required>
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="password" class="form-control" 
+                               placeholder="Enter your password" required style="padding-right: 50px;">
+                        <button type="button" id="togglePassword" 
+                                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); 
+                                       background: none; border: none; cursor: pointer; color: #666; font-size: 18px;"
+                                title="Show/Hide Password">
+                            👁️
+                        </button>
+                    </div>
                 </div>
-                
                 <button type="submit" class="btn btn-primary btn-block">Login</button>
             </form>
             
@@ -319,14 +326,31 @@
                     forgotBtn.style.cursor = 'pointer';
                     forgotBtn.style.zIndex = '999';
                     forgotBtn.style.position = 'relative';
-                    
-                    // Add click event listener as backup
+                      // Add click event listener as backup
                     forgotBtn.addEventListener('click', function(e) {
                         e.preventDefault();
                         window.location.href = '{{ route("password.request") }}';
                     });
                 }
             }, 100);
+            
+            // Password toggle functionality
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', function() {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        togglePassword.textContent = '🙈';
+                        togglePassword.title = 'Hide Password';
+                    } else {
+                        passwordInput.type = 'password';
+                        togglePassword.textContent = '👁️';
+                        togglePassword.title = 'Show Password';
+                    }
+                });
+            }
         });
     </script>
 </body>

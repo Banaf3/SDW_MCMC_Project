@@ -296,10 +296,8 @@
                     </ul>
                 </div>
             @endif
-            
-            <form method="POST" action="{{ route('password.change') }}">
+              <form method="POST" action="{{ route('password.update') }}">
                 @csrf
-                @method('PUT')
                 
                 <div class="form-section">
                     <h3><i class="section-icon">🔐</i> Administrator Security</h3>

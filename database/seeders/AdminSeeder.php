@@ -26,15 +26,12 @@ class AdminSeeder extends Seeder
         $username = 'Mr.Majed';  // Change this to your desired username
         $password = '11223344';  // Change this to your desired password
         $email = 'majed@admin.com';  // Change this to your desired email
-        
-        // Check for duplicate admin by username or email
-        $existingAdmin = Administrator::where('AdminName', $username)
+          // Check for duplicate admin by username or email
+        $existingAdmin = Administrator::where('Username', $username)
                                     ->orWhere('AdminEmail', $email)
-                                    ->first();
-
-        if ($existingAdmin) {
+                                    ->first();        if ($existingAdmin) {
             $this->command->warn('Admin account already exists!');
-            if ($existingAdmin->AdminName === $username) {
+            if ($existingAdmin->Username === $username) {
                 $this->command->warn('Username "' . $username . '" is already taken.');
             }
             if ($existingAdmin->AdminEmail === $email) {
@@ -42,19 +39,17 @@ class AdminSeeder extends Seeder
             }
             $this->command->info('Skipping admin creation to prevent duplicates.');
             return;
-        }
-
-        // Create the admin account
+        }        // Create the admin account
         try {
             Administrator::create([
-                'AdminName' => $username,  // Using AdminName field to store the username
+                'AdminName' => $username,  // Full name
+                'Username' => $username,   // Username for login
                 'AdminEmail' => $email,    // Admin email
                 'Password' => Hash::make($password),
                 'AdminRole' => 'Super Admin',
                 'AdminPhoneNum' => '+1234567890',
                 'AdminAddress' => 'Admin Headquarters, Main Office',
                 'LoginHistory' => null,
-                'ProfilePicture' => null,
             ]);
 
             // Display the created admin credentials

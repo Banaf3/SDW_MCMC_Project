@@ -28,10 +28,8 @@
                 <span>{{ $errors->first() }}</span>
             </div>
         @endif
-        
-        <form id="profile-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+          <form id="profile-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
             @csrf
-            @method('PUT')
             
             <div class="form-section profile-pic-section public-pic-section">
                 <h3><i class="section-icon">🖼️</i> Profile Picture</h3>

@@ -11,9 +11,7 @@
         if ($userId && $userType) {
             if ($userType === 'admin') {
                 $user = \App\Models\Administrator::find($userId);
-                if ($user && !empty($user->ProfilePicture)) {
-                    $profilePic = $user->ProfilePicture;
-                }
+                // Admins do not have profile pictures
             } elseif ($userType === 'agency') {
                 $user = \App\Models\AgencyStaff::find($userId);
                 if ($user && !empty($user->ProfilePic)) {

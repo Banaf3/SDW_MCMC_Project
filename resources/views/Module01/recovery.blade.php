@@ -132,12 +132,14 @@
                         @endforeach
                     </ul>
                 </div>
-            @endif
-            <form method="POST" action="{{ route('password.email') }}">
+            @endif            <form method="POST" action="{{ route('password.email') }}">
                 @csrf
                 <div class="form-group">
-                    <label for="email">Enter your email address</label>
-                    <input type="email" name="email" id="email" class="form-control" required autofocus>
+                    <label for="identifier">Enter your email address</label>
+                    <input type="email" name="email" id="identifier" class="form-control" placeholder="Email address" required autofocus>
+                    <small style="color: #666; font-size: 0.9rem; margin-top: 0.5rem; display: block;">
+                        Note: Password recovery is only available for accounts with email addresses.
+                    </small>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Send Password Reset Link</button>
             </form>
