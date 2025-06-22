@@ -283,8 +283,7 @@
                     <div class="inquiry-description">
                         {{ Str::limit($inquiry->InquiryDescription, 200) }}
                     </div>
-                    
-                    <div class="inquiry-actions">
+                      <div class="inquiry-actions">
                         <a href="{{ route('admin.inquiries.show', $inquiry->InquiryID) }}" class="btn btn-primary">
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
@@ -301,18 +300,6 @@
                                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                                 Approve for Review
-                            </button>
-                        </form>
-                        
-                        <form method="POST" action="{{ route('admin.inquiries.flag', $inquiry->InquiryID) }}" style="display: inline;">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="reason" value="Requires further validation">
-                            <button type="submit" class="btn btn-warning">
-                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.888-.833-2.664 0L4.15 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                </svg>
-                                Flag
                             </button>
                         </form>
                         
