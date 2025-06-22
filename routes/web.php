@@ -12,6 +12,7 @@ use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
+use App\Http\Controllers\ManageUser\User_Controller;
 
 Route::get('/', function () {
     return view('welcome');
@@ -57,6 +58,23 @@ Route::middleware(['web'])->group(function () {
     Route::post('/admin/agency/register', [User_Controller::class, 'registerAgencyStaff'])->name('admin.agency.register.store');
     Route::get('/admin/agency/management', [User_Controller::class, 'showAgencyManagement'])->name('admin.agency.management');
     Route::post('/admin/agency/create', [User_Controller::class, 'createAgency'])->name('admin.agency.create');
+    
+    // MCMC Admin inquiry management routes (placeholders)
+    Route::get('/mcmc/inquiries/unassigned', function () {
+        return view('welcome');
+    })->name('mcmc.unassigned.inquiries');
+    
+    Route::get('/mcmc/inquiries/assigned', function () {
+        return view('welcome');
+    })->name('mcmc.assigned.inquiries');
+    
+    Route::get('/mcmc/reports/assignments', function () {
+        return view('welcome');
+    })->name('mcmc.assignment.reports');
+    
+    Route::get('/mcmc/analytics', function () {
+        return view('welcome');
+    })->name('mcmc.analytics');
 });
 
 // Password recovery routes
