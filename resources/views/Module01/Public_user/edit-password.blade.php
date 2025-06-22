@@ -330,8 +330,8 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="icon">🔐</i> Update Password
                     </button>
-                    <a href="#" class="btn btn-secondary" onclick="alert('Profile functionality not implemented yet')">
-                        <i class="icon">↩️</i> Back to Profile
+                    <a href="{{ route('dashboard') }}" class="btn btn-secondary">
+                        <i class="icon">↩️</i> Back to Dashboard
                     </a>
                 </div>
             </form>

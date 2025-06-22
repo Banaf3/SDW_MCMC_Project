@@ -13,6 +13,8 @@ use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissio
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
 use App\Http\Controllers\ManageInquiryFormSubmission\MCMC\InquiryManagementController;
+use App\Http\Controllers\InquiryAssignment\MCMCController;
+use App\Http\Controllers\InquiryAssignment\AgencyController as InquiryAssignmentAgencyController;
 use App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController;
 use App\Http\Controllers\ManageUser\User_Controller;
 
@@ -35,14 +37,16 @@ Route::get('/dashboard', function () {
     return view('welcome');
 })->name('dashboard');
 
-// Authentication Routes (commented out - controllers not available)
-/*
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-*/
+// Authentication Routes
+Route::get('/login', [User_Controller::class, 'showLoginForm'])->name('login');
+Route::post('/login', [User_Controller::class, 'login']);
+Route::get('/register', [User_Controller::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [User_Controller::class, 'register']);
+Route::post('/logout', [User_Controller::class, 'logout'])->name('logout');
+
+// Profile Routes
+Route::get('/profile/edit', [User_Controller::class, 'editProfile'])->name('profile.edit');
+Route::post('/profile/update', [User_Controller::class, 'updateProfile'])->name('profile.update');
 
 // CSRF Token refresh route
 Route::get('/refresh-csrf', function () {
@@ -60,6 +64,10 @@ Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name(
 // Agency staff forced password change
 Route::get('/password/change', [User_Controller::class, 'showForcedPasswordChange'])->name('password.change');
 Route::post('/password/change', [User_Controller::class, 'updateForcedPassword'])->name('password.change.update');
+
+// General password edit route for profile pages
+Route::get('/password/edit', [User_Controller::class, 'editPassword'])->name('password.edit');
+Route::post('/password/update', [User_Controller::class, 'updatePassword'])->name('password.update.profile');
 
 // Admin routes (agency staff registration)
 Route::middleware(['web'])->group(function () {
@@ -79,10 +87,8 @@ Route::middleware(['web'])->group(function () {
     Route::get('/admin/audit-logs', [InquiryManagementController::class, 'viewAuditLogs'])->name('admin.audit-logs');
     Route::get('/admin/reports', [InquiryManagementController::class, 'reports'])->name('admin.reports');
     
-    // MCMC Admin inquiry management routes (placeholders for legacy routes)
-    Route::get('/mcmc/inquiries/unassigned', function () {
-        return view('welcome');
-    })->name('mcmc.unassigned.inquiries');
+    // MCMC Admin inquiry management routes
+    Route::get('/mcmc/inquiries/unassigned', [MCMCController::class, 'unassignedInquiries'])->name('mcmc.unassigned.inquiries');
     
     Route::get('/mcmc/inquiries/assigned', function () {
         return view('welcome');
@@ -118,7 +124,8 @@ Route::middleware(['web'])->group(function () {
     Route::get('/public/inquiries/{id}', [PublicInquiriesController::class, 'show'])->name('public.inquiries.show');
     
     // Agency inquiry routes
-    Route::get('/agency/inquiries/assigned', [AssignedInquiriesController::class, 'index'])->name('agency.inquiries.assigned');
+    Route::get('/agency/inquiries/assigned', [InquiryAssignmentAgencyController::class, 'assignedInquiries'])->name('agency.inquiries.assigned'); // Module 3
+    Route::get('/agency/inquiries/list', [AssignedInquiriesController::class, 'index'])->name('agency.inquiries.list'); // Module 2
     Route::get('/agency/inquiries/{inquiryId}', [AssignedInquiriesController::class, 'show'])->name('agency.inquiries.show');
     Route::put('/agency/inquiries/{inquiryId}/status', [AssignedInquiriesController::class, 'updateStatus'])->name('agency.inquiries.update-status');
     Route::post('/agency/inquiries/{inquiryId}/comment', [AssignedInquiriesController::class, 'addComment'])->name('agency.inquiries.add-comment');

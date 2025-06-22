@@ -15,6 +15,7 @@ class AdminOnlySeeder extends Seeder
             'AdminEmail' => 'admin@admin.com'
         ], [
             'AdminName' => 'Admin User',
+            'Username' => 'admin',
             'Password' => Hash::make('password123'),
             'AdminRole' => 'Administrator',
             'AdminPhoneNum' => '0123456789',
@@ -26,6 +27,7 @@ class AdminOnlySeeder extends Seeder
             'AdminEmail' => 'mcmc.admin@admin.com'
         ], [
             'AdminName' => 'MCMC Administrator',
+            'Username' => 'mcmc_admin',
             'Password' => Hash::make('password123'),
             'AdminRole' => 'Administrator',
             'AdminPhoneNum' => '0123456790',
@@ -33,7 +35,7 @@ class AdminOnlySeeder extends Seeder
         ]);
 
         $this->command->info('✅ Admin accounts created successfully!');
-        $this->command->info('Admin 1: admin@admin.com / password123');
-        $this->command->info('Admin 2: mcmc.admin@admin.com / password123');
+        $this->command->info('Admin 1: admin@admin.com (username: admin) / password123');
+        $this->command->info('Admin 2: mcmc.admin@admin.com (username: mcmc_admin) / password123');
     }
 }

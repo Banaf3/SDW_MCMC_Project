@@ -111,20 +111,11 @@
                     </ul>
                 </li>
 
-                <!-- 3. Assign Inquiries -->
+                <!-- 3. Unassigned Inquiries - Direct Link -->
                 <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('assign-inquiries')">
-                        <span>Assign Inquiries</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
+                    <a href="{{ route('mcmc.unassigned.inquiries') }}" class="nav-toggle" style="justify-content: flex-start;">
+                        <span>Unassigned Inquiries</span>
                     </a>
-                    <ul class="submenu" id="assign-inquiries">
-                        <li><a href="{{ route('mcmc.unassigned.inquiries') }}">Unassigned Inquiries</a></li>
-                        <li><a href="{{ route('mcmc.assigned.inquiries') }}">View Assignments</a></li>
-                        <li><a href="{{ route('mcmc.assignment.reports') }}">Assignment Reports</a></li>
-                        <li><a href="{{ route('mcmc.analytics') }}">Analytics</a></li>
-                    </ul>
                 </li>
 
                 <!-- 4. Monitor Progress -->
@@ -156,24 +147,16 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="inquiry-access">
-                        <li><a href="{{ route('agency.inquiries.assigned') }}">Assigned Inquiries</a></li>
+                        <li><a href="{{ route('agency.inquiries.list') }}">Assigned Inquiries</a></li>
                         <li><a href="{{ route('agency.reports') }}">Investigation Reports</a></li>
                     </ul>
                 </li>
 
-                <!-- 3. Assignment Management -->
+                <!-- 3. Accept/Reject Inquiries - Direct Link -->
                 <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('assignment-management')">
-                        <span>Assignment Management</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
+                    <a href="{{ route('agency.inquiries.assigned') }}" class="nav-toggle" style="justify-content: flex-start;">
+                        <span>Accept/Reject Inquiries</span>
                     </a>
-                    <ul class="submenu" id="assignment-management">
-                        <li><a href="#">Received Inquiries</a></li>
-                        <li><a href="#">Jurisdiction Review</a></li>
-                        <li><a href="#">Accept/Reject</a></li>
-                    </ul>
                 </li>
 
                 <!-- 4. Investigation Updates -->
