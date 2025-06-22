@@ -81,65 +81,11 @@
             @if($isAdmin)
                 <!-- MCMC ADMIN MENU -->
 
-                <!-- 1. User Management -->
+                <!-- Unassigned Inquiries - Single Link -->
                 <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('user-management')">
-                        <span>User Management</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
+                    <a href="{{ route('mcmc.unassigned.inquiries') }}" class="nav-link">
+                        <span>Unassigned Inquiries</span>
                     </a>
-                    <ul class="submenu" id="user-management">
-                        <li><a href="{{ route('admin.agency.register') }}">Register Agency Staff</a></li>
-                        <li><a href="{{ route('admin.agency.management') }}">Manage Agencies</a></li>
-                        <li><a href="#">User Reports</a></li>
-                    </ul>
-                </li>
-
-                <!-- 2. Manage Inquiries -->
-                <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('manage-inquiries')">
-                        <span>Manage Inquiries</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
-                    </a>
-                    <ul class="submenu" id="manage-inquiries">
-                        <li><a href="#">View Inquiries</a></li>
-                        <li><a href="#">Generate Reports</a></li>
-                    </ul>
-                </li>
-
-                <!-- 3. Assign Inquiries -->
-                <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('assign-inquiries')">
-                        <span>Assign Inquiries</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
-                    </a>
-                    <ul class="submenu" id="assign-inquiries">
-                        <li><a href="{{ route('mcmc.unassigned.inquiries') }}">Unassigned Inquiries</a></li>
-                        <li><a href="{{ route('mcmc.assigned.inquiries') }}">View Assignments</a></li>
-                        <li><a href="#">Assignment Reports</a></li>
-                        <li><a href="#">Analytics</a></li>
-                    </ul>
-                </li>
-
-                <!-- 4. Monitor Progress -->
-                <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('monitor-progress')">
-                        <span>Monitor Progress</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
-                    </a>
-                    <ul class="submenu" id="monitor-progress">
-                        <li><a href="#">Track Agency Progress</a></li>
-                        <li><a href="#">Performance Reports</a></li>
-                        <li><a href="#">Visual Analytics</a></li>
-                        <li><a href="#">System Overview</a></li>
-                    </ul>
                 </li>
             @endif
 
