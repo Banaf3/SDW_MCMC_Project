@@ -16,6 +16,7 @@ class Inquiry extends Model
         'InquiryDescription',
         'InquiryEvidence',
         'AdminComment',
+        'AdminNotes',
         'ResolvedExplanation',
         'ResolvedSupportingDocs',
         'AgencyRejectionComment',
@@ -55,5 +56,15 @@ class Inquiry extends Model
     public function notifications()
     {
         return $this->hasMany(Notification::class, 'inquiry_id', 'InquiryID');
+    }
+
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class, 'AgencyID', 'AgencyID');
+    }
+
+    public function auditLogs()
+    {
+        return $this->hasMany(InquiryAuditLog::class, 'InquiryID')->orderBy('ActionDate', 'desc');
     }
 }

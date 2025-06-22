@@ -105,8 +105,9 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="manage-inquiries">
-                        <li><a href="#">View Inquiries</a></li>
-                        <li><a href="#">Generate Reports</a></li>
+                        <li><a href="{{ route('admin.inquiries.new') }}">View Inquiries</a></li>
+                        <li><a href="{{ route('admin.audit-logs') }}">View Audit Logs</a></li>
+                        <li><a href="{{ route('admin.reports') }}">Generate Reports</a></li>
                     </ul>
                 </li>
 
@@ -155,7 +156,8 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="inquiry-access">
-                        <li><a href="#">Assigned Inquiries</a></li>
+                        <li><a href="{{ route('agency.inquiries.assigned') }}">Assigned Inquiries</a></li>
+                        <li><a href="{{ route('agency.reports') }}">Investigation Reports</a></li>
                     </ul>
                 </li>
 

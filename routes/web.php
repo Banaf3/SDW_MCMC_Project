@@ -11,6 +11,8 @@ use App\Http\Controllers\AgencyRegistrationController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
+use App\Http\Controllers\ManageInquiryFormSubmission\MCMC\InquiryManagementController;
+use App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -69,6 +71,31 @@ Route::post('/admin/agency/register', [AgencyRegistrationController::class, 'reg
 Route::get('/admin/agency/management', [AgencyRegistrationController::class, 'showAgencyManagement'])->name('admin.agency.management');
 Route::post('/admin/agency/create', [AgencyRegistrationController::class, 'createAgency'])->name('admin.agency.create');
 
+// MCMC Admin Inquiry Management Routes (only accessible by MCMC staff)
+Route::prefix('admin/inquiries')->name('admin.inquiries.')->group(function () {
+    Route::get('/new', [InquiryManagementController::class, 'viewNewInquiries'])->name('new');
+    Route::get('/previous', [InquiryManagementController::class, 'viewPreviousInquiries'])->name('previous');
+    Route::get('/{id}', [InquiryManagementController::class, 'showInquiry'])->name('show');
+    Route::put('/{id}/status', [InquiryManagementController::class, 'updateInquiryStatus'])->name('update-status');
+    Route::put('/{id}/flag', [InquiryManagementController::class, 'flagAsNonSerious'])->name('flag');
+    Route::delete('/{id}/discard', [InquiryManagementController::class, 'discardInquiry'])->name('discard');
+});
+
+// MCMC Admin Audit Logs Route
+Route::get('/admin/audit-logs', [InquiryManagementController::class, 'viewAuditLogs'])->name('admin.audit-logs');
+
+// MCMC Admin Reports Route
+Route::get('/admin/reports', [InquiryManagementController::class, 'reports'])->name('admin.reports');
+
+// Agency Routes for Assigned Inquiries Management
+Route::prefix('agency')->name('agency.')->group(function () {
+    Route::get('/inquiries/assigned', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'index'])->name('inquiries.assigned');
+    Route::get('/inquiries/{inquiryId}', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'show'])->name('inquiries.show');
+    Route::put('/inquiries/{inquiryId}/status', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'updateStatus'])->name('inquiries.update-status');
+    Route::post('/inquiries/{inquiryId}/comment', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'addComment'])->name('inquiries.add-comment');
+    Route::get('/reports', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'generateReport'])->name('reports');
+});
+
 // Routes for Public User Inquiry Submission
 Route::get('/inquiries/submit', [InquirySubmissionController::class, 'create'])->name('inquiries.create');
 Route::post('/inquiries', [InquirySubmissionController::class, 'store'])->name('inquiries.store');
@@ -102,6 +129,16 @@ Route::get('/test-login/{userId?}', function($userId = 1) {
     session()->put('user_email', 'testuser' . $userId . '@example.com');
     
     return redirect()->route('inquiries.index')->with('success', 'Logged in as Test User ' . $userId);
+});
+
+// Test route for agency login (remove in production)
+Route::get('/test-agency-login/{agencyId?}', function($agencyId = 1) {
+    session()->put('agency_id', $agencyId);
+    session()->put('user_type', 'agency');
+    session()->put('user_name', 'Agency Staff ' . $agencyId);
+    session()->put('user_email', 'agency' . $agencyId . '@example.com');
+    
+    return redirect()->route('agency.inquiries.assigned')->with('success', 'Logged in as Agency Staff ' . $agencyId);
 });
 
 // Test route to logout (remove in production)

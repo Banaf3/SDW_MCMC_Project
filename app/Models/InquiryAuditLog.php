@@ -9,10 +9,15 @@ class InquiryAuditLog extends Model
     protected $primaryKey = 'AuditLogID';
 
     protected $fillable = [
+        'InquiryID',
+        'AdminID',
         'Action',
-        'PerformedBy',
+        'OldStatus',
+        'NewStatus',
         'ActionDate',
-        'InquiryID'
+        'Reason',
+        'Notes',
+        'PerformedBy'
     ];
 
     protected $dates = [
@@ -25,5 +30,13 @@ class InquiryAuditLog extends Model
     public function inquiry()
     {
         return $this->belongsTo(Inquiry::class, 'InquiryID', 'InquiryID');
+    }
+
+    /**
+     * Get the administrator who performed this action
+     */
+    public function administrator()
+    {
+        return $this->belongsTo(Administrator::class, 'AdminID', 'AdminID');
     }
 }
