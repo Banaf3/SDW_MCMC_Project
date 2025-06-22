@@ -17,42 +17,95 @@ class MCMCController extends Controller
      */
     public function unassignedInquiries()
     {
-        // Get inquiries that are not assigned to any agency
+        // Get inquiries that are not assigned to any agency or rejected by agency
         $unassignedInquiries = Inquiry::with(['user'])
-            ->whereNull('AgencyID')
-            ->orWhere('AgencyID', 0)
+            ->where(function ($query) {
+                // Not assigned to any agency
+                $query->where(function ($subQuery) {
+                    $subQuery->whereNull('AgencyID')
+                             ->orWhere('AgencyID', 0);
+                })
+                // OR rejected by agency (regardless of AgencyID state)
+                ->orWhere('InquiryStatus', 'Rejected by Agency');
+            })
             ->orderBy('SubmitionDate', 'desc')
             ->get()
             ->map(function ($inquiry) {
+                // Calculate more user-friendly time pending
+                $submittedAt = Carbon::parse($inquiry->SubmitionDate);
+                $now = Carbon::now();
+                
+                // Calculate the full breakdown of days, hours, and minutes
+                $totalMinutes = $submittedAt->diffInMinutes($now);
+                $days = intval($totalMinutes / (24 * 60));
+                $hours = intval(($totalMinutes % (24 * 60)) / 60);
+                $minutes = $totalMinutes % 60;
+                
+                // Build the time pending string with days, hours, and minutes
+                $timeParts = [];
+                if ($days > 0) {
+                    $timeParts[] = $days . ' day' . ($days > 1 ? 's' : '');
+                }
+                if ($hours > 0) {
+                    $timeParts[] = $hours . ' hour' . ($hours > 1 ? 's' : '');
+                }
+                if ($minutes > 0 || count($timeParts) == 0) { // Always show minutes if nothing else or if there are minutes
+                    $timeParts[] = $minutes . ' minute' . ($minutes > 1 ? 's' : '');
+                }
+                
+                $timePending = implode(', ', $timeParts);
+                
+                // For sorting and priority purposes, use total days
+                $diffInDays = $days;
+                
                 return [
                     'InquiryID' => $inquiry->InquiryID,
                     'title' => $inquiry->InquiryTitle,
                     'description' => $inquiry->InquiryDescription,
                     'status' => $inquiry->InquiryStatus,
                     'submittedDate' => $inquiry->SubmitionDate->format('F j, Y'),
+                    'submittedDateTime' => $inquiry->SubmitionDate->format('F j, Y g:i A'),
                     'submittedDateISO' => $inquiry->SubmitionDate->format('Y-m-d'),
                     'submittedBy' => $inquiry->user->UserName ?? 'Unknown User',
+                    'submitterEmail' => $inquiry->user->UserEmail ?? 'N/A',
+                    'submitterPhone' => $inquiry->user->UserPhoneNum ?? 'N/A',
+                    'submitterAddress' => $inquiry->user->Useraddress ?? 'N/A',
                     'evidence' => $inquiry->InquiryEvidence,
+                    'evidenceData' => $inquiry->InquiryEvidence ? json_decode($inquiry->InquiryEvidence, true) : null,
+                    'adminComment' => $inquiry->AdminComment,
+                    'statusHistory' => $inquiry->StatusHistory,
+                    'createdAt' => $inquiry->created_at->format('F j, Y g:i A'),
+                    'daysSinceSubmission' => $diffInDays, // Keep for priority calculation
+                    'timePending' => $timePending,
+                    'pendingDays' => $days,
+                    'pendingHours' => $hours,
+                    'pendingMinutes' => $minutes,
                     'reference_number' => 'VT-' . $inquiry->SubmitionDate->format('Y') . '-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
+                    'rejectionComment' => $inquiry->AgencyRejectionComment,
+                    'rejectionData' => $inquiry->AgencyRejectionComment ? json_decode($inquiry->AgencyRejectionComment, true) : null,
+                    'rejectedByAgency' => $inquiry->AgencyRejectionComment ? 
+                        (json_decode($inquiry->AgencyRejectionComment, true)['rejected_by_agency'] ?? 'Unknown Agency') : null,
+                    'rejectedByAgencyId' => $inquiry->AgencyRejectionComment ? 
+                        (json_decode($inquiry->AgencyRejectionComment, true)['rejected_by_agency_id'] ?? null) : null,
+                    'isRejected' => $inquiry->InquiryStatus === 'Rejected by Agency',
+                    'priority' => $diffInDays > 7 ? 'High' : ($diffInDays > 3 ? 'Medium' : 'Normal')
                 ];
             });
 
         // Get all available agencies for assignment dropdown
         $agencies = Agency::orderBy('AgencyName')->get();
 
-        // Calculate stats
+        // Calculate priority-based stats
         $totalUnassigned = $unassignedInquiries->count();
-        $totalAgencies = $agencies->count();
-        $todaySubmissions = Inquiry::whereDate('SubmitionDate', Carbon::today())
-            ->whereNull('AgencyID')
-            ->count();
-
-        return view('Module3.MCMC.unassigned_inquiries', [
+        $highPriorityCount = $unassignedInquiries->where('priority', 'High')->count();
+        $mediumPriorityCount = $unassignedInquiries->where('priority', 'Medium')->count();
+        $normalPriorityCount = $unassignedInquiries->where('priority', 'Normal')->count();        return view('Module3.MCMC.unassigned_inquiries', [
             'unassignedInquiries' => $unassignedInquiries,
             'agencies' => $agencies,
             'totalUnassigned' => $totalUnassigned,
-            'totalAgencies' => $totalAgencies,
-            'todaySubmissions' => $todaySubmissions
+            'highPriorityCount' => $highPriorityCount,
+            'mediumPriorityCount' => $mediumPriorityCount,
+            'normalPriorityCount' => $normalPriorityCount
         ]);
     }
 

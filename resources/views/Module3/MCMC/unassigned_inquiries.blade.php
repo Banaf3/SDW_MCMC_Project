@@ -50,87 +50,220 @@
             padding-bottom: 10px;
         }
 
-        /* Stats Summary */
+        /* Statistics Cards */
         .stats-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: white;
-            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
             border-radius: 12px;
             text-align: center;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .stat-card:hover {
-            border-color: #2a5298;
-            transform: translateY(-2px);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card.priority-high {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .stat-card.priority-medium {
+            background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+        }
+
+        .stat-card.priority-normal {
+            background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
         }
 
         .stat-number {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #1e3c72;
             display: block;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            color: #666;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid #dee2e6;
+        }
+
+        .filters-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2a5298;
+            margin-bottom: 1rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-select, .filter-input {
+            padding: 0.5rem;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
             font-size: 0.9rem;
-            margin-top: 5px;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-filter {
+            padding: 0.5rem 1rem;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-filter:hover {
+            background: #1e3c72;
+        }
+
+        .btn-clear {
+            padding: 0.5rem 1rem;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-clear:hover {
+            background: #545b62;
         }
 
         /* Inquiries Grid */
         .inquiries-grid {
             display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 1.5rem;
         }
 
         .inquiry-card {
             background: white;
+            border: 1px solid #e1e5e9;
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #e74c3c;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
             position: relative;
         }
 
         .inquiry-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #2a5298;
         }
 
         .inquiry-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 1rem;
-            gap: 1rem;
         }
 
         .inquiry-id {
-            background: #2a5298;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        .inquiry-date {
-            color: #666;
+            font-weight: 600;
+            color: #2a5298;
             font-size: 0.9rem;
         }
 
+        .inquiry-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .priority-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: #e74c3c;
+        }
+
+        .priority-medium {
+            background: #f39c12;
+        }
+
+        .priority-normal {
+            background: #3498db;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .status-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
         .inquiry-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: #2c3e50;
             margin-bottom: 0.75rem;
@@ -138,22 +271,32 @@
         }
 
         .inquiry-content {
-            color: #555;
+            color: #5a6c7d;
             line-height: 1.6;
             margin-bottom: 1rem;
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
         }
 
-        .inquiry-content.collapsed {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .inquiry-content.expanded {
+            max-height: none;
+        }
+
+        .inquiry-content.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(transparent, white);
         }
 
         .inquiry-meta {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
             margin-bottom: 1rem;
             padding: 1rem;
             background: #f8f9fa;
@@ -161,34 +304,43 @@
         }
 
         .meta-item {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .meta-label {
             font-weight: 600;
             color: #2a5298;
             display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .meta-value {
             margin-top: 0.25rem;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #333;
+            font-weight: 500;
+        }
+
+        .time-pending {
+            color: #e74c3c;
+            font-weight: 600;
         }
 
         /* Action Buttons */
         .inquiry-actions {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             justify-content: flex-end;
             align-items: center;
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             border: none;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -215,6 +367,16 @@
 
         .btn-assign:hover {
             background: #229954;
+            transform: translateY(-1px);
+        }
+
+        .btn-details {
+            background: #8e44ad;
+            color: white;
+        }
+
+        .btn-details:hover {
+            background: #7d3c98;
             transform: translateY(-1px);
         }
 
@@ -338,6 +500,7 @@
             text-align: center;
             padding: 3rem 1rem;
             color: #6c757d;
+            grid-column: 1 / -1;
         }
 
         .empty-icon {
@@ -366,6 +529,10 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
+            .inquiries-grid {
+                grid-template-columns: 1fr;
+            }
+
             .inquiry-meta {
                 grid-template-columns: 1fr;
             }
@@ -380,7 +547,13 @@
                 width: 95%;
                 padding: 1.5rem;
             }
-        }        @media (max-width: 480px) {
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
             .stats-summary {
                 grid-template-columns: 1fr;
             }
@@ -597,6 +770,7 @@
     </style>
 </head>
 <body>
+
     <!-- Include Header -->
     @include('layouts.partials.header')
     
@@ -607,37 +781,91 @@
         <div class="content-area">
             <!-- Main Content -->
             <div class="main-content">
-                <h1 class="page-title">Unassigned Inquiries</h1>
+                <h1 class="page-title">📋 Unassigned Inquiries Management</h1>
 
                 <!-- Success Message -->
                 <div id="successMessage" class="success-message">
                     <strong>Success!</strong> <span id="successText"></span>
                 </div>
 
-                <!-- Stats Summary -->
+                <!-- Enhanced Priority-Based Stats Summary -->
                 <div class="stats-summary">
                     <div class="stat-card">
                         <span class="stat-number">{{ $totalUnassigned }}</span>
-                        <span class="stat-label">Unassigned Inquiries</span>
+                        <span class="stat-label">📊 Total Unassigned</span>
                     </div>
-                    <div class="stat-card">
-                        <span class="stat-number">{{ $totalAgencies }}</span>
-                        <span class="stat-label">Available Agencies</span>
+                    <div class="stat-card priority-high">
+                        <span class="stat-number">{{ $highPriorityCount }}</span>
+                        <span class="stat-label">🔥 High Priority (7+ days)</span>
                     </div>
-                    <div class="stat-card">
-                        <span class="stat-number">{{ $todaySubmissions }}</span>
-                        <span class="stat-label">Today's Submissions</span>
+                    <div class="stat-card priority-medium">
+                        <span class="stat-number">{{ $mediumPriorityCount }}</span>
+                        <span class="stat-label">⚡ Medium Priority (3-7 days)</span>
+                    </div>
+                    <div class="stat-card priority-normal">
+                        <span class="stat-number">{{ $normalPriorityCount }}</span>
+                        <span class="stat-label">✅ Normal Priority (0-3 days)</span>
                     </div>
                 </div>
 
-                <!-- Inquiries Grid -->
-                <div class="inquiries-grid">
+                <!-- Enhanced Filters Section -->
+                <div class="filters-section">
+                    <h3 class="filters-title">🔍 Filter & Search Inquiries</h3>
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label class="filter-label">Priority Level</label>
+                            <select id="priorityFilter" class="filter-select">
+                                <option value="">All Priorities</option>
+                                <option value="High">High Priority (7+ days)</option>
+                                <option value="Medium">Medium Priority (3-7 days)</option>
+                                <option value="Normal">Normal Priority (0-3 days)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Status</label>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">All Statuses</option>
+                                <option value="Submitted">Submitted</option>
+                                <option value="Rejected by Agency">Rejected by Agency</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Search Text</label>
+                            <input type="text" id="searchFilter" class="filter-input" placeholder="Search title, description, or user...">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Actions</label>
+                            <div class="filter-actions">
+                                <button class="btn-filter" onclick="applyFilters()">Filter</button>
+                                <button class="btn-clear" onclick="clearFilters()">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Inquiries Grid -->
+                <div class="inquiries-grid" id="inquiriesGrid">
                     @if($unassignedInquiries->count() > 0)
                         @foreach($unassignedInquiries as $inquiry)
-                        <div class="inquiry-card" data-inquiry-id="{{ $inquiry['InquiryID'] }}">
+                        <div class="inquiry-card" 
+                             data-inquiry-id="{{ $inquiry['InquiryID'] }}"
+                             data-priority="{{ $inquiry['priority'] }}"
+                             data-status="{{ $inquiry['status'] }}"
+                             data-search-text="{{ strtolower($inquiry['title'] . ' ' . $inquiry['description'] . ' ' . $inquiry['submittedBy']) }}">
+                            
+                            <!-- Priority Badge -->
+                            <div class="priority-badge priority-{{ strtolower($inquiry['priority']) }}">
+                                {{ $inquiry['priority'] }} Priority
+                            </div>
+
                             <div class="inquiry-header">
                                 <span class="inquiry-id">{{ $inquiry['reference_number'] }}</span>
-                                <span class="inquiry-date">{{ $inquiry['submittedDate'] }}</span>
+                                <span class="inquiry-date">{{ $inquiry['submittedDateTime'] }}</span>
+                                @if($inquiry['isRejected'])
+                                    <span class="status-badge status-rejected">Rejected</span>
+                                @else
+                                    <span class="status-badge status-pending">Pending</span>
+                                @endif
                             </div>
                             
                             <h3 class="inquiry-title">{{ $inquiry['title'] }}</h3>
@@ -646,27 +874,41 @@
                                 {{ $inquiry['description'] }}
                             </div>
                             
+                            <!-- Enhanced Meta Information -->
                             <div class="inquiry-meta">
                                 <div class="meta-item">
-                                    <span class="meta-label">Status:</span>
-                                    <span class="meta-value">{{ $inquiry['status'] }}</span>
+                                    <span class="meta-label">Time Pending</span>
+                                    <span class="meta-value time-pending">{{ $inquiry['timePending'] }}</span>
                                 </div>
                                 <div class="meta-item">
-                                    <span class="meta-label">Submitted by:</span>
+                                    <span class="meta-label">Submitted by</span>
                                     <span class="meta-value">{{ $inquiry['submittedBy'] }}</span>
                                 </div>
                                 <div class="meta-item">
-                                    <span class="meta-label">Assignment:</span>
-                                    <span class="meta-value">Not Assigned</span>
+                                    <span class="meta-label">Status</span>
+                                    <span class="meta-value">{{ $inquiry['status'] }}</span>
                                 </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Priority</span>
+                                    <span class="meta-value">{{ $inquiry['priority'] }}</span>
+                                </div>
+                                @if($inquiry['isRejected'] && $inquiry['rejectedByAgency'])
+                                <div class="meta-item">
+                                    <span class="meta-label">Rejected by</span>
+                                    <span class="meta-value">{{ $inquiry['rejectedByAgency'] }}</span>
+                                </div>
+                                @endif
                             </div>
                             
                             <div class="inquiry-actions">
                                 <button class="btn btn-view" onclick="toggleContent({{ $inquiry['InquiryID'] }})">
-                                    <span>📄</span> View More
+                                    <span>👁️</span> <span id="btn-text-{{ $inquiry['InquiryID'] }}">View More</span>
+                                </button>
+                                <button class="btn btn-details" onclick="openDetailsModal({{ $inquiry['InquiryID'] }})">
+                                    <span>📋</span> Details
                                 </button>
                                 <button class="btn btn-assign" onclick="openAssignModal({{ $inquiry['InquiryID'] }})">
-                                    <span>📋</span> Assign to Agency
+                                    <span>✅</span> Assign
                                 </button>
                             </div>
                         </div>
@@ -703,157 +945,281 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="assignmentComments" class="form-label">Assignment Comments (Optional)</label>
-                    <textarea id="assignmentComments" class="form-textarea" 
-                        placeholder="Add any notes or special instructions for the assigned agency..."></textarea>
+                    <label for="assignComments" class="form-label">Comments (Optional)</label>
+                    <textarea id="assignComments" class="form-textarea" placeholder="Add any additional notes or comments..."></textarea>
                 </div>
                 
                 <div class="inquiry-actions">
                     <button type="button" class="btn btn-cancel" onclick="closeAssignModal()">Cancel</button>
-                    <button type="submit" class="btn btn-submit">
-                        <span>✓</span> Assign Inquiry
-                    </button>
+                    <button type="submit" class="btn btn-submit">Assign Inquiry</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script>
-        let currentInquiryId = null;
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Inquiry Details</h2>
+                <button class="close-modal" onclick="closeDetailsModal()">&times;</button>
+            </div>
+            
+            <div id="detailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
 
+    <script>
+        // Store all inquiries data for filtering
+        const allInquiries = @json($unassignedInquiries);
+        let currentAssignInquiryId = null;
+
+        // Toggle inquiry content
         function toggleContent(inquiryId) {
             const content = document.getElementById(`content-${inquiryId}`);
-            const button = event.target.closest('.btn-view');
+            const btnText = document.getElementById(`btn-text-${inquiryId}`);
             
             if (content.classList.contains('collapsed')) {
                 content.classList.remove('collapsed');
-                button.innerHTML = '<span>📄</span> View Less';
+                content.classList.add('expanded');
+                btnText.textContent = 'View Less';
             } else {
                 content.classList.add('collapsed');
-                button.innerHTML = '<span>📄</span> View More';
+                content.classList.remove('expanded');
+                btnText.textContent = 'View More';
             }
         }
 
+        // Open assignment modal
         function openAssignModal(inquiryId) {
-            currentInquiryId = inquiryId;
+            currentAssignInquiryId = inquiryId;
             document.getElementById('assignModal').classList.add('show');
         }
 
+        // Close assignment modal
         function closeAssignModal() {
             document.getElementById('assignModal').classList.remove('show');
             document.getElementById('assignForm').reset();
-            currentInquiryId = null;
+            currentAssignInquiryId = null;
+        }
+
+        // Open details modal
+        function openDetailsModal(inquiryId) {
+            const inquiry = allInquiries.find(i => i.InquiryID === inquiryId);
+            if (!inquiry) return;
+
+            const content = `
+                <div class="inquiry-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Reference Number</span>
+                        <span class="meta-value">${inquiry.reference_number}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Title</span>
+                        <span class="meta-value">${inquiry.title}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Status</span>
+                        <span class="meta-value">${inquiry.status}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Priority</span>
+                        <span class="meta-value">${inquiry.priority}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Submitted Date</span>
+                        <span class="meta-value">${inquiry.submittedDateTime}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Time Pending</span>
+                        <span class="meta-value time-pending">${inquiry.timePending}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Submitted By</span>
+                        <span class="meta-value">${inquiry.submittedBy}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Email</span>
+                        <span class="meta-value">${inquiry.submitterEmail}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Phone</span>
+                        <span class="meta-value">${inquiry.submitterPhone}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Address</span>
+                        <span class="meta-value">${inquiry.submitterAddress}</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                        ${inquiry.description}
+                    </div>
+                </div>
+
+                ${inquiry.evidenceData ? `
+                <div class="form-group">
+                    <label class="form-label">Evidence Submitted</label>
+                    <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                        <pre>${JSON.stringify(inquiry.evidenceData, null, 2)}</pre>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${inquiry.isRejected && inquiry.rejectionData ? `
+                <div class="form-group">
+                    <label class="form-label">Rejection Details</label>
+                    <div style="padding: 1rem; background: #ffebee; border-radius: 8px; border: 1px solid #ffcdd2;">
+                        <strong>Rejected by:</strong> ${inquiry.rejectedByAgency}<br>
+                        <strong>Reason:</strong> ${inquiry.rejectionData.reason || 'No reason provided'}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('detailsContent').innerHTML = content;
+            document.getElementById('detailsModal').classList.add('show');
+        }
+
+        // Close details modal
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.remove('show');
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+            const cards = document.querySelectorAll('.inquiry-card');
+            
+            cards.forEach(card => {
+                const priority = card.dataset.priority;
+                const status = card.dataset.status;
+                const searchText = card.dataset.searchText;
+
+                let show = true;
+
+                if (priorityFilter && priority !== priorityFilter) {
+                    show = false;
+                }
+
+                if (statusFilter && status !== statusFilter) {
+                    show = false;
+                }
+
+                if (searchFilter && !searchText.includes(searchFilter)) {
+                    show = false;
+                }
+
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('priorityFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('searchFilter').value = '';
+            
+            const cards = document.querySelectorAll('.inquiry-card');
+            cards.forEach(card => {
+                card.style.display = 'block';
+            });
         }
 
         // Handle assignment form submission
-        document.getElementById('assignForm').addEventListener('submit', async function(e) {
+        document.getElementById('assignForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            if (!currentAssignInquiryId) return;
+
             const agencyId = document.getElementById('agencySelect').value;
-            const comments = document.getElementById('assignmentComments').value;
-            
+            const comments = document.getElementById('assignComments').value;
+
             if (!agencyId) {
                 alert('Please select an agency');
                 return;
             }
-            
-            try {
-                const response = await fetch(`/mcmc/assign-inquiry/${currentInquiryId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        agency_id: agencyId,
-                        comments: comments
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
+
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Assigning...';
+            submitBtn.disabled = true;
+
+            // Make API call
+            fetch(`/mcmc/assign-inquiry/${currentAssignInquiryId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    agency_id: agencyId,
+                    comments: comments
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
                     // Show success message
-                    document.getElementById('successText').textContent = result.message;
+                    document.getElementById('successText').textContent = data.message;
                     document.getElementById('successMessage').classList.add('show');
                     
-                    // Remove the assigned inquiry card from the UI
-                    const inquiryCard = document.querySelector(`[data-inquiry-id="${currentInquiryId}"]`);
-                    if (inquiryCard) {
-                        inquiryCard.remove();
-                    }
-                    
-                    // Update stats
-                    const statNumber = document.querySelector('.stat-number');
-                    if (statNumber) {
-                        const currentCount = parseInt(statNumber.textContent);
-                        statNumber.textContent = currentCount - 1;
+                    // Remove the assigned inquiry card
+                    const card = document.querySelector(`[data-inquiry-id="${currentAssignInquiryId}"]`);
+                    if (card) {
+                        card.remove();
                     }
                     
                     // Close modal
                     closeAssignModal();
                     
-                    // Hide success message after 5 seconds
+                    // Reload page after short delay to update stats
                     setTimeout(() => {
-                        document.getElementById('successMessage').classList.remove('show');
-                    }, 5000);
-                    
-                    // Check if no more inquiries and show empty state
-                    const remainingCards = document.querySelectorAll('.inquiry-card').length;
-                    if (remainingCards === 0) {
-                        document.querySelector('.inquiries-grid').innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">✅</div>
-                                <h3 class="empty-title">All Inquiries Assigned</h3>
-                                <p class="empty-message">Great! All inquiries have been assigned to agencies. New unassigned inquiries will appear here.</p>
-                            </div>
-                        `;
-                    }
-                    
+                        window.location.reload();
+                    }, 2000);
                 } else {
-                    alert('Error: ' + result.message);
+                    alert('Error: ' + data.message);
                 }
-                
-            } catch (error) {
-                console.error('Assignment error:', error);
+            })
+            .catch(error => {
+                console.error('Error:', error);
                 alert('An error occurred while assigning the inquiry');
-            }
-        });        // Close modal when clicking outside
-        document.getElementById('assignModal').addEventListener('click', function(e) {
-            if (e.target === this) {
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
                 closeAssignModal();
+                closeDetailsModal();
             }
         });
 
-        // Sidebar functionality
-        function toggleSubmenu(submenuId) {
-            const submenu = document.getElementById(submenuId);
-            const navItem = submenu.closest('.nav-item');
-            
-            if (submenu.classList.contains('show')) {
-                submenu.classList.remove('show');
-                navItem.classList.remove('active');
-            } else {
-                // Close all other submenus
-                document.querySelectorAll('.submenu.show').forEach(menu => {
-                    menu.classList.remove('show');
-                    menu.closest('.nav-item').classList.remove('active');
-                });
-                
-                submenu.classList.add('show');
-                navItem.classList.add('active');
-            }
-        }
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+            document.getElementById('successMessage').classList.remove('show');
+        }, 5000);
 
-        // Close dropdown when clicking outside (for header dropdown)
-        document.addEventListener('click', function(event) {
-            const userInfo = document.querySelector('.header-user-info');
-            const dropdown = document.getElementById('userDropdown');
-            
-            if (dropdown && userInfo && !userInfo.contains(event.target)) {
-                dropdown.classList.remove('show');
+        // Real-time search
+        document.getElementById('searchFilter').addEventListener('input', function() {
+            if (this.value.length >= 2 || this.value.length === 0) {
+                applyFilters();
             }
         });
     </script>
+
 </body>
 </html>

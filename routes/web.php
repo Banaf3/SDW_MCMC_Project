@@ -121,3 +121,17 @@ Route::get('/test-logout', function() {
     session()->flush();
     return redirect('/')->with('success', 'Logged out successfully');
 });
+
+// Module 3 routes
+Route::get('/mcmc/unassigned-inquiries', [MCMCController::class, 'unassignedInquiries'])->name('mcmc.unassigned.inquiries');
+Route::get('/agency/assigned-inquiries', [AgencyController::class, 'assignedInquiries'])->name('agency.assigned.inquiries');
+Route::get('/mcmc/assigned-inquiries', [MCMCController::class, 'assignedInquiries'])->name('mcmc.assigned.inquiries');
+
+// Assignment route
+Route::post('/mcmc/assign-inquiry/{id}', [MCMCController::class, 'assignInquiry'])->name('mcmc.assign.inquiry');
+
+// Inquiry details route
+Route::get('/mcmc/inquiry-details/{id}', [MCMCController::class, 'getInquiryDetails'])->name('mcmc.inquiry.details');
+
+// Agency rejection route
+Route::post('/agency/reject-inquiry/{id}', [AgencyController::class, 'rejectInquiry'])->name('agency.reject.inquiry');

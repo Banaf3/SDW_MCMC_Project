@@ -16,8 +16,26 @@ class AgencyController extends Controller
     }
     public function assignedInquiries(Request $request)
     {
-        // Start with base query
+        // Get current agency staff ID from session
+        $staffId = session('user_id');
+        
+        if (!$staffId || session('user_type') !== 'agency') {
+            return redirect()->route('login')->with('error', 'Please log in as agency staff.');
+        }
+        
+        // Get the agency ID for the current staff member
+        $agencyStaff = \App\Models\AgencyStaff::find($staffId);
+        
+        if (!$agencyStaff) {
+            return redirect()->route('login')->with('error', 'Agency staff not found.');
+        }
+        
+        $agencyId = $agencyStaff->AgencyID;
+        
+        // Start with base query - only inquiries assigned to this agency
         $query = Inquiry::with(['assignedAgency', 'user'])
+            ->where('AgencyID', $agencyId)  // Filter by agency
+            ->whereNotNull('AgencyID')      // Only assigned inquiries
             ->orderBy('created_at', 'desc');
 
         // Apply status filter if provided
@@ -39,20 +57,21 @@ class AgencyController extends Controller
         $inquiries = $query->get()
             ->map(function ($inquiry) {
                 return [
-                    'InquiryID' => $inquiry->InquiryID, // Add the actual database ID
-                    'id' => $inquiry->reference_number ?? 'VT-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
+                    'InquiryID' => $inquiry->InquiryID,
+                    'reference_number' => $inquiry->reference_number ?? 'VT-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
                     'title' => $inquiry->InquiryTitle ?? 'No Title',
                     'description' => $inquiry->InquiryDescription ?? 'No description available',
                     'type' => $inquiry->type ?? 'General',
                     'status' => $inquiry->InquiryStatus ?? 'Pending',
                     'submittedBy' => $inquiry->user->UserName ?? 'Unknown User',
                     'submittedDate' => $inquiry->SubmitionDate ? $inquiry->SubmitionDate->format('F j, Y') : 'N/A',
-                    'assignedDate' => $inquiry->updated_at ? $inquiry->updated_at->format('F j, Y') : 'N/A'
+                    'assignedDate' => $inquiry->updated_at ? $inquiry->updated_at->format('F j, Y') : 'N/A',
+                    'evidence' => $inquiry->InquiryEvidence ?? 'No evidence provided'
                 ];
             });
 
-        // Get total count of all inquiries (unfiltered)
-        $totalInquiries = Inquiry::count();
+        // Get total count of inquiries assigned to this agency
+        $totalInquiries = Inquiry::where('AgencyID', $agencyId)->whereNotNull('AgencyID')->count();
 
         // Get count of filtered inquiries
         $filteredCount = $inquiries->count();
@@ -63,12 +82,13 @@ class AgencyController extends Controller
             'search' => $request->search ?? ''
         ];
 
-        return view('Module4-Agency.InquiryAssigned', compact(
-            'inquiries',
-            'totalInquiries',
-            'filteredCount',
-            'currentFilters'
-        ));
+        return view('Module3.Agency.assigned_inquiries', [
+            'assignedInquiries' => $inquiries,
+            'totalInquiries' => $totalInquiries,
+            'filteredCount' => $filteredCount,
+            'currentFilters' => $currentFilters,
+            'agencyName' => $agencyStaff->agency->AgencyName ?? 'Your Agency'
+        ]);
     }public function editInquiry($id)
     {
         // Get the inquiry from database
@@ -192,6 +212,100 @@ class AgencyController extends Controller
 
         } catch (\Exception $e) {
             return back()->with('error', 'Error updating inquiry: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject an inquiry assignment (agency staff rejects inquiry)
+     */
+    public function rejectInquiry(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'required|string',
+            'comments' => 'required|string|max:1000'
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            // Get current agency staff ID from session
+            $staffId = session('user_id');
+            
+            if (!$staffId || session('user_type') !== 'agency') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Agency access required.'
+                ], 403);
+            }
+
+            // Get the agency ID for the current staff member
+            $agencyStaff = \App\Models\AgencyStaff::find($staffId);
+            
+            if (!$agencyStaff) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Agency staff not found.'
+                ], 404);
+            }
+
+            // Get the inquiry
+            $inquiry = Inquiry::findOrFail($id);
+
+            // Verify this inquiry is assigned to the current agency
+            if ($inquiry->AgencyID !== $agencyStaff->AgencyID) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This inquiry is not assigned to your agency.'
+                ], 403);
+            }
+
+            // Get agency name for rejection tracking
+            $agencyName = $agencyStaff->agency->AgencyName ?? 'Unknown Agency';
+
+            // Create structured rejection comment that includes agency info
+            $rejectionData = [
+                'rejected_by_agency' => $agencyName,
+                'rejected_by_agency_id' => $agencyStaff->AgencyID,
+                'rejection_reason' => $request->reason,
+                'rejection_comments' => $request->comments,
+                'rejection_date' => \Carbon\Carbon::now()->toDateTimeString()
+            ];
+
+            // Update the inquiry - remove assignment and set status
+            $inquiry->AgencyID = null;  // Remove agency assignment
+            $inquiry->AdminID = null;   // Remove admin assignment
+            $inquiry->InquiryStatus = 'Rejected by Agency';
+            $inquiry->AgencyRejectionComment = json_encode($rejectionData);
+            $inquiry->save();
+
+            // Remove from assigned_inquiries table
+            \App\Models\AssignedInquiry::where('InquiryID', $id)
+                ->where('AgencyID', $agencyStaff->AgencyID)
+                ->delete();
+
+            // Create audit log
+            \App\Models\InquiryAuditLog::create([
+                'InquiryID' => $id,
+                'Action' => 'Rejected by Agency - ' . $request->reason,
+                'ActionDate' => \Carbon\Carbon::now(),
+                'PerformedBy' => $staffId
+            ]);
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inquiry rejected successfully. It has been returned to MCMC for reassignment.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollback();
+            \Illuminate\Support\Facades\Log::error('Rejection error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error rejecting inquiry: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -121,8 +121,8 @@
                     <ul class="submenu" id="assign-inquiries">
                         <li><a href="{{ route('mcmc.unassigned.inquiries') }}">Unassigned Inquiries</a></li>
                         <li><a href="{{ route('mcmc.assigned.inquiries') }}">View Assignments</a></li>
-                        <li><a href="{{ route('mcmc.assignment.reports') }}">Assignment Reports</a></li>
-                        <li><a href="{{ route('mcmc.analytics') }}">Analytics</a></li>
+                        <li><a href="#">Assignment Reports</a></li>
+                        <li><a href="#">Analytics</a></li>
                     </ul>
                 </li>
 
@@ -155,7 +155,7 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="inquiry-access">
-                        <li><a href="#">Assigned Inquiries</a></li>
+                        <li><a href="{{ route('agency.assigned.inquiries') }}">Assigned Inquiries</a></li>
                     </ul>
                 </li>
 
@@ -209,4 +209,28 @@
 .submenu li a.active:hover {
     background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* Arrow animation */
+.nav-toggle .nav-arrow {
+    transition: transform 0.3s ease;
+}
+
+.nav-toggle.open .nav-arrow {
+    transform: rotate(180deg);
+}
 </style>
+
+<script>
+function toggleSubmenu(menuId) {
+    const submenu = document.getElementById(menuId);
+    if (submenu) {
+        submenu.classList.toggle('open');
+        
+        // Toggle the arrow for the parent link
+        const toggle = submenu.previousElementSibling;
+        if (toggle && toggle.classList.contains('nav-toggle')) {
+            toggle.classList.toggle('open');
+        }
+    }
+}
+</script>
