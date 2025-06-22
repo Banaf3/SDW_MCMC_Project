@@ -526,9 +526,7 @@
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
                 MCMC Admin Actions
-            </h3>
-            
-            <div class="actions-grid">
+            </h3>            <div class="actions-grid">
                 <form method="POST" action="{{ route('admin.inquiries.update-status', $inquiry->InquiryID) }}" style="display: contents;">
                     @csrf
                     @method('PUT')
@@ -541,30 +539,6 @@
                     </button>
                 </form>
                 
-                <form method="POST" action="{{ route('admin.inquiries.update-status', $inquiry->InquiryID) }}" style="display: contents;">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="status" value="Resolved">
-                    <button type="submit" class="btn btn-success">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Mark as Resolved
-                    </button>
-                </form>
-                
-                <form method="POST" action="{{ route('admin.inquiries.flag', $inquiry->InquiryID) }}" style="display: contents;">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="reason" value="Requires further validation">
-                    <button type="submit" class="btn btn-warning">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.888-.833-2.664 0L4.15 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                        </svg>
-                        Flag for Review
-                    </button>
-                </form>
-                
                 <form method="POST" action="{{ route('admin.inquiries.discard', $inquiry->InquiryID) }}" style="display: contents;">
                     @csrf
                     @method('DELETE')
@@ -574,23 +548,6 @@
                             <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                         Discard Inquiry
-                    </button>
-                </form>
-            </div>
-
-            <!-- Admin Notes Section -->
-            <div class="notes-section">
-                <form method="POST" action="{{ route('admin.inquiries.update-status', $inquiry->InquiryID) }}">
-                    @csrf
-                    @method('PUT')
-                    <div class="content-label">Add Admin Notes</div>
-                    <textarea name="notes" class="notes-input" placeholder="Add notes about this inquiry for internal tracking..."></textarea>
-                    <input type="hidden" name="status" value="{{ $inquiry->InquiryStatus }}">
-                    <button type="submit" class="btn btn-primary" style="margin-top: 8px;">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7"/>
-                        </svg>
-                        Save Notes
                     </button>
                 </form>
             </div>

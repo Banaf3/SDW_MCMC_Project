@@ -129,16 +129,13 @@ class InquiryManagementController extends Controller
         }
         
         return response()->download($filePath, $file['original_name']);
-    }
-
-    /**
+    }    /**
      * Update inquiry status (filter/validate)
      */
     public function updateInquiryStatus(Request $request, $id)
     {
         $request->validate([
             'status' => 'required|string',
-            'admin_notes' => 'nullable|string',
             'reason' => 'nullable|string'
         ]);
 
@@ -146,26 +143,17 @@ class InquiryManagementController extends Controller
         $oldStatus = $inquiry->InquiryStatus;
         
         $inquiry->update([
-            'InquiryStatus' => $request->status,
-            'AdminNotes' => $request->admin_notes
-        ]);
-
-        // Create audit log entry
+            'InquiryStatus' => $request->status
+        ]);        // Create audit log entry
         InquiryAuditLog::create([
             'InquiryID' => $id,
-            'AdminID' => session('user_id'),
-            'Action' => 'Status Updated',
-            'OldStatus' => $oldStatus,
-            'NewStatus' => $request->status,
-            'ActionDate' => now(),
-            'Reason' => $request->reason,
-            'Notes' => $request->admin_notes
+            'Action' => 'Status Updated to ' . $request->status,
+            'PerformedBy' => 'Admin User', // You can get this from session if needed
+            'ActionDate' => now()
         ]);
 
         return redirect()->back()->with('success', 'Inquiry status updated successfully.');
-    }
-
-    /**
+    }    /**
      * Flag inquiry as non-serious
      */
     public function flagAsNonSerious(Request $request, $id)
@@ -178,25 +166,17 @@ class InquiryManagementController extends Controller
         $oldStatus = $inquiry->InquiryStatus;
         
         $inquiry->update([
-            'InquiryStatus' => 'Flagged as Non-serious',
-            'AdminNotes' => $request->reason
-        ]);
-
-        // Create audit log entry
+            'InquiryStatus' => 'Flagged as Non-serious'
+        ]);        // Create audit log entry
         InquiryAuditLog::create([
             'InquiryID' => $id,
-            'AdminID' => session('user_id'),
             'Action' => 'Flagged as Non-serious',
-            'OldStatus' => $oldStatus,
-            'NewStatus' => 'Flagged as Non-serious',
-            'ActionDate' => now(),
-            'Reason' => $request->reason
+            'PerformedBy' => 'Admin User',
+            'ActionDate' => now()
         ]);
 
         return redirect()->back()->with('success', 'Inquiry flagged as non-serious.');
-    }
-
-    /**
+    }    /**
      * Discard inquiry
      */
     public function discardInquiry(Request $request, $id)
@@ -209,19 +189,13 @@ class InquiryManagementController extends Controller
         $oldStatus = $inquiry->InquiryStatus;
         
         $inquiry->update([
-            'InquiryStatus' => 'Discarded',
-            'AdminNotes' => $request->reason
-        ]);
-
-        // Create audit log entry
+            'InquiryStatus' => 'Discarded'
+        ]);        // Create audit log entry
         InquiryAuditLog::create([
             'InquiryID' => $id,
-            'AdminID' => session('user_id'),
-            'Action' => 'Discarded',
-            'OldStatus' => $oldStatus,
-            'NewStatus' => 'Discarded',
-            'ActionDate' => now(),
-            'Reason' => $request->reason
+            'Action' => 'Inquiry Discarded',
+            'PerformedBy' => 'Admin User',
+            'ActionDate' => now()
         ]);
 
         return redirect()->back()->with('success', 'Inquiry discarded.');
