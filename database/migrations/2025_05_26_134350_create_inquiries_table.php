@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('InquiryStatus', 50);
             $table->text('StatusHistory')->nullable();
             $table->text('InquiryDescription');
-            $table->string('InquiryEvidence', 255)->nullable();
+            $table->binary('InquiryEvidence')->nullable();
             $table->text('AdminComment')->nullable();
             $table->text('ResolvedExplanation')->nullable();
             $table->string('ResolvedSupportingDocs', 255)->nullable();
