@@ -15,15 +15,11 @@ class InquiryManagementController extends Controller
      */
     public function viewNewInquiries(Request $request)
     {
-        $query = Inquiry::with(['user', 'agency']);
-
-        // Apply filters
+        $query = Inquiry::with(['user', 'agency']);        // Apply filters
         if ($request->filled('status')) {
             $query->where('InquiryStatus', $request->status);
-        } else {
-            // Default to showing new inquiries first, but allow viewing all
-            $query->where('InquiryStatus', 'Pending Review');
         }
+        // Remove else clause to show all statuses when no specific status is selected
 
         if ($request->filled('date_from')) {
             $query->whereDate('SubmitionDate', '>=', $request->date_from);
@@ -100,16 +96,39 @@ class InquiryManagementController extends Controller
         $previousInquiries = $query->orderByDesc('SubmitionDate')->paginate(20);
 
         return view('ManageInquiryFormSubmission.MCMC.previous-inquiries', compact('previousInquiries'));
-    }
-
-    /**
+    }    /**
      * Show detailed view of an inquiry for admin review
      */
     public function showInquiry($id)
     {
         $inquiry = Inquiry::with(['user', 'agency', 'auditLogs'])->findOrFail($id);
         
-        return view('ManageInquiryFormSubmission.MCMC.inquiry-detail', compact('inquiry'));
+        // Parse evidence JSON if it exists
+        $evidence = $inquiry->InquiryEvidence ? json_decode($inquiry->InquiryEvidence, true) : [];
+        
+        return view('ManageInquiryFormSubmission.MCMC.inquiry-detail', compact('inquiry', 'evidence'));
+    }
+
+    /**
+     * Download evidence file
+     */
+    public function downloadEvidence($id, $fileIndex)
+    {
+        $inquiry = Inquiry::findOrFail($id);
+        $evidence = $inquiry->InquiryEvidence ? json_decode($inquiry->InquiryEvidence, true) : [];
+        
+        if (!isset($evidence['files'][$fileIndex])) {
+            abort(404, 'File not found');
+        }
+        
+        $file = $evidence['files'][$fileIndex];
+        $filePath = storage_path('app/public/' . $file['path']);
+        
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found on disk');
+        }
+        
+        return response()->download($filePath, $file['original_name']);
     }
 
     /**

@@ -179,10 +179,91 @@
         margin-bottom: 4px;
         color: #1a202c;
     }
-    
-    .evidence-meta {
+      .evidence-meta {
         font-size: 12px;
         color: #6b7280;
+    }
+    
+    .evidence-display {
+        margin-top: 16px;
+    }
+    
+    .evidence-files-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .evidence-file-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    
+    .evidence-file-item:hover {
+        background: #e9ecef;
+        border-color: #adb5bd;
+    }
+    
+    .file-preview {
+        flex-shrink: 0;
+    }
+      .file-info {
+        min-width: 0;
+        flex: 1;
+    }
+    
+    .file-name {
+        font-weight: 500;
+        color: #212529;
+        margin-bottom: 4px;
+        word-break: break-word;
+    }
+    
+    .file-type {
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .file-actions {
+        margin-top: 8px;
+    }
+
+    .btn-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: #3b82f6;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .btn-download:hover {
+        background: #2563eb;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-download svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .evidence-description {
+        margin-top: 16px;
     }
     
     .admin-actions {
@@ -360,33 +441,79 @@
             <div class="content-text">
                 {{ $inquiry->InquiryDescription }}
             </div>
-        </div>
-    </div>
-
-    <!-- Evidence Files -->
-    @if($inquiry->evidence && count($inquiry->evidence) > 0)
+        </div>    <!-- Evidence Files -->
+    @if($inquiry->InquiryEvidence)
     <div class="section">
         <h2 class="section-header">
-            <span>Evidence Files ({{ count($inquiry->evidence) }})</span>
+            <span>Evidence Files</span>
         </h2>
-        <div class="evidence-grid">
-            @foreach($inquiry->evidence as $evidence)
-                <div class="evidence-item">
-                    <div class="evidence-preview">
-                        @if(in_array(pathinfo($evidence->file_path, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
-                            <img src="{{ Storage::url($evidence->file_path) }}" alt="Evidence" style="width: 100%; height: 100%; object-fit: cover;">
-                        @else
-                            <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-                            </svg>
-                        @endif
+        <div class="content-section">
+            <div class="evidence-display">
+                @if(isset($evidence['files']) && count($evidence['files']) > 0)
+                    <!-- Display actual uploaded files -->
+                    <div class="evidence-files-grid">
+                        @foreach($evidence['files'] as $index => $file)
+                            @php
+                                $fileExtension = strtolower(pathinfo($file['original_name'], PATHINFO_EXTENSION));
+                                $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+                                $isImage = in_array($fileExtension, $imageExtensions);
+                                $fileSize = isset($file['size']) ? $file['size'] : 0;
+                                $fileSizeFormatted = $fileSize > 0 ? number_format($fileSize / 1024, 1) . ' KB' : 'Unknown size';
+                            @endphp
+                            
+                            <div class="evidence-file-item">
+                                <div class="file-preview">
+                                    @if($isImage)
+                                        <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="color: #10b981;">
+                                            <path d="M4 3h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1zm1 2v14h14V5H5zm2 3l3.5 4.5 2.5-3L16 14H8l-1-6z"/>
+                                        </svg>
+                                    @elseif($fileExtension === 'pdf')
+                                        <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="color: #ef4444;">
+                                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                                        </svg>
+                                    @elseif(in_array($fileExtension, ['mp3', 'wav', 'ogg']))
+                                        <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="color: #8b5cf6;">
+                                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                                        </svg>
+                                    @elseif(in_array($fileExtension, ['mp4', 'avi', 'mov', 'wmv']))
+                                        <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="color: #f59e0b;">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    @elseif(in_array($fileExtension, ['doc', 'docx']))
+                                        <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="color: #2563eb;">
+                                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                                        </svg>
+                                    @else
+                                        <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="color: #6b7280;">
+                                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                                        </svg>
+                                    @endif
+                                </div>
+                                <div class="file-info">
+                                    <div class="file-name">{{ $file['original_name'] }}</div>
+                                    <div class="file-type">{{ strtoupper($fileExtension) }} File • {{ $fileSizeFormatted }}</div>
+                                    <div class="file-actions">
+                                        <a href="{{ route('admin.inquiries.download-evidence', [$inquiry->InquiryID, $index]) }}" 
+                                           class="btn-download" 
+                                           target="_blank"
+                                           title="Download {{ $file['original_name'] }}">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" />
+                                            </svg>
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                    <div class="evidence-info">
-                        <div class="evidence-name">{{ $evidence->original_filename }}</div>
-                        <div class="evidence-meta">{{ number_format($evidence->file_size / 1024, 1) }} KB</div>
+                @else
+                    <!-- Show evidence text directly if no files in JSON -->
+                    <div class="content-text">
+                        {{ $inquiry->InquiryEvidence }}
                     </div>
-                </div>
-            @endforeach
+                @endif
+            </div>
         </div>
     </div>
     @endif

@@ -76,6 +76,7 @@ Route::prefix('admin/inquiries')->name('admin.inquiries.')->group(function () {
     Route::get('/new', [InquiryManagementController::class, 'viewNewInquiries'])->name('new');
     Route::get('/previous', [InquiryManagementController::class, 'viewPreviousInquiries'])->name('previous');
     Route::get('/{id}', [InquiryManagementController::class, 'showInquiry'])->name('show');
+    Route::get('/{id}/evidence/{fileIndex}', [InquiryManagementController::class, 'downloadEvidence'])->name('download-evidence');
     Route::put('/{id}/status', [InquiryManagementController::class, 'updateInquiryStatus'])->name('update-status');
     Route::put('/{id}/flag', [InquiryManagementController::class, 'flagAsNonSerious'])->name('flag');
     Route::delete('/{id}/discard', [InquiryManagementController::class, 'discardInquiry'])->name('discard');
