@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\NotificationController;
@@ -20,8 +21,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Demo routes for testing the layout
+// Dashboard route with proper session handling
 Route::get('/dashboard', function () {
+    // Check if user is logged in via session
+    $userType = session('user_type');
+    $userId = session('user_id');
+    
+    if (empty($userType) || empty($userId)) {
+        // No user session, redirect to login
+        return redirect()->route('login')->with('message', 'Please log in to access the dashboard.');
+    }
+    
+    // User is logged in, show dashboard
     return view('welcome');
 })->name('dashboard');
 
@@ -61,7 +72,18 @@ Route::middleware(['web'])->group(function () {
     Route::get('/admin/agency/management', [User_Controller::class, 'showAgencyManagement'])->name('admin.agency.management');
     Route::post('/admin/agency/create', [User_Controller::class, 'createAgency'])->name('admin.agency.create');
     
-    // MCMC Admin inquiry management routes (placeholders)
+    // MCMC Admin inquiry management routes
+    Route::get('/admin/inquiries/new', [InquiryManagementController::class, 'viewNewInquiries'])->name('admin.inquiries.new');
+    Route::get('/admin/inquiries/previous', [InquiryManagementController::class, 'viewPreviousInquiries'])->name('admin.inquiries.previous');
+    Route::get('/admin/inquiries/{id}', [InquiryManagementController::class, 'showInquiry'])->name('admin.inquiries.show');
+    Route::get('/admin/inquiries/{id}/evidence/{fileIndex}', [InquiryManagementController::class, 'downloadEvidence'])->name('admin.inquiries.download-evidence');
+    Route::put('/admin/inquiries/{id}/status', [InquiryManagementController::class, 'updateInquiryStatus'])->name('admin.inquiries.update-status');
+    Route::put('/admin/inquiries/{id}/flag', [InquiryManagementController::class, 'flagAsNonSerious'])->name('admin.inquiries.flag');
+    Route::delete('/admin/inquiries/{id}/discard', [InquiryManagementController::class, 'discardInquiry'])->name('admin.inquiries.discard');
+    Route::get('/admin/audit-logs', [InquiryManagementController::class, 'viewAuditLogs'])->name('admin.audit-logs');
+    Route::get('/admin/reports', [InquiryManagementController::class, 'reports'])->name('admin.reports');
+    
+    // MCMC Admin inquiry management routes (placeholders for legacy routes)
     Route::get('/mcmc/inquiries/unassigned', function () {
         return view('welcome');
     })->name('mcmc.unassigned.inquiries');
@@ -85,38 +107,26 @@ Route::post('/password/email', [User_Controller::class, 'sendResetLinkEmail'])->
 Route::get('/password/reset/{token}', [User_Controller::class, 'showResetForm'])->name('password.reset');
 Route::post('/password/reset', [User_Controller::class, 'resetPassword'])->name('password.reset.update');
 
-// Inquiry routes (placeholder for now)
+// Public User Inquiry routes
 Route::middleware(['web'])->group(function () {
-    // User inquiry routes
-    Route::get('/inquiries/create', function () {
-        return view('welcome');
-    })->name('inquiries.create');
+    // Inquiry creation and submission
+    Route::get('/inquiries/create', [InquirySubmissionController::class, 'create'])->name('inquiries.create');
+    Route::post('/inquiries', [InquirySubmissionController::class, 'store'])->name('inquiries.store');
     
-    Route::post('/inquiries', function () {
-        return redirect()->back()->with('success', 'Inquiry submitted successfully (placeholder)');
-    })->name('inquiries.store');
+    // User's own inquiries
+    Route::get('/inquiries', [UserInquiriesController::class, 'index'])->name('inquiries.index');
+    Route::get('/inquiries/{id}', [UserInquiriesController::class, 'show'])->name('inquiries.show');
     
-    Route::get('/inquiries', function () {
-        return view('welcome');
-    })->name('inquiries.index');
-    
-    Route::get('/inquiries/{id}', function ($id) {
-        return view('welcome');
-    })->name('inquiries.show');
-    
-    // Public inquiry routes
-    Route::get('/public/inquiries', function () {
-        return view('welcome');
-    })->name('public.inquiries.index');
-    
-    Route::get('/public/inquiries/{id}', function ($id) {
-        return view('welcome');
-    })->name('public.inquiries.show');
+    // Public inquiry browsing
+    Route::get('/public/inquiries', [PublicInquiriesController::class, 'index'])->name('public.inquiries.index');
+    Route::get('/public/inquiries/{id}', [PublicInquiriesController::class, 'show'])->name('public.inquiries.show');
     
     // Agency inquiry routes
-    Route::get('/agency/inquiries/assigned', function () {
-        return view('welcome');
-    })->name('agency.inquiries.assigned');
+    Route::get('/agency/inquiries/assigned', [AssignedInquiriesController::class, 'index'])->name('agency.inquiries.assigned');
+    Route::get('/agency/inquiries/{inquiryId}', [AssignedInquiriesController::class, 'show'])->name('agency.inquiries.show');
+    Route::put('/agency/inquiries/{inquiryId}/status', [AssignedInquiriesController::class, 'updateStatus'])->name('agency.inquiries.update-status');
+    Route::post('/agency/inquiries/{inquiryId}/comment', [AssignedInquiriesController::class, 'addComment'])->name('agency.inquiries.add-comment');
+    Route::get('/agency/reports', [AssignedInquiriesController::class, 'generateReport'])->name('agency.reports');
     
     // Agency-specific profile routes
     Route::post('/agency/profile/update', [User_Controller::class, 'updateProfile'])->name('agency.profile.update');
@@ -127,4 +137,15 @@ Route::middleware(['web'])->group(function () {
     Route::get('/test/inquiry/create', function () {
         return view('welcome');
     })->name('test.inquiry.create');
+});
+
+// Test route for debugging admin login (REMOVE IN PRODUCTION)
+Route::get('/test-admin-login', function (Request $request) {
+    // Simulate admin login
+    $request->session()->put('user_id', 1);
+    $request->session()->put('user_type', 'admin');
+    $request->session()->put('user_name', 'Admin User');
+    $request->session()->put('user_email', 'admin@admin.com');
+    
+    return redirect()->route('dashboard')->with('success', 'Test admin session created');
 });
