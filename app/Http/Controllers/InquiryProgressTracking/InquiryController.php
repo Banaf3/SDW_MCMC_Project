@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\InquiryProgressTracking;
 
+use App\Http\Controllers\Controller;
 use App\Models\Inquiry;
 use App\Models\Agency;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class InquiryController extends Controller
                         'submittedDate' => $inquiry->SubmitionDate->format('F j, Y'),
                         'submittedDateISO' => $inquiry->SubmitionDate->format('Y-m-d'), // For JavaScript Date parsing
                         'assignedTo' => $inquiry->assignedAgency->AgencyName ?? 'Unassigned',
+                        'assignedDate' => $inquiry->updated_at ? $inquiry->updated_at->format('F j, Y') : 'Not assigned',
                         'description' => $inquiry->InquiryDescription,
                         'notes' => $inquiry->AdminComment,
                         'conclusion' => $inquiry->ResolvedExplanation,
@@ -49,6 +51,7 @@ class InquiryController extends Controller
                     'submittedDate' => 'June 15, 2025',
                     'submittedDateISO' => '2025-06-15',
                     'assignedTo' => 'Malaysian Communications and Multimedia Commission (MCMC)',
+                    'assignedDate' => 'June 15, 2025',
                     'description' => 'Suspicious social media post containing false information about government policies.',
                     'notes' => 'High priority case due to public interest.',
                     'conclusion' => null,
@@ -65,6 +68,7 @@ class InquiryController extends Controller
                     'submittedDate' => 'June 14, 2025',
                     'submittedDateISO' => '2025-06-14',
                     'assignedTo' => 'Ministry of Health',
+                    'assignedDate' => 'June 14, 2025',
                     'description' => 'Report about misleading health information being shared online.',
                     'notes' => 'Investigation completed successfully.',
                     'conclusion' => 'Content verified and found to be accurate.',
@@ -288,96 +292,6 @@ class InquiryController extends Controller
             
             $inquiryData = $sampleInquiries[$id] ?? $sampleInquiries[1];
         }
-        
-        // 1. Inquiry Submitted
-        $timeline[] = [
-            'date' => $inquiry->SubmitionDate->format('F j, Y - H:i'),
-            'event' => 'Inquiry Submitted',
-            'description' => 'Inquiry was submitted by ' . ($inquiry->user->UserName ?? 'Unknown User'),
-            'icon' => '📝',
-            'type' => 'submitted'
-        ];
-
-        // 2. Agency Assignment (if assigned)
-        if ($inquiry->AgencyID && $inquiry->assignedAgency) {
-            $timeline[] = [
-                'date' => $inquiry->updated_at->format('F j, Y - H:i'),
-                'event' => 'Assigned to Agency',
-                'description' => 'Inquiry assigned to ' . $inquiry->assignedAgency->AgencyName,
-                'icon' => '🏢',
-                'type' => 'assigned'
-            ];
-        }
-
-        // 3. Status Updates (if status changed from default)
-        if ($inquiry->InquiryStatus && $inquiry->InquiryStatus !== 'Pending') {
-            $statusIcon = match($inquiry->InquiryStatus) {
-                'Under Investigation' => '🔍',
-                'Verified as True' => '✅',
-                'Identified as Fake' => '❌',
-                'Rejected' => '🚫',
-                'Resolved' => '✅',
-                default => '🔄'
-            };
-            
-            $timeline[] = [
-                'date' => $inquiry->updated_at->format('F j, Y - H:i'),
-                'event' => 'Status Updated',
-                'description' => 'Status changed to: ' . $inquiry->InquiryStatus,
-                'icon' => $statusIcon,
-                'type' => 'status'
-            ];
-        }
-
-        // 4. Resolution (if resolved explanation exists)
-        if ($inquiry->ResolvedExplanation) {
-            $timeline[] = [
-                'date' => $inquiry->updated_at->format('F j, Y - H:i'),
-                'event' => 'Investigation Completed',
-                'description' => 'Investigation completed with resolution details',
-                'icon' => '🏁',
-                'type' => 'resolved'
-            ];
-        }
-
-        // 5. Supporting Documents Added (if exists)
-        if ($inquiry->ResolvedSupportingDocs) {
-            $timeline[] = [
-                'date' => $inquiry->updated_at->format('F j, Y - H:i'),
-                'event' => 'Supporting Documents Added',
-                'description' => 'Additional documentation provided by investigating agency',
-                'icon' => '📎',
-                'type' => 'documents'
-            ];
-        }
-
-        $inquiryData = [
-            'id' => $inquiry->InquiryID,
-            'title' => $inquiry->InquiryTitle,
-            'status' => $inquiry->InquiryStatus,
-            'type' => 'Social Media Post',
-            'submittedDate' => $inquiry->SubmitionDate->format('F j, Y'),
-            'submittedDateISO' => $inquiry->SubmitionDate->format('Y-m-d'),
-            'assignedTo' => $inquiry->assignedAgency->AgencyName ?? 'Unassigned',
-            'agencyDescription' => $inquiry->assignedAgency->AgencyDescription ?? 'No description available',
-            'officerName' => $inquiry->assignedStaff->StaffName ?? null,
-            'userDescription' => $inquiry->InquiryDescription,
-            'agencyComment' => $inquiry->AdminComment ?? null,
-            'evidence' => $inquiry->InquiryEvidence ?? null,
-            'agencySupportingDocs' => $inquiry->ResolvedSupportingDocs ?? null,
-            'notes' => $inquiry->AdminComment ?? null,
-            'conclusion' => $inquiry->ResolvedExplanation ?? null,
-            'reference_number' => 'VT-' . $inquiry->SubmitionDate->format('Y') . '-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
-            'timeline' => $timeline,
-            // Additional data for MCMC view
-            'userId' => $inquiry->UserID,
-            'agencyId' => $inquiry->AgencyID,
-            'adminId' => $inquiry->AdminID,
-            'submittedBy' => $inquiry->user->UserName ?? 'Unknown User',
-            'userEmail' => $inquiry->user->UserEmail ?? 'N/A',
-            'createdAt' => $inquiry->created_at->format('F j, Y - H:i'),
-            'updatedAt' => $inquiry->updated_at->format('F j, Y - H:i')
-        ];
 
         // Check if this is MCMC view request by checking the route path
         if (request()->is('mcmc-inquiry-detail/*')) {

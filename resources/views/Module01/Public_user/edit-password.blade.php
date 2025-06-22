@@ -330,7 +330,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="icon">🔐</i> Update Password
                     </button>
-                    <a href="{{ route('profile.edit') }}" class="btn btn-secondary">
+                    <a href="#" class="btn btn-secondary" onclick="alert('Profile functionality not implemented yet')">
                         <i class="icon">↩️</i> Back to Profile
                     </a>
                 </div>

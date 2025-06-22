@@ -11,9 +11,8 @@ try {
     
     // Create a request to the reports route
     $request = Illuminate\Http\Request::create('/reports', 'GET');
-    
-    // Get the controller
-    $controller = new App\Http\Controllers\InquiryController();
+      // Get the controller
+    $controller = new App\Http\Controllers\InquiryProgressTracking\InquiryController();
       // Call the reports method
     $response = $controller->reports();
     

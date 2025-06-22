@@ -353,7 +353,7 @@
                     <button type="submit" class="btn agency-save-button">
                         <i class="save-icon">🔐</i> Update Password
                     </button>
-                    <a href="{{ route('profile.edit') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="#" class="btn btn-secondary" onclick="alert('Profile functionality not implemented yet')">Cancel</a>
                 </div>
             </form>
         </div>

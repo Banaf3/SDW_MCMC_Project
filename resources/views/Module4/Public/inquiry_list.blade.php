@@ -591,9 +591,11 @@
                         <div class="meta-item">
                             <span class="meta-label">Assigned to:</span> {{ $inquiry['assignedTo'] }}
                         </div>
+                        @if(isset($inquiry['assignedDate']))
                         <div class="meta-item">
                             <span class="meta-label">Assignment Date:</span> {{ $inquiry['assignedDate'] }}
                         </div>
+                        @endif
                     </div>
                     <div class="inquiry-actions">
                         <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry['status'])) }}">{{ $inquiry['status'] }}</span>
