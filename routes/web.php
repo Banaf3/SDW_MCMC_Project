@@ -12,12 +12,9 @@ use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
 use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
-<<<<<<< HEAD
 use App\Http\Controllers\ManageInquiryFormSubmission\MCMC\InquiryManagementController;
 use App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController;
-=======
 use App\Http\Controllers\ManageUser\User_Controller;
->>>>>>> 5d115d490cee5b539b57a652c74af0986830c3ef
 
 Route::get('/', function () {
     return view('welcome');
@@ -45,49 +42,12 @@ Route::post('/register', [User_Controller::class, 'register']);
 Route::get('/agency/login', [User_Controller::class, 'showAgencyLoginForm'])->name('agency.login');
 Route::post('/agency/login', [User_Controller::class, 'agencyLogin']);
 
-<<<<<<< HEAD
-// MCMC Admin Inquiry Management Routes (only accessible by MCMC staff)
-Route::prefix('admin/inquiries')->name('admin.inquiries.')->group(function () {
-    Route::get('/new', [InquiryManagementController::class, 'viewNewInquiries'])->name('new');
-    Route::get('/previous', [InquiryManagementController::class, 'viewPreviousInquiries'])->name('previous');
-    Route::get('/{id}', [InquiryManagementController::class, 'showInquiry'])->name('show');
-    Route::get('/{id}/evidence/{fileIndex}', [InquiryManagementController::class, 'downloadEvidence'])->name('download-evidence');
-    Route::put('/{id}/status', [InquiryManagementController::class, 'updateInquiryStatus'])->name('update-status');
-    Route::put('/{id}/flag', [InquiryManagementController::class, 'flagAsNonSerious'])->name('flag');
-    Route::delete('/{id}/discard', [InquiryManagementController::class, 'discardInquiry'])->name('discard');
-});
-
-// MCMC Admin Audit Logs Route
-Route::get('/admin/audit-logs', [InquiryManagementController::class, 'viewAuditLogs'])->name('admin.audit-logs');
-
-// MCMC Admin Reports Route
-Route::get('/admin/reports', [InquiryManagementController::class, 'reports'])->name('admin.reports');
-
-// Agency Routes for Assigned Inquiries Management
-Route::prefix('agency')->name('agency.')->group(function () {
-    Route::get('/inquiries/assigned', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'index'])->name('inquiries.assigned');
-    Route::get('/inquiries/{inquiryId}', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'show'])->name('inquiries.show');
-    Route::put('/inquiries/{inquiryId}/status', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'updateStatus'])->name('inquiries.update-status');
-    Route::post('/inquiries/{inquiryId}/comment', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'addComment'])->name('inquiries.add-comment');
-    Route::get('/reports', [\App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController::class, 'generateReport'])->name('reports');
-});
-
-// Routes for Public User Inquiry Submission
-Route::get('/inquiries/submit', [InquirySubmissionController::class, 'create'])->name('inquiries.create');
-Route::post('/inquiries', [InquirySubmissionController::class, 'store'])->name('inquiries.store');
-
-// User Inquiries Management Routes
-Route::prefix('inquiries')->group(function() {
-    Route::get('/', [UserInquiriesController::class, 'index'])->name('inquiries.index');
-    Route::get('/{id}', [UserInquiriesController::class, 'show'])->name('inquiries.show');
-=======
 // Profile management (for all user types)
 Route::middleware(['web'])->group(function () {
     Route::get('/profile/edit', [User_Controller::class, 'editProfile'])->name('profile.edit');
     Route::post('/profile/update', [User_Controller::class, 'updateProfile'])->name('profile.update');
     Route::get('/password/edit', [User_Controller::class, 'editPassword'])->name('password.edit');
     Route::post('/password/update', [User_Controller::class, 'updatePassword'])->name('password.update');
->>>>>>> 5d115d490cee5b539b57a652c74af0986830c3ef
 });
 
 // Agency staff forced password change
@@ -119,22 +79,6 @@ Route::middleware(['web'])->group(function () {
     })->name('mcmc.analytics');
 });
 
-<<<<<<< HEAD
-// Test route for agency login (remove in production)
-Route::get('/test-agency-login/{agencyId?}', function($agencyId = 1) {
-    session()->put('agency_id', $agencyId);
-    session()->put('user_type', 'agency');
-    session()->put('user_name', 'Agency Staff ' . $agencyId);
-    session()->put('user_email', 'agency' . $agencyId . '@example.com');
-    
-    return redirect()->route('agency.inquiries.assigned')->with('success', 'Logged in as Agency Staff ' . $agencyId);
-});
-
-// Test route to logout (remove in production)
-Route::get('/test-logout', function() {
-    session()->flush();
-    return redirect('/')->with('success', 'Logged out successfully');
-=======
 // Password recovery routes
 Route::get('/password/forgot', [User_Controller::class, 'showForgotPasswordForm'])->name('password.request');
 Route::post('/password/email', [User_Controller::class, 'sendResetLinkEmail'])->name('password.email');
@@ -183,5 +127,4 @@ Route::middleware(['web'])->group(function () {
     Route::get('/test/inquiry/create', function () {
         return view('welcome');
     })->name('test.inquiry.create');
->>>>>>> 5d115d490cee5b539b57a652c74af0986830c3ef
 });
