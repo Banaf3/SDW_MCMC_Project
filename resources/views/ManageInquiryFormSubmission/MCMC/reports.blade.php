@@ -206,12 +206,25 @@
                 <input type="date" name="end_date" value="{{ $endDate }}" 
                        style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px;">
             </div>
-            
-            <button type="submit" class="btn btn-primary">
+              <button type="submit" class="btn btn-primary">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
                 Generate Report
+            </button>
+            
+            <button type="button" onclick="exportToPDF()" class="btn btn-secondary" style="background-color: #dc2626; color: white;">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                </svg>
+                Export PDF
+            </button>
+            
+            <button type="button" onclick="exportToExcel()" class="btn btn-secondary" style="background-color: #16a34a; color: white;">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                </svg>
+                Export Excel
             </button>
         </form>
     </div>
@@ -244,14 +257,13 @@
     <div class="charts-section">
         <!-- Status Distribution -->
         <div class="chart-card">
-            <h3 class="chart-title">Status Distribution</h3>
-            @if($statusDistribution->count() > 0)
+            <h3 class="chart-title">Status Distribution</h3>            @if($statusDistribution->count() > 0)
                 @foreach($statusDistribution as $status)
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <span>{{ $status->InquiryStatus }}</span>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div style="width: 100px; height: 8px; background-color: #e2e8f0; border-radius: 4px;">
-                                <div style="width: {{ ($status->count / $totalInquiries) * 100 }}%; height: 100%; background-color: #3b82f6; border-radius: 4px;"></div>
+                                <div style="width: {{ $totalInquiries > 0 ? ($status->count / $totalInquiries) * 100 : 0 }}%; height: 100%; background-color: #3b82f6; border-radius: 4px;"></div>
                             </div>
                             <span style="font-weight: 600;">{{ $status->count }}</span>
                         </div>
@@ -260,15 +272,17 @@
             @else
                 <p style="color: #6b7280; text-align: center; padding: 20px;">No data available for the selected period.</p>
             @endif
-        </div>
-
-        <!-- Daily Trend -->
+        </div>        <!-- Daily Trend -->
         <div class="chart-card">
             <h3 class="chart-title">Daily Inquiry Trend (Last 7 Days)</h3>
             <div class="trend-chart">
+                @php
+                    $maxCount = max(array_column($dailyTrend, 'count'));
+                    $maxCount = $maxCount > 0 ? $maxCount : 1; // Prevent division by zero
+                @endphp
                 @foreach($dailyTrend as $day)
                     <div style="flex: 1; text-align: center;">
-                        <div class="trend-bar" style="height: {{ $day['count'] > 0 ? max(10, ($day['count'] / max(array_column($dailyTrend, 'count'), 1)) * 100) : 10 }}px;"></div>
+                        <div class="trend-bar" style="height: {{ $day['count'] > 0 ? max(10, ($day['count'] / $maxCount) * 100) : 10 }}px;"></div>
                         <div class="trend-label">{{ $day['date'] }}</div>
                         <div style="font-size: 10px; font-weight: 600; color: #3b82f6;">{{ $day['count'] }}</div>
                     </div>
@@ -338,4 +352,131 @@
         alert('{{ session('success') }}');
     </script>
 @endif
+
+<!-- Include libraries for PDF and Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text('MCMC Reports & Analytics', 20, 20);
+    
+    // Add date range
+    doc.setFontSize(12);
+    doc.text(`Report Period: {{ $startDate }} to {{ $endDate }}`, 20, 35);
+    
+    // Add statistics
+    doc.setFontSize(14);
+    doc.text('Summary Statistics:', 20, 50);
+    doc.setFontSize(10);
+    doc.text(`Total Inquiries: {{ $totalInquiries }}`, 20, 60);
+    doc.text(`Pending Review: {{ $pendingInquiries }}`, 20, 70);
+    doc.text(`Under Review: {{ $underReviewInquiries }}`, 20, 80);
+    doc.text(`Resolved: {{ $resolvedInquiries }}`, 20, 90);
+    doc.text(`Flagged: {{ $flaggedInquiries }}`, 20, 100);
+    
+    // Add status distribution
+    doc.setFontSize(14);
+    doc.text('Status Distribution:', 20, 120);
+    doc.setFontSize(10);
+    let yPos = 130;
+    @if($statusDistribution->count() > 0)
+        @foreach($statusDistribution as $status)
+            doc.text('{{ $status->InquiryStatus }}: {{ $status->count }}', 20, yPos);
+            yPos += 10;
+        @endforeach
+    @endif
+    
+    // Add top users
+    doc.setFontSize(14);
+    doc.text('Most Active Users:', 20, yPos + 10);
+    doc.setFontSize(10);
+    yPos += 20;
+    @if($topUsers->count() > 0)
+        @foreach($topUsers as $user)
+            doc.text('{{ $user->user->UserName ?? "Unknown User" }}: {{ $user->inquiry_count }} inquiries', 20, yPos);
+            yPos += 10;
+        @endforeach
+    @endif
+    
+    // Save PDF
+    doc.save('MCMC_Report_{{ $startDate }}_to_{{ $endDate }}.pdf');
+}
+
+function exportToExcel() {
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    
+    // Summary Statistics Sheet
+    const summaryData = [
+        ['MCMC Reports & Analytics'],
+        ['Report Period', '{{ $startDate }} to {{ $endDate }}'],
+        [''],
+        ['Summary Statistics'],
+        ['Total Inquiries', {{ $totalInquiries }}],
+        ['Pending Review', {{ $pendingInquiries }}],
+        ['Under Review', {{ $underReviewInquiries }}],
+        ['Resolved', {{ $resolvedInquiries }}],
+        ['Flagged', {{ $flaggedInquiries }}]
+    ];
+    
+    const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
+    
+    // Status Distribution Sheet
+    const statusData = [['Status', 'Count']];
+    @if($statusDistribution->count() > 0)
+        @foreach($statusDistribution as $status)
+            statusData.push(['{{ $status->InquiryStatus }}', {{ $status->count }}]);
+        @endforeach
+    @endif
+    
+    const statusWS = XLSX.utils.aoa_to_sheet(statusData);
+    XLSX.utils.book_append_sheet(wb, statusWS, 'Status Distribution');
+    
+    // Top Users Sheet
+    const usersData = [['User Name', 'Inquiry Count']];
+    @if($topUsers->count() > 0)
+        @foreach($topUsers as $user)
+            usersData.push(['{{ $user->user->UserName ?? "Unknown User" }}', {{ $user->inquiry_count }}]);
+        @endforeach
+    @endif
+    
+    const usersWS = XLSX.utils.aoa_to_sheet(usersData);
+    XLSX.utils.book_append_sheet(wb, usersWS, 'Top Users');
+    
+    // Daily Trend Sheet
+    const trendData = [['Date', 'Count']];
+    @foreach($dailyTrend as $day)
+        trendData.push(['{{ $day["date"] }}', {{ $day["count"] }}]);
+    @endforeach
+    
+    const trendWS = XLSX.utils.aoa_to_sheet(trendData);
+    XLSX.utils.book_append_sheet(wb, trendWS, 'Daily Trend');
+    
+    // Recent Audit Activities Sheet
+    const auditData = [['Action', 'Admin', 'Date']];
+    @if($recentAudits->count() > 0)
+        @foreach($recentAudits as $audit)
+            auditData.push([
+                '{{ $audit->Action }}', 
+                '{{ $audit->PerformedBy }}', 
+                '{{ \Carbon\Carbon::parse($audit->ActionDate)->format("M d, H:i") }}'
+            ]);
+        @endforeach
+    @endif
+    
+    const auditWS = XLSX.utils.aoa_to_sheet(auditData);
+    XLSX.utils.book_append_sheet(wb, auditWS, 'Recent Audits');
+    
+    // Save Excel file
+    XLSX.writeFile(wb, 'MCMC_Report_{{ $startDate }}_to_{{ $endDate }}.xlsx');
+}
+</script>
 @endsection
