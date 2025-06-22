@@ -5,15 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Inquiry;
 use App\Models\Agency;
-use App\Services\NotificationService;
 
 class AgencyController extends Controller
-{    protected $notificationService;
-
-    public function __construct(NotificationService $notificationService)
-    {
-        $this->notificationService = $notificationService;
-    }
+{
     public function assignedInquiries(Request $request)
     {
         // Start with base query
@@ -69,11 +63,18 @@ class AgencyController extends Controller
             'filteredCount',
             'currentFilters'
         ));
-    }public function editInquiry($id)
+    }    public function editInquiry($id)
     {
+        // Debug: Log the ID being accessed
+        \Log::info('Edit Inquiry accessed with ID: ' . $id);
+        
         // Get the inquiry from database
         $inquiry = Inquiry::with(['assignedAgency', 'user'])->findOrFail($id);
-          // Format the inquiry data for the view
+        
+        // Debug: Log the inquiry found
+        \Log::info('Inquiry found: ' . json_encode($inquiry->toArray()));
+          
+        // Format the inquiry data for the view
         $inquiryData = [
             'InquiryID' => $inquiry->InquiryID,
             'id' => 'VT-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
@@ -89,54 +90,76 @@ class AgencyController extends Controller
         return view('Module4-Agency.InquiryEdit', ['inquiry' => $inquiryData]);
     }    public function updateInquiryStatus(Request $request, $id)
     {
-        // Validate the request
-        $request->validate([
-            'InquiryStatus' => 'required|in:Under Investigation,Verified as True,Identified as Fake,Rejected',
-        ]);
-
         try {
+            // Validate the request
+            $request->validate([
+                'InquiryStatus' => 'required|in:Under Investigation,Verified as True,Identified as Fake,Rejected',
+            ]);
+
             // Find the inquiry
             $inquiry = Inquiry::findOrFail($id);
             
             // Store the old status for notification
             $oldStatus = $inquiry->InquiryStatus;
-            $newStatus = $request->input('InquiryStatus');
-
-            // Update only the inquiry status
+            $newStatus = $request->input('InquiryStatus');            // Update only the inquiry status
             $inquiry->InquiryStatus = $newStatus;
             $inquiry->save();
-
-            // Create notification for status update if status actually changed
-            if ($oldStatus !== $newStatus) {
-                $this->notificationService->createStatusUpdateNotification(
-                    $inquiry->InquiryID,
-                    $newStatus,
-                    $oldStatus
-                );
-            }
+            
+            // Create a simple notification for the user
+            $this->createSimpleNotification($inquiry, $oldStatus, $newStatus);
+            
+            // Log the successful update
+            \Log::info('Inquiry status updated successfully', [
+                'inquiry_id' => $id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Status updated successfully',
-                'new_status' => $inquiry->InquiryStatus
+                'new_status' => $inquiry->InquiryStatus,
+                'notification_sent' => true
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . implode(', ', $e->validator->errors()->all())
+            ], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Inquiry not found'
+            ], 404);
         } catch (\Exception $e) {
+            \Log::error('Error updating inquiry status', [
+                'inquiry_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating status: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    public function updateInquiry(Request $request, $id)
+    }    public function updateInquiry(Request $request, $id)
     {
-        // Validate the request
-        $request->validate([
-            'InquiryStatus' => 'required|in:Under Investigation,Verified as True,Identified as Fake,Rejected',
-            'ResolvedExplanation' => 'nullable|string|max:5000',
-            'ResolvedSupportingDocs.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // 10MB max
-        ]);        try {
+        try {
+            // Log the incoming request
+            \Log::info('Update inquiry request', [
+                'inquiry_id' => $id,
+                'request_data' => $request->all()
+            ]);
+
+            // Validate the request
+            $request->validate([
+                'InquiryStatus' => 'required|in:Under Investigation,Verified as True,Identified as Fake,Rejected',
+                'ResolvedExplanation' => 'nullable|string|max:5000',
+                'ResolvedSupportingDocs.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // 10MB max
+            ]);
+
             // Find the inquiry
             $inquiry = Inquiry::findOrFail($id);
             
@@ -171,27 +194,90 @@ class AgencyController extends Controller
                     $uploadedFiles[] = $filename;
                 }
 
-                // Update the database with file names (you might want to store this differently)
+                // Update the database with file names
                 $inquiry->ResolvedSupportingDocs = implode(', ', $uploadedFiles);
-            }
-
-            // Save the changes
+            }            // Save the changes
             $inquiry->save();
-
-            // Create notification for status update if status actually changed
+            
+            // Create notification if status changed
             if ($oldStatus !== $newStatus) {
-                $this->notificationService->createStatusUpdateNotification(
-                    $inquiry->InquiryID,
-                    $newStatus,
-                    $oldStatus
-                );
+                $this->createSimpleNotification($inquiry, $oldStatus, $newStatus);
             }
+            
+            \Log::info('Inquiry updated successfully', [
+                'inquiry_id' => $id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus
+            ]);
 
             return redirect()->route('agency.inquiries.assigned')
                            ->with('success', 'Inquiry updated successfully!');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation error updating inquiry', [
+                'inquiry_id' => $id,
+                'errors' => $e->validator->errors()->toArray()
+            ]);
+            
+            return back()->withErrors($e->validator)->withInput();
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::error('Inquiry not found', ['inquiry_id' => $id]);
+            
+            return back()->with('error', 'Inquiry not found.');
+            
         } catch (\Exception $e) {
-            return back()->with('error', 'Error updating inquiry: ' . $e->getMessage());
+            \Log::error('Error updating inquiry', [
+                'inquiry_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+              return back()->with('error', 'Error updating inquiry: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Create a simple notification without using a notification model
+     */
+    private function createSimpleNotification($inquiry, $oldStatus, $newStatus)
+    {
+        try {
+            // Create notification data
+            $notificationData = [
+                'inquiry_id' => $inquiry->InquiryID,
+                'inquiry_title' => $inquiry->InquiryTitle,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+                'message' => "Your inquiry '{$inquiry->InquiryTitle}' status has been changed from '{$oldStatus}' to '{$newStatus}'",
+                'timestamp' => now()->format('Y-m-d H:i:s'),
+                'read' => false
+            ];
+            
+            // Store in session (in production, you might want to store in cache or database)
+            $userNotifications = session()->get("user_notifications_{$inquiry->UserID}", []);
+            $userNotifications[] = $notificationData;
+            
+            // Keep only the last 10 notifications
+            if (count($userNotifications) > 10) {
+                $userNotifications = array_slice($userNotifications, -10);
+            }
+            
+            session()->put("user_notifications_{$inquiry->UserID}", $userNotifications);
+            
+            \Log::info('Simple notification created', [
+                'user_id' => $inquiry->UserID,
+                'inquiry_id' => $inquiry->InquiryID,
+                'status_change' => "$oldStatus → $newStatus"
+            ]);
+            
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Failed to create simple notification', [
+                'exception' => $e->getMessage(),
+                'user_id' => $inquiry->UserID ?? 'unknown',
+                'inquiry_id' => $inquiry->InquiryID ?? 'unknown'
+            ]);
+            return false;
         }
     }
 }

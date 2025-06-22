@@ -622,10 +622,9 @@
                                 <div class="meta-item">
                                     <span class="meta-label">Submitted By:</span> {{ $inquiry['submittedBy'] ?? 'Unknown' }}
                                 </div>
-                            </div>
-                            <div class="inquiry-actions">
+                            </div>                            <div class="inquiry-actions">
                                 <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry['status'] ?? 'pending')) }}">{{ $inquiry['status'] ?? 'Pending' }}</span>
-                                <a href="/agency/inquiry-edit/{{ $inquiry['InquiryID'] ?? '#' }}" class="btn btn-success">Edit Inquiry</a>
+                                <a href="{{ route('agency.inquiry.edit', $inquiry['InquiryID'] ?? 1) }}" class="btn btn-success">Edit Inquiry</a>
                             </div>
                         </div>
                         @endforeach
