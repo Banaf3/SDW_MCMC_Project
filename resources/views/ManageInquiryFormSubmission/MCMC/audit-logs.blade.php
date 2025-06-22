@@ -326,19 +326,15 @@
     <!-- Audit Logs Table -->
     <div class="audit-section">
         @if($auditLogs->count() > 0)
-            <table class="audit-table">
-                <thead>
+            <table class="audit-table">                <thead>
                     <tr>
                         <th>Timestamp</th>
                         <th>Inquiry</th>
                         <th>Action</th>
                         <th>Administrator</th>
-                        <th>Status Change</th>
-                        <th>Reason/Notes</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach($auditLogs as $log)
+                <tbody>                    @foreach($auditLogs as $log)
                         <tr>
                             <td>
                                 <div class="timestamp">
@@ -365,26 +361,7 @@
                             </td>
                             <td>
                                 <div class="admin-name">
-                                    {{ $log->administrator->AdminName ?? 'Unknown Admin' }}
-                                </div>
-                                <div style="font-size: 12px; color: #6b7280;">
-                                    ID: {{ $log->AdminID }}
-                                </div>
-                            </td>
-                            <td>
-                                @if($log->OldStatus && $log->NewStatus)
-                                    <div style="font-size: 13px;">
-                                        <span style="color: #ef4444;">{{ $log->OldStatus }}</span>
-                                        <span style="color: #6b7280;"> → </span>
-                                        <span style="color: #10b981;">{{ $log->NewStatus }}</span>
-                                    </div>
-                                @else
-                                    <span style="color: #9ca3af;">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="reason-text" title="{{ $log->Reason ?: $log->Notes }}">
-                                    {{ $log->Reason ?: $log->Notes ?: '-' }}
+                                    {{ $log->PerformedBy }}
                                 </div>
                             </td>
                         </tr>
