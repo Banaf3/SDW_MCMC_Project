@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inquiry;
+use App\Models\AssignedInquiry;
 use Illuminate\Http\Request;
 
 class InquiryController extends Controller
@@ -12,7 +13,7 @@ class InquiryController extends Controller
         // In a real app, this would come from authentication
         $currentUserId = 3;
         
-        $inquiries = Inquiry::with(['timeline', 'assignedAgency', 'administrator'])
+        $inquiries = Inquiry::with(['timeline', 'assignedAgency', 'administrator', 'assignment'])
             ->where('UserID', $currentUserId) // Only show inquiries for current user
             ->orderBy('SubmitionDate', 'desc')->get()            ->map(function ($inquiry) {
                 return [
@@ -23,13 +24,16 @@ class InquiryController extends Controller
                     'submittedDate' => $inquiry->SubmitionDate->format('F j, Y'),
                     'submittedDateISO' => $inquiry->SubmitionDate->format('Y-m-d'), // For JavaScript Date parsing
                     'assignedTo' => $inquiry->assignedAgency->AgencyName ?? 'Unassigned',
+                    'assignedDate' => $inquiry->assignment ? $inquiry->assignment->AssignedDate->format('F j, Y') : 'Not Assigned Yet',
                     'description' => $inquiry->InquiryDescription,
                     'notes' => $inquiry->AdminComment,
                     'conclusion' => $inquiry->ResolvedExplanation,
                     'reference_number' => 'VT-' . $inquiry->SubmitionDate->format('Y') . '-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
                     'timeline' => $inquiry->timeline->map(function ($log) {
                         return [
-                            'date' => $log->ActionDate->format('F j, Y - H:i'),
+                            'date' => is_string($log->ActionDate) ? 
+                                \Carbon\Carbon::parse($log->ActionDate)->format('F j, Y - H:i') : 
+                                $log->ActionDate->format('F j, Y - H:i'),
                             'event' => $log->Action
                         ];
                     })
@@ -40,7 +44,7 @@ class InquiryController extends Controller
             'currentUserId' => $currentUserId // Pass current user ID to view
         ]);
     }    public function show($id)
-    {        $inquiry = Inquiry::with(['timeline', 'assignedAgency', 'administrator', 'assignedStaff', 'user'])
+    {        $inquiry = Inquiry::with(['timeline', 'assignedAgency', 'administrator', 'assignedStaff', 'user', 'assignment'])
             ->findOrFail($id);        $inquiryData = [
             'id' => $inquiry->InquiryID,
             'title' => $inquiry->InquiryTitle,
@@ -49,6 +53,7 @@ class InquiryController extends Controller
             'submittedDate' => $inquiry->SubmitionDate->format('F j, Y'),
             'submittedDateISO' => $inquiry->SubmitionDate->format('Y-m-d'),
             'assignedTo' => $inquiry->assignedAgency->AgencyName ?? 'Unassigned',
+            'assignedDate' => $inquiry->assignment ? $inquiry->assignment->AssignedDate->format('F j, Y') : 'Not Assigned Yet',
             'agencyDescription' => $inquiry->assignedAgency->AgencyDescription ?? 'No description available', // Added missing field
             'officerName' => $inquiry->assignedStaff->StaffName ?? null, // Staff name from agency_staff table
             'userDescription' => $inquiry->InquiryDescription, // User's description of the inquiry
@@ -60,7 +65,9 @@ class InquiryController extends Controller
             'reference_number' => 'VT-' . $inquiry->SubmitionDate->format('Y') . '-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
             'timeline' => $inquiry->timeline->map(function ($log) {
                 return [
-                    'date' => $log->ActionDate->format('F j, Y - H:i'),
+                    'date' => is_string($log->ActionDate) ? 
+                        \Carbon\Carbon::parse($log->ActionDate)->format('F j, Y - H:i') : 
+                        $log->ActionDate->format('F j, Y - H:i'),
                     'event' => $log->Action
                 ];
             })
@@ -90,7 +97,9 @@ class InquiryController extends Controller
                     'reference_number' => 'VT-' . $inquiry->SubmitionDate->format('Y') . '-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
                     'timeline' => $inquiry->timeline->map(function ($log) {
                         return [
-                            'date' => $log->ActionDate->format('F j, Y - H:i'),
+                            'date' => is_string($log->ActionDate) ? 
+                                \Carbon\Carbon::parse($log->ActionDate)->format('F j, Y - H:i') : 
+                                $log->ActionDate->format('F j, Y - H:i'),
                             'event' => $log->Action
                         ];
                     })

@@ -480,6 +480,10 @@
                                 <div class="meta-value-header">{{ $inquiry['assignedTo'] }}</div>
                             </div>
                             <div class="meta-item-header">
+                                <div class="meta-label-header">Assignment Date</div>
+                                <div class="meta-value-header">{{ $inquiry['assignedDate'] }}</div>
+                            </div>
+                            <div class="meta-item-header">
                                 <div class="meta-label-header">Agency Type</div>
                                 <div class="meta-value-header">{{ $inquiry['agencyDescription'] }}</div>
                             </div>

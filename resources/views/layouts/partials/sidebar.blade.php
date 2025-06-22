@@ -119,10 +119,10 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="assign-inquiries">
-                        <li><a href="#">Assign to Agencies</a></li>
-                        <li><a href="#">View Assignments</a></li>
-                        <li><a href="#">Assignment Reports</a></li>
-                        <li><a href="#">Analytics</a></li>
+                        <li><a href="{{ route('mcmc.unassigned.inquiries') }}">Unassigned Inquiries</a></li>
+                        <li><a href="{{ route('mcmc.assigned.inquiries') }}">View Assignments</a></li>
+                        <li><a href="{{ route('mcmc.assignment.reports') }}">Assignment Reports</a></li>
+                        <li><a href="{{ route('mcmc.analytics') }}">Analytics</a></li>
                     </ul>
                 </li>
 

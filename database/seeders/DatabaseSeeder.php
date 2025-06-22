@@ -20,6 +20,12 @@ class DatabaseSeeder extends Seeder
         // Call the AgencySeeder
         $this->call(AgencySeeder::class);
 
+        // Call the TempInquirySeeder for testing data
+        $this->call(TempInquirySeeder::class);
+
+        // Call the AssignmentSeeder to create assignments
+        $this->call(AssignmentSeeder::class);
+
         // Sample admin user
         Administrator::create([
             'AdminName' => 'Admin User',
@@ -56,6 +62,23 @@ class DatabaseSeeder extends Seeder
             'Password' => Hash::make('password123'),
             'UserPhoneNum' => '0123456789',
             'Useraddress' => '123 User St, Kuala Lumpur',
+        ]);
+
+        // Additional public users for testing
+        PublicUser::create([
+            'UserName' => 'Ahmad Rahman',
+            'UserEmail' => 'ahmad.rahman@gmail.com',
+            'Password' => Hash::make('password123'),
+            'UserPhoneNum' => '0123456790',
+            'Useraddress' => '456 Jalan Ampang, Kuala Lumpur',
+        ]);
+
+        PublicUser::create([
+            'UserName' => 'Siti Aminah',
+            'UserEmail' => 'siti.aminah@yahoo.com',
+            'Password' => Hash::make('password123'),
+            'UserPhoneNum' => '0123456791',
+            'Useraddress' => '789 Jalan Tun Razak, Kuala Lumpur',
         ]);
 
         // Regular user for Laravel auth

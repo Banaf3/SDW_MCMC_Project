@@ -1,7 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ManageUser\User_Controller;
+use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\AgencyController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AgencyRegistrationController;
+use App\Http\Controllers\NewPasswordResetController;
+use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\InquirySubmissionController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\UserInquiriesController;
+use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesController;
 
 Route::get('/', function () {
     return view('welcome');
