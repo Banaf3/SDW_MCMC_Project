@@ -16,8 +16,7 @@ class Agency extends Model
      * The attributes that are mass assignable.
      *
      * @var array
-     */
-    protected $fillable = [
+     */    protected $fillable = [
         'AgencyName',
         'AgencyEmail',
         'AgencyPhoneNum',

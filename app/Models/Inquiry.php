@@ -58,6 +58,7 @@ class Inquiry extends Model
         return $this->hasMany(Notification::class, 'inquiry_id', 'InquiryID');
     }
 
+<<<<<<< HEAD
     public function agency()
     {
         return $this->belongsTo(Agency::class, 'AgencyID', 'AgencyID');
@@ -66,5 +67,10 @@ class Inquiry extends Model
     public function auditLogs()
     {
         return $this->hasMany(InquiryAuditLog::class, 'InquiryID')->orderBy('ActionDate', 'desc');
+=======
+    public function assignment()
+    {
+        return $this->hasOne(AssignedInquiry::class, 'InquiryID', 'InquiryID');
+>>>>>>> 5d115d490cee5b539b57a652c74af0986830c3ef
     }
 }

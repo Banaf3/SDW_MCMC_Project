@@ -33,7 +33,7 @@
             @if($isPublic)
                 <!-- PUBLIC USER MENU -->
                 
-                <!-- 2. Inquiry Submission -->
+                <!-- 1. Inquiry Submission -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('inquiry-submission')">
                         <span>Inquiry Submission</span>
@@ -120,10 +120,10 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="assign-inquiries">
-                        <li><a href="#">Assign to Agencies</a></li>
-                        <li><a href="#">View Assignments</a></li>
-                        <li><a href="#">Assignment Reports</a></li>
-                        <li><a href="#">Analytics</a></li>
+                        <li><a href="{{ route('mcmc.unassigned.inquiries') }}">Unassigned Inquiries</a></li>
+                        <li><a href="{{ route('mcmc.assigned.inquiries') }}">View Assignments</a></li>
+                        <li><a href="{{ route('mcmc.assignment.reports') }}">Assignment Reports</a></li>
+                        <li><a href="{{ route('mcmc.analytics') }}">Analytics</a></li>
                     </ul>
                 </li>
 
@@ -147,7 +147,7 @@
             @if($isAgency)
                 <!-- AGENCY STAFF MENU -->
 
-                <!-- 2. Inquiry Access -->
+                <!-- 1. Inquiry Access -->
                 <li class="nav-item">
                     <a href="#" class="nav-toggle" onclick="toggleSubmenu('inquiry-access')">
                         <span>Inquiry Access</span>
