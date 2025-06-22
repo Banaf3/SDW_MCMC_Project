@@ -4,6 +4,7 @@ namespace App\Http\Controllers\InquiryProgressTracking;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\Inquiry;
 use App\Models\Agency;
 
@@ -67,13 +68,13 @@ class AgencyController extends Controller
     }    public function editInquiry($id)
     {
         // Debug: Log the ID being accessed
-        \Log::info('Edit Inquiry accessed with ID: ' . $id);
+        Log::info('Edit Inquiry accessed with ID: ' . $id);
         
         // Get the inquiry from database
         $inquiry = Inquiry::with(['assignedAgency', 'user'])->findOrFail($id);
         
         // Debug: Log the inquiry found
-        \Log::info('Inquiry found: ' . json_encode($inquiry->toArray()));
+        Log::info('Inquiry found: ' . json_encode($inquiry->toArray()));
           
         // Format the inquiry data for the view
         $inquiryData = [
@@ -110,7 +111,7 @@ class AgencyController extends Controller
             $this->createSimpleNotification($inquiry, $oldStatus, $newStatus);
             
             // Log the successful update
-            \Log::info('Inquiry status updated successfully', [
+            Log::info('Inquiry status updated successfully', [
                 'inquiry_id' => $id,
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus
@@ -134,7 +135,7 @@ class AgencyController extends Controller
                 'message' => 'Inquiry not found'
             ], 404);
         } catch (\Exception $e) {
-            \Log::error('Error updating inquiry status', [
+            Log::error('Error updating inquiry status', [
                 'inquiry_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -149,7 +150,7 @@ class AgencyController extends Controller
     {
         try {
             // Log the incoming request
-            \Log::info('Update inquiry request', [
+            Log::info('Update inquiry request', [
                 'inquiry_id' => $id,
                 'request_data' => $request->all()
             ]);
@@ -205,7 +206,7 @@ class AgencyController extends Controller
                 $this->createSimpleNotification($inquiry, $oldStatus, $newStatus);
             }
             
-            \Log::info('Inquiry updated successfully', [
+            Log::info('Inquiry updated successfully', [
                 'inquiry_id' => $id,
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus
@@ -215,7 +216,7 @@ class AgencyController extends Controller
                            ->with('success', 'Inquiry updated successfully!');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation error updating inquiry', [
+            Log::error('Validation error updating inquiry', [
                 'inquiry_id' => $id,
                 'errors' => $e->validator->errors()->toArray()
             ]);
@@ -223,12 +224,12 @@ class AgencyController extends Controller
             return back()->withErrors($e->validator)->withInput();
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            \Log::error('Inquiry not found', ['inquiry_id' => $id]);
+            Log::error('Inquiry not found', ['inquiry_id' => $id]);
             
             return back()->with('error', 'Inquiry not found.');
             
         } catch (\Exception $e) {
-            \Log::error('Error updating inquiry', [
+            Log::error('Error updating inquiry', [
                 'inquiry_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -265,7 +266,7 @@ class AgencyController extends Controller
             
             session()->put("user_notifications_{$inquiry->UserID}", $userNotifications);
             
-            \Log::info('Simple notification created', [
+            Log::info('Simple notification created', [
                 'user_id' => $inquiry->UserID,
                 'inquiry_id' => $inquiry->InquiryID,
                 'status_change' => "$oldStatus → $newStatus"
@@ -273,7 +274,7 @@ class AgencyController extends Controller
             
             return true;
         } catch (\Exception $e) {
-            \Log::error('Failed to create simple notification', [
+            Log::error('Failed to create simple notification', [
                 'exception' => $e->getMessage(),
                 'user_id' => $inquiry->UserID ?? 'unknown',
                 'inquiry_id' => $inquiry->InquiryID ?? 'unknown'
