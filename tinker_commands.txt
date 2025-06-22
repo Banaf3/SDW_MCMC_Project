@@ -1,0 +1,7 @@
+// Commands to run in artisan tinker
+DB::table('agencies')->count()
+$seeder = new Database\Seeders\AgencySeeder();
+$seeder->run();
+DB::table('agencies')->count()
+DB::table('agencies')->get()
+exit

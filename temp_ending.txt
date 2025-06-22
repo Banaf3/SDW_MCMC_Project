@@ -1,0 +1,18 @@
+        function clearFilters() {
+            document.getElementById('searchInquiries').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            
+            // Show all cards
+            document.querySelectorAll('.inquiry-card').forEach(card => {
+                card.style.display = 'block';
+            });
+        }
+        
+        // Real-time search
+        document.getElementById('searchInquiries').addEventListener('input', filterInquiries);
+        document.getElementById('statusFilter').addEventListener('change', filterInquiries);
+        document.getElementById('dateFilter').addEventListener('change', filterInquiries);
+    </script>
+</body>
+</html>

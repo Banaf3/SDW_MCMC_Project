@@ -200,12 +200,10 @@
                     @endforeach
                 </ul>
             </div>
-        @endif
-
-        @if(session('new_staff_credentials'))
+        @endif        @if(session('new_staff_credentials'))
             <div class="credentials-box">
                 <h4>🎉 New Staff Credentials Generated</h4>
-                <p>The following credentials have been generated for the new agency staff member. In a real system, these would be sent via email.</p>
+                <p>The following credentials have been generated for the new agency staff member. Please provide these credentials to the staff member.</p>
                 <div class="credential-item">
                     <strong>Name:</strong> {{ session('new_staff_credentials.staff_name') }}
                 </div>
@@ -213,16 +211,19 @@
                     <strong>Agency:</strong> {{ session('new_staff_credentials.agency_name') }}
                 </div>
                 <div class="credential-item">
+                    <strong>Username:</strong> {{ session('new_staff_credentials.username') }}
+                </div>
+                <div class="credential-item">
                     <strong>Email:</strong> {{ session('new_staff_credentials.email') }}
                 </div>
                 <div class="credential-item">
-                    <strong>Password:</strong> {{ session('new_staff_credentials.password') }}
+                    <strong>Temporary Password:</strong> {{ session('new_staff_credentials.password') }}
                 </div>
                 <div class="credential-item">
                     <strong>Login URL:</strong> <a href="{{ session('new_staff_credentials.login_url') }}" target="_blank">{{ session('new_staff_credentials.login_url') }}</a>
                 </div>
                 <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
-                    📧 <em>Email would be sent to: {{ session('new_staff_credentials.email') }}</em>
+                    📧 <em>Staff can login using their username or email (if provided). They must change their password on first login.</em>
                 </p>
             </div>
         @endif
@@ -232,13 +233,15 @@
                 Register New Agency Staff Member
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.agency.register') }}">
-                    @csrf
-                    <div class="form-group">
-                        <label for="staff_name">Staff Name</label>
+                <form method="POST" action="{{ route('admin.agency.register.store') }}">
+                    @csrf                    <div class="form-group">
+                        <label for="staff_name">Staff Name (Optional)</label>
                         <input type="text" name="staff_name" id="staff_name" class="form-control" 
-                               value="{{ old('staff_name') }}" required 
-                               placeholder="Enter the full name of the staff member">
+                               value="{{ old('staff_name') }}" 
+                               placeholder="Enter the full name of the staff member (optional)">
+                        <small style="color: #666; font-size: 0.9rem;">
+                            📝 Name is optional - staff can update their name in their profile later.
+                        </small>
                     </div>
 
                     <div class="form-group">
@@ -251,20 +254,34 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>                    <div class="form-group">
+                        <label for="staff_phone">Phone Number (Optional)</label>
+                        <input type="tel" name="staff_phone" id="staff_phone" class="form-control" 
+                               value="{{ old('staff_phone') }}" 
+                               placeholder="Enter phone number (e.g., +60123456789) - optional">
+                        <small style="color: #666; font-size: 0.9rem;">
+                            📞 Phone number is optional - staff can add it in their profile later.
+                        </small>
                     </div>
 
                     <div class="form-group">
-                        <label for="staff_phone">Phone Number</label>
-                        <input type="tel" name="staff_phone" id="staff_phone" class="form-control" 
-                               value="{{ old('staff_phone') }}" required 
-                               placeholder="Enter phone number (e.g., +60123456789)">
+                        <label for="staff_email">Email Address <span style="color: red;">*</span></label>
+                        <input type="email" name="staff_email" id="staff_email" class="form-control" 
+                               value="{{ old('staff_email') }}" required
+                               placeholder="Enter email address (required for login credentials)">
+                        <small style="color: #666; font-size: 0.9rem;">
+                            � <strong>Email is required</strong> - system will send login credentials to this email address.
+                        </small>
                     </div>                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
                         <h5 style="color: #495057; margin-bottom: 0.5rem;">📋 Registration Process:</h5>
                         <ol style="margin: 0; padding-left: 1.5rem; color: #666;">
-                            <li>Unique email will be auto-generated with @agency.com domain (e.g., johnsmith@agency.com)</li>
-                            <li>Secure password will be randomly generated</li>
-                            <li>Staff credentials will be displayed here (simulated email sending)</li>
-                            <li>Staff can login using the generated credentials</li>
+                            <li>Unique username will be auto-generated based on agency</li>
+                            <li><strong>Email is required</strong> - system will send login credentials here</li>
+                            <li>Staff name and phone number are optional</li>
+                            <li>Secure temporary password will be randomly generated</li>
+                            <li>Staff credentials will be displayed here for manual delivery</li>
+                            <li>Staff can login using their username or email</li>
+                            <li>Staff must change password on first login</li>
                         </ol>
                     </div>
 

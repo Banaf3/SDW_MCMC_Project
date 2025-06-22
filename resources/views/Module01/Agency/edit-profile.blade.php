@@ -28,10 +28,8 @@
                 <span>{{ $errors->first() }}</span>
             </div>
         @endif
-        
-        <form id="profile-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+          <form id="profile-form" method="POST" action="{{ route('agency.profile.update') }}" enctype="multipart/form-data">
             @csrf
-            @method('PUT')
             
             <div class="form-section profile-pic-section agency-pic-section">
                 <h3><i class="section-icon">🖼️</i> Profile Picture</h3>
@@ -89,8 +87,7 @@
             <div class="form-actions agency-actions">
                 <button type="submit" class="btn btn-primary agency-save-button">
                     <i class="save-icon">💾</i> Save Staff Profile
-                </button>
-                <a href="{{ route('password.edit') }}" class="btn btn-warning change-password-btn">
+                </button>                <a href="{{ route('agency.password.change') }}" class="btn btn-warning change-password-btn">
                     <i class="password-icon">🔐</i> Change Password
                 </a>
                 <a href="#" class="btn btn-secondary">Cancel</a>

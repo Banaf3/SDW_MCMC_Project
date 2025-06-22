@@ -360,20 +360,37 @@
         }        /* Alert Styles */
         .alert {
             padding: 15px;
-            border-radius: 8px;
             margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-weight: 500;
         }
-
+        
         .alert-success {
-            background: #d4edda;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
             color: #155724;
-            border: 1px solid #c3e6cb;
         }
-
+        
         .alert-error {
-            background: #f8d7da;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
             color: #721c24;
-            border: 1px solid #f5c6cb;
+        }
+        
+        .status-message {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Evidence Display Styles */
@@ -526,9 +543,7 @@
             <!-- Main Content -->
             <div class="main-content">
                 <h1 class="page-title">Edit Inquiry</h1>
-                <div class="inquiry-id-display">ID: {{ $inquiry['InquiryID'] ?? 'N/A' }}</div>
-
-                @if(session('success'))
+                <div class="inquiry-id-display">ID: {{ $inquiry['InquiryID'] ?? 'N/A' }}</div>                @if(session('success'))
                     <div class="alert alert-success">
                         {{ session('success') }}
                     </div>
@@ -540,8 +555,16 @@
                     </div>
                 @endif
 
-                <!-- Edit Form -->
-                <form action="/agency/inquiry-update/{{ $inquiry['InquiryID'] ?? '' }}" method="POST" enctype="multipart/form-data" class="edit-form">
+                @if($errors->any())
+                    <div class="alert alert-error">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif<!-- Edit Form -->
+                <form action="{{ route('agency.inquiry.update', $inquiry['InquiryID'] ?? 1) }}" method="POST" enctype="multipart/form-data" class="edit-form">
                     @csrf
                     @method('PUT')
 
@@ -660,12 +683,10 @@
                                 </div>
                             @endif
                         </div>
-                    </div>
-
-                    <!-- Action Buttons -->
+                    </div>                    <!-- Action Buttons -->
                     <div class="action-buttons">
                         <button type="submit" class="btn btn-success">Update Inquiry</button>
-                        <a href="/agency/inquiries/assigned" class="btn btn-secondary">Cancel</a>
+                        <a href="{{ route('agency.inquiries.assigned') }}" class="btn btn-secondary">Cancel</a>
                     </div>
                 </form>
             </div>
@@ -723,10 +744,10 @@
                         updateInquiryStatus(this.value);
                     }
                 });
-            });
-
-            function updateInquiryStatus(status) {
+            });            async function updateInquiryStatus(status) {
                 const inquiryId = {{ $inquiry['InquiryID'] ?? 0 }};
+                
+                console.log('Updating status to:', status, 'for inquiry ID:', inquiryId);
                 
                 // Show loading indicator
                 const currentStatusLabel = document.querySelector('.form-group label strong');
@@ -734,20 +755,69 @@
                 currentStatusLabel.textContent = 'Updating...';
                 currentStatusLabel.style.color = '#007bff';
 
-                // Make AJAX request
-                fetch(`/agency/inquiry-status-update/${inquiryId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-                                       document.querySelector('input[name="_token"]')?.value
-                    },
-                    body: JSON.stringify({
-                        InquiryStatus: status
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
+                // Get CSRF token
+                let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                               document.querySelector('input[name="_token"]')?.value;
+                
+                if (!csrfToken) {
+                    console.error('CSRF token not found');
+                    showStatusMessage('CSRF token not found. Please refresh the page.', 'error');
+                    return;
+                }
+
+                try {
+                    // Make AJAX request
+                    const response = await fetch(`{{ url('/agency/inquiry-status-update') }}/${inquiryId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            InquiryStatus: status
+                        })
+                    });
+                    
+                    // If we get a 419 (CSRF token mismatch), try to refresh token and retry once
+                    if (response.status === 419) {
+                        console.log('Session expired, attempting to refresh token and retry');
+                        showStatusMessage('Session expired. Attempting to refresh...', 'error');
+                        
+                        // Try to refresh the token
+                        if (window.refreshCsrfToken && typeof window.refreshCsrfToken === 'function') {
+                            const newToken = await window.refreshCsrfToken();
+                            
+                            if (newToken) {
+                                // Retry with the new token
+                                return fetch(`{{ url('/agency/inquiry-status-update') }}/${inquiryId}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': newToken,
+                                        'Accept': 'application/json',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    },
+                                    body: JSON.stringify({
+                                        InquiryStatus: status
+                                    })
+                                });
+                            } else {
+                                throw new Error('Could not refresh session. Please reload the page.');
+                            }
+                        } else {
+                            throw new Error('Session expired. Please reload the page and try again.');
+                        }
+                    }
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })                .then(data => {
+                    console.log('Response data:', data);
                     if (data.success) {
                         // Update the current status display
                         currentStatusLabel.textContent = status;
@@ -771,12 +841,17 @@
                             currentStatusLabel.style.color = '';
                         }, 3000);
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
+                })                .catch(error => {
+                    console.error('Error details:', error);
                     currentStatusLabel.textContent = originalText;
                     currentStatusLabel.style.color = '#dc3545';
-                    showStatusMessage('Network error. Please try again.', 'error');
+                    
+                    // Check specifically for 419 error which indicates CSRF token expiration
+                    if (error.message.includes('419')) {
+                        showStatusMessage('Your session has expired. Please refresh the page and try again.', 'error');
+                    } else {
+                        showStatusMessage('Network error: ' + error.message, 'error');
+                    }
                     
                     // Reset color after 3 seconds
                     setTimeout(() => {
@@ -805,6 +880,51 @@
                     messageDiv.remove();
                 }, 5000);
             }
+        });            // Add form submission handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.edit-form');
+            
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('Form submission started');
+                    
+                    // Show loading state on submit button
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Updating...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            }
+
+            // Function to refresh the CSRF token when needed
+            window.refreshCsrfToken = async function() {
+                try {
+                    // Make a request to get a fresh token
+                    const response = await fetch('{{ route("refresh-csrf") }}', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Update the meta tag
+                        const metaToken = document.querySelector('meta[name="csrf-token"]');
+                        if (metaToken) {
+                            metaToken.setAttribute('content', data.token);
+                        }
+                        // Update any csrf input fields
+                        document.querySelectorAll('input[name="_token"]').forEach(input => {
+                            input.value = data.token;
+                        });
+                        return data.token;
+                    }
+                } catch (error) {
+                    console.error('Failed to refresh CSRF token:', error);
+                }
+                return null;
+            };
         });
     </script>
 </body>

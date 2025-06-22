@@ -294,10 +294,8 @@
                     </ul>
                 </div>
             @endif
-            
-            <form method="POST" action="{{ route('password.change') }}">
+              <form method="POST" action="{{ route('password.update') }}">
                 @csrf
-                @method('PUT')
                 
                 <div class="form-section">
                     <h3><i class="section-icon">🔐</i> Password Security</h3>
@@ -332,7 +330,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="icon">🔐</i> Update Password
                     </button>
-                    <a href="{{ route('profile.edit') }}" class="btn btn-secondary">
+                    <a href="#" class="btn btn-secondary" onclick="alert('Profile functionality not implemented yet')">
                         <i class="icon">↩️</i> Back to Profile
                     </a>
                 </div>

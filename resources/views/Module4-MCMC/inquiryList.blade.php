@@ -549,9 +549,7 @@
             text-decoration: none;
             font-size: 0.875rem;
             transition: all 0.2s ease;
-        }
-        
-        .submenu a:hover,
+        }        .submenu a:hover,
         .submenu a.active {
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
@@ -570,9 +568,7 @@
         <div class="content-area">
             <!-- Main Content -->
             <div class="main-content">
-                <h1 class="page-title">All Inquiries</h1>
-
-                <!-- Stats Summary with Status Counts -->
+                <h1 class="page-title">All Inquiries</h1>                <!-- Stats Summary with Status Counts -->
                 <div class="stats-summary">
                     <div class="stat-card">
                         <span class="stat-number">{{ $totalInquiries ?? 0 }}</span>
@@ -593,7 +589,21 @@
                     <div class="stat-card rejected">
                         <span class="stat-number">{{ $statusCounts['Rejected'] ?? 0 }}</span>
                         <span class="stat-label">Rejected</span>
+                    </div>                </div>
+
+                <!-- Reports Navigation -->
+                <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(30, 60, 114, 0.1); border: 1px solid #e9ecef; text-align: center;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px;">
+                        <span style="font-size: 2rem;">📊</span>
+                        <h3 style="color: #1e3c72; margin: 0; font-size: 1.5rem;">Agency Performance Analytics</h3>
                     </div>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 1rem;">
+                        Generate comprehensive reports on agency performance, resolution times, and inquiry analytics.
+                    </p>
+                    <a href="/reports" class="btn btn-primary" style="font-size: 1.1rem; padding: 15px 30px;">
+                        <span style="margin-right: 8px;">📈</span>
+                        View Performance Reports
+                    </a>
                 </div>
 
                 <!-- Filter Section -->
@@ -602,8 +612,7 @@
                         <div class="form-group">
                             <label for="searchInquiries">Search Inquiries</label>
                             <input type="text" class="form-control" id="searchInquiries" placeholder="Search by ID, subject, or content...">
-                        </div>
-                        <div class="form-group">
+                        </div>                        <div class="form-group">
                             <label for="statusFilter">Status</label>
                             <select class="form-control" id="statusFilter">
                                 <option value="">All Statuses</option>
@@ -611,6 +620,22 @@
                                 <option value="verified-as-true">Verified as True</option>
                                 <option value="identified-as-fake">Identified as Fake</option>
                                 <option value="rejected">Rejected</option>
+                            </select>
+                        </div>                        <div class="form-group">
+                            <label for="agencyFilter">Agency</label>
+                            <select class="form-control" id="agencyFilter">
+                                <option value="">All Agencies</option>
+                                <option value="cybersecurity-malaysia">CyberSecurity Malaysia</option>
+                                <option value="ministry-of-health-malaysia-(moh)">Ministry of Health Malaysia (MOH)</option>
+                                <option value="royal-malaysia-police-(pdrm)">Royal Malaysia Police (PDRM)</option>
+                                <option value="ministry-of-domestic-trade-and-consumer-affairs-(kpdn)">Ministry of Domestic Trade and Consumer Affairs (KPDN)</option>
+                                <option value="ministry-of-education-(moe)">Ministry of Education (MOE)</option>
+                                <option value="ministry-of-communications-and-digital-(kkd)">Ministry of Communications and Digital (KKD)</option>
+                                <option value="department-of-islamic-development-malaysia-(jakim)">Department of Islamic Development Malaysia (JAKIM)</option>
+                                <option value="election-commission-of-malaysia-(spr)">Election Commission of Malaysia (SPR)</option>
+                                <option value="malaysian-anti-corruption-commission-(macc-/-sprm)">Malaysian Anti-Corruption Commission (MACC / SPRM)</option>
+                                <option value="department-of-environment-malaysia-(doe)">Department of Environment Malaysia (DOE)</option>
+                                <option value="unassigned">Unassigned</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -636,7 +661,7 @@
                 <div class="inquiries-container" id="inquiriesList">
                     @if(isset($inquiries) && count($inquiries) > 0)
                         @foreach($inquiries as $inquiry)
-                        <div class="inquiry-card" data-status="{{ strtolower(str_replace(' ', '-', $inquiry['status'])) }}" data-date="{{ $inquiry['submittedDate'] }}">
+                        <div class="inquiry-card" data-status="{{ strtolower(str_replace(' ', '-', $inquiry['status'])) }}" data-date="{{ $inquiry['submittedDate'] }}" data-agency="{{ strtolower(str_replace(' ', '-', $inquiry['assignedTo'])) }}">
                             <div class="inquiry-header">
                                 <span class="inquiry-id">ID: {{ $inquiry['id'] ?? 'N/A' }}</span>
                                 <span class="inquiry-date">Submitted: {{ $inquiry['submittedDate'] }}</span>
@@ -653,10 +678,9 @@
                                 <div class="meta-item">
                                     <span class="meta-label">Submitted by:</span> {{ $inquiry['submittedBy'] ?? 'Unknown User' }}
                                 </div>
-                            </div>
-                            <div class="inquiry-actions">
+                            </div>                            <div class="inquiry-actions">
                                 <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry['status'])) }}">{{ $inquiry['status'] }}</span>
-                                <a href="/inquiry-detail/{{ $inquiry['id'] }}" class="btn btn-primary">View Details</a>
+                                <a href="/mcmc-inquiry-detail/{{ $inquiry['id'] }}" class="btn btn-primary">View Details</a>
                             </div>
                         </div>
                         @endforeach
@@ -672,11 +696,11 @@
         </div>
     </div>
 
-    <script>
-        // Filter functionality
+    <script>        // Filter functionality
         function filterInquiries() {
             const searchTerm = document.getElementById('searchInquiries').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
+            const agencyFilter = document.getElementById('agencyFilter').value;
             const dateFilter = document.getElementById('dateFilter').value;
             
             const cards = document.querySelectorAll('.inquiry-card');
@@ -696,6 +720,7 @@
                 const content = card.querySelector('.inquiry-content').textContent.toLowerCase();
                 const id = card.querySelector('.inquiry-id').textContent.toLowerCase();
                 const status = card.dataset.status;
+                const agency = card.dataset.agency;
                 const submittedDateStr = card.dataset.date;
                 
                 // Parse the submitted date
@@ -704,6 +729,7 @@
                 const matchesSearch = searchTerm === '' || title.includes(searchTerm) || 
                                     content.includes(searchTerm) || id.includes(searchTerm);
                 const matchesStatus = statusFilter === '' || status === statusFilter;
+                const matchesAgency = agencyFilter === '' || agency === agencyFilter;
                 
                 // Date filtering logic
                 let matchesDate = true;
@@ -724,7 +750,7 @@
                     }
                 }
                 
-                if (matchesSearch && matchesStatus && matchesDate) {
+                if (matchesSearch && matchesStatus && matchesAgency && matchesDate) {
                     card.style.display = 'block';
                     visibleCount++;
                 } else {
@@ -735,10 +761,10 @@
             // Update results count if needed
             console.log(`Showing ${visibleCount} of ${cards.length} inquiries`);
         }
-        
-        function clearFilters() {
+          function clearFilters() {
             document.getElementById('searchInquiries').value = '';
             document.getElementById('statusFilter').value = '';
+            document.getElementById('agencyFilter').value = '';
             document.getElementById('dateFilter').value = '';
             
             // Show all cards
@@ -750,6 +776,7 @@
         // Real-time search
         document.getElementById('searchInquiries').addEventListener('input', filterInquiries);
         document.getElementById('statusFilter').addEventListener('change', filterInquiries);
+        document.getElementById('agencyFilter').addEventListener('change', filterInquiries);
         document.getElementById('dateFilter').addEventListener('change', filterInquiries);
     </script>
 </body>
