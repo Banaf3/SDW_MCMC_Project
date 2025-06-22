@@ -246,10 +246,9 @@
         <div class="stat-card">
             <div class="stat-number stat-resolved">{{ $resolvedInquiries }}</div>
             <div class="stat-label">Resolved</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number stat-flagged">{{ $flaggedInquiries }}</div>
-            <div class="stat-label">Flagged</div>
+        </div>        <div class="stat-card">
+            <div class="stat-number stat-flagged">{{ $discardedInquiries }}</div>
+            <div class="stat-label">Discarded</div>
         </div>
     </div>
 
@@ -379,7 +378,7 @@ function exportToPDF() {
     doc.text(`Pending Review: {{ $pendingInquiries }}`, 20, 70);
     doc.text(`Under Review: {{ $underReviewInquiries }}`, 20, 80);
     doc.text(`Resolved: {{ $resolvedInquiries }}`, 20, 90);
-    doc.text(`Flagged: {{ $flaggedInquiries }}`, 20, 100);
+    doc.text(`Discarded: {{ $discardedInquiries }}`, 20, 100);
     
     // Add status distribution
     doc.setFontSize(14);
@@ -423,7 +422,7 @@ function exportToExcel() {
         ['Pending Review', {{ $pendingInquiries }}],
         ['Under Review', {{ $underReviewInquiries }}],
         ['Resolved', {{ $resolvedInquiries }}],
-        ['Flagged', {{ $flaggedInquiries }}]
+        ['Discarded', {{ $discardedInquiries }}]
     ];
     
     const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);

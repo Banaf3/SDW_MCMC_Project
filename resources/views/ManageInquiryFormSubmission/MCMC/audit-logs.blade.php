@@ -119,15 +119,14 @@
         font-weight: 500;
         white-space: nowrap;
     }
-    
-    .action-status-updated {
+      .action-status-updated {
         background-color: #dbeafe;
         color: #1e40af;
     }
     
-    .action-flagged {
-        background-color: #fef3c7;
-        color: #92400e;
+    .action-inquiry-discarded {
+        background-color: #fee2e2;
+        color: #991b1b;
     }
     
     .action-discarded {

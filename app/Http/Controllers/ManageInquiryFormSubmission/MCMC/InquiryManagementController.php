@@ -256,8 +256,7 @@ class InquiryManagementController extends Controller
         $underReviewInquiries = Inquiry::where('InquiryStatus', 'Under Review')
             ->whereBetween('SubmitionDate', [$startDate, $endDate])->count();
         $resolvedInquiries = Inquiry::where('InquiryStatus', 'Resolved')
-            ->whereBetween('SubmitionDate', [$startDate, $endDate])->count();
-        $flaggedInquiries = Inquiry::where('InquiryStatus', 'Flagged')
+            ->whereBetween('SubmitionDate', [$startDate, $endDate])->count();        $discardedInquiries = Inquiry::where('InquiryStatus', 'Discarded')
             ->whereBetween('SubmitionDate', [$startDate, $endDate])->count();
 
         // Status distribution
@@ -288,14 +287,12 @@ class InquiryManagementController extends Controller
         $recentAudits = InquiryAuditLog::with(['inquiry', 'administrator'])
             ->orderByDesc('ActionDate')
             ->limit(10)
-            ->get();
-
-        return view('ManageInquiryFormSubmission.MCMC.reports', compact(
+            ->get();        return view('ManageInquiryFormSubmission.MCMC.reports', compact(
             'totalInquiries',
             'pendingInquiries', 
             'underReviewInquiries',
             'resolvedInquiries',
-            'flaggedInquiries',
+            'discardedInquiries',
             'statusDistribution',
             'dailyTrend',
             'topUsers',
