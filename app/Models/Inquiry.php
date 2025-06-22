@@ -16,6 +16,7 @@ class Inquiry extends Model
         'InquiryDescription',
         'InquiryEvidence',
         'AdminComment',
+        'AdminNotes',
         'ResolvedExplanation',
         'ResolvedSupportingDocs',
         'AgencyRejectionComment',
@@ -48,5 +49,22 @@ class Inquiry extends Model
     }    public function user()
     {
         return $this->belongsTo(PublicUser::class, 'UserID', 'UserID');
+    }
+
+    
+
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class, 'AgencyID', 'AgencyID');
+    }
+
+    public function auditLogs()
+    {
+        return $this->hasMany(InquiryAuditLog::class, 'InquiryID')->orderBy('ActionDate', 'desc');
+    }
+
+    public function assignment()
+    {
+        return $this->hasOne(AssignedInquiry::class, 'InquiryID', 'InquiryID');
     }
 }
