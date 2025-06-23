@@ -7,6 +7,7 @@ use App\Models\Inquiry;
 use App\Models\InquiryAuditLog;
 use App\Models\Agency;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class AssignedInquiriesController extends Controller
@@ -114,7 +115,7 @@ class AssignedInquiriesController extends Controller
         // Only allow access to inquiries with allowed statuses within ManageInquiryFormSubmission
         $allowedStatuses = ['Under Investigation', 'Verified as True', 'Identified as Fake', 'Rejected'];
 
-        $inquiry = Inquiry::with(['user', 'agency', 'evidence', 'auditLogs.administrator'])
+        $inquiry = Inquiry::with(['user', 'agency', 'auditLogs.administrator'])
             ->where('InquiryID', $inquiryId)
             ->where('AgencyID', $agencyId)
             ->whereIn('InquiryStatus', $allowedStatuses)
@@ -126,92 +127,17 @@ class AssignedInquiriesController extends Controller
             ->orderByDesc('ActionDate')
             ->get();
 
+        // Parse evidence JSON if it exists
+        $evidence = $inquiry->InquiryEvidence ? json_decode($inquiry->InquiryEvidence, true) : [];
+
         return view('ManageInquiryFormSubmission.Agency.inquiry-detail', compact(
             'inquiry',
-            'inquiryHistory'
+            'inquiryHistory',
+            'evidence'
         ));
-    }    /**
-     * Update inquiry status (for agency actions within ManageInquiryFormSubmission)
-     */    public function updateStatus(Request $request, $inquiryId)
-    {
-        $agencyId = session('agency_id');
-        
-        // Temporary: If no agency_id in session, use agency ID 1 for testing
-        if (!$agencyId) {
-            $agencyId = 1;
-            session(['agency_id' => $agencyId]);
-        }
+    }
 
-        // Define allowed statuses for agencies within ManageInquiryFormSubmission
-        $allowedStatuses = ['Under Investigation', 'Verified as True', 'Identified as Fake', 'Rejected'];
-        
-        // Validate that the new status is allowed
-        if (!in_array($request->status, $allowedStatuses)) {
-            return redirect()->back()->with('error', 'Invalid status. Only allowed statuses are: ' . implode(', ', $allowedStatuses));
-        }
-
-        $inquiry = Inquiry::where('InquiryID', $inquiryId)
-            ->where('AgencyID', $agencyId)
-            ->whereIn('InquiryStatus', $allowedStatuses)
-            ->firstOrFail();
-
-        $oldStatus = $inquiry->InquiryStatus;
-        $newStatus = $request->status;
-
-        // Update inquiry status (only within allowed statuses)
-        $inquiry->update([
-            'InquiryStatus' => $newStatus
-        ]);
-
-        // Create audit log entry within ManageInquiryFormSubmission context
-        InquiryAuditLog::create([
-            'InquiryID' => $inquiryId,
-            'AdminID' => null, // This is an agency action, not admin
-            'Action' => 'Status Updated by Agency (ManageInquiryFormSubmission)',
-            'OldStatus' => $oldStatus,
-            'NewStatus' => $newStatus,
-            'ActionDate' => now(),
-            'Reason' => $request->reason ?? 'Status updated by assigned agency within investigation workflow',
-            'Notes' => $request->notes,
-            'PerformedBy' => 'Agency ID: ' . $agencyId . ' (ManageInquiryFormSubmission)'
-        ]);
-
-        return redirect()->back()->with('success', 'Inquiry status updated successfully to: ' . $newStatus);
-    }    /**
-     * Add agency comments/notes to an inquiry (within ManageInquiryFormSubmission)
-     */    public function addComment(Request $request, $inquiryId)
-    {
-        $agencyId = session('agency_id');
-        
-        // Temporary: If no agency_id in session, use agency ID 1 for testing
-        if (!$agencyId) {
-            $agencyId = 1;
-            session(['agency_id' => $agencyId]);
-        }
-
-        // Only allow comments on inquiries with allowed statuses
-        $allowedStatuses = ['Under Investigation', 'Verified as True', 'Identified as Fake', 'Rejected'];
-
-        $inquiry = Inquiry::where('InquiryID', $inquiryId)
-            ->where('AgencyID', $agencyId)
-            ->whereIn('InquiryStatus', $allowedStatuses)
-            ->firstOrFail();
-
-        // Create audit log entry for the comment within ManageInquiryFormSubmission
-        InquiryAuditLog::create([
-            'InquiryID' => $inquiryId,
-            'AdminID' => null,
-            'Action' => 'Agency Investigation Comment (ManageInquiryFormSubmission)',
-            'OldStatus' => $inquiry->InquiryStatus,
-            'NewStatus' => $inquiry->InquiryStatus,
-            'ActionDate' => now(),
-            'Reason' => 'Agency investigation update within ManageInquiryFormSubmission workflow',
-            'Notes' => $request->comment,
-            'PerformedBy' => 'Agency ID: ' . $agencyId . ' (ManageInquiryFormSubmission)'
-        ]);
-
-        return redirect()->back()->with('success', 'Investigation comment added successfully.');
-    }    /**
+    /**
      * Generate agency inquiry report (within ManageInquiryFormSubmission context)
      */    public function generateReport(Request $request)
     {
@@ -271,5 +197,86 @@ class AssignedInquiriesController extends Controller
             'startDate',
             'endDate'
         ));
+    }
+
+    /**
+     * Download evidence file for an inquiry
+     */
+    public function downloadEvidence($inquiryId, $fileIndex)
+    {
+        try {
+            $agencyId = session('agency_id');
+            
+            // Temporary: If no agency_id in session, use agency ID 1 for testing
+            if (!$agencyId) {
+                $agencyId = 1;
+                session(['agency_id' => $agencyId]);
+            }
+
+            // Find the inquiry and ensure it belongs to this agency
+            $inquiry = Inquiry::where('InquiryID', $inquiryId)
+                ->where('AgencyID', $agencyId)
+                ->firstOrFail();
+
+            // Parse evidence JSON
+            $evidenceJson = $inquiry->InquiryEvidence;
+            if (!$evidenceJson) {
+                Log::error("No evidence found for inquiry {$inquiryId}");
+                abort(404, 'No evidence found for this inquiry');
+            }
+
+            $evidence = json_decode($evidenceJson, true);
+            if (!$evidence || !isset($evidence['files'])) {
+                Log::error("Evidence files not found for inquiry {$inquiryId}. Evidence data: " . $evidenceJson);
+                abort(404, 'Evidence files not found');
+            }
+
+            // Check if the file index exists
+            if (!isset($evidence['files'][$fileIndex])) {
+                Log::error("Evidence file index {$fileIndex} not found for inquiry {$inquiryId}. Available files: " . count($evidence['files']));
+                abort(404, 'Evidence file not found');
+            }
+
+            $file = $evidence['files'][$fileIndex];
+            
+            // Try different possible file paths
+            $possiblePaths = [
+                storage_path('app/' . $file['path']),
+                storage_path('app/public/' . $file['path']),
+                storage_path('app/public/inquiries/files/' . basename($file['path']))
+            ];
+            
+            $filePath = null;
+            foreach ($possiblePaths as $path) {
+                if (file_exists($path)) {
+                    $filePath = $path;
+                    break;
+                }
+            }
+
+            Log::info("Attempting to access file. Possible paths checked: " . implode(', ', $possiblePaths));
+            Log::info("Found file at: " . ($filePath ?? 'NONE'));
+
+            // Check if file exists
+            if (!$filePath) {
+                Log::error("Evidence file not found in any location. Paths checked: " . implode(', ', $possiblePaths));
+                abort(404, 'Evidence file not found on disk');
+            }
+
+            // Get the original filename
+            $originalName = $file['original_name'] ?? $file['name'] ?? 'evidence_file';
+
+            Log::info("Serving file: {$originalName} from {$filePath}");
+
+            // Return the file for download/viewing
+            return response()->file($filePath, [
+                'Content-Type' => $file['mime_type'] ?? 'application/octet-stream',
+                'Content-Disposition' => 'inline; filename="' . $originalName . '"'
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error in downloadEvidence: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
+            abort(500, 'Error accessing evidence file: ' . $e->getMessage());
+        }
     }
 }

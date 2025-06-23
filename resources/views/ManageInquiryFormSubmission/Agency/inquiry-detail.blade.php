@@ -179,6 +179,35 @@
         color: #6b7280;
     }
     
+    .clickable-evidence {
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .clickable-evidence:hover {
+        border-color: #3b82f6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+    
+    .evidence-actions {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: white;
+        border-radius: 50%;
+        padding: 4px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .clickable-evidence:hover .evidence-actions {
+        opacity: 1;
+    }
+    
     .agency-actions {
         background: #f0f9ff;
         border: 2px solid #bae6fd;
@@ -337,7 +366,7 @@
 
 <div class="inquiry-details-container">
     <!-- Back Navigation -->
-    <a href="{{ route('agency.inquiries.assigned') }}" class="back-button">
+    <a href="{{ route('agency.inquiries.list') }}" class="back-button">
         <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
@@ -388,106 +417,59 @@
     </div>
 
     <!-- Evidence Files -->
-    @if($inquiry->evidence && count($inquiry->evidence) > 0)
+    @if($inquiry->InquiryEvidence)
     <div class="section">
         <h2 class="section-header">
-            <span>Evidence Files ({{ count($inquiry->evidence) }})</span>
+            <span>Evidence Files</span>
         </h2>
         <div class="evidence-grid">
-            @foreach($inquiry->evidence as $evidence)
-                <div class="evidence-item">
-                    <div class="evidence-preview">
-                        @if(in_array(pathinfo($evidence->file_path, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png', 'gif']))
-                            <img src="{{ Storage::url($evidence->file_path) }}" alt="Evidence" style="width: 100%; height: 100%; object-fit: cover;">
-                        @else
-                            <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+            @if(isset($evidence['files']) && count($evidence['files']) > 0)
+                @foreach($evidence['files'] as $index => $file)
+                    @php
+                        $fileExtension = strtolower(pathinfo($file['original_name'] ?? $file['name'] ?? 'unknown', PATHINFO_EXTENSION));
+                        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+                        $isImage = in_array($fileExtension, $imageExtensions);
+                        $fileSize = isset($file['size']) ? $file['size'] : 0;
+                        $fileSizeFormatted = $fileSize > 0 ? number_format($fileSize / 1024, 1) . ' KB' : 'Unknown size';
+                    @endphp
+                    
+                    <a href="{{ route('agency.inquiries.detail.download-evidence', ['inquiryId' => $inquiry->InquiryID, 'fileIndex' => $index]) }}" 
+                       target="_blank" class="evidence-item clickable-evidence">
+                        <div class="evidence-preview">
+                            @if($isImage)
+                                <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24" style="color: #10b981;">
+                                    <path d="M4 3h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1zm1 2v14h14V5H5zm2 3l3.5 4.5 2.5-3L16 14H8l-1-6z"/>
+                                </svg>
+                            @elseif($fileExtension === 'pdf')
+                                <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24" style="color: #ef4444;">
+                                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                                </svg>
+                            @else
+                                <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                                </svg>
+                            @endif
+                        </div>
+                        <div class="evidence-info">
+                            <div class="evidence-name">{{ $file['original_name'] ?? $file['name'] ?? 'Unknown file' }}</div>
+                            <div class="evidence-meta">{{ $fileSizeFormatted }}</div>
+                        </div>
+                        <div class="evidence-actions">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
                             </svg>
-                        @endif
-                    </div>
-                    <div class="evidence-info">
-                        <div class="evidence-name">{{ $evidence->original_filename }}</div>
-                        <div class="evidence-meta">{{ number_format($evidence->file_size / 1024, 1) }} KB</div>
-                    </div>
+                        </div>
+                    </a>
+                @endforeach
+            @else
+                <!-- Display text evidence if no files -->
+                <div class="evidence-text">
+                    {{ $evidence['description'] ?? 'No evidence description available' }}
                 </div>
-            @endforeach
+            @endif
         </div>
     </div>
     @endif
-
-    <!-- Agency Investigation Actions -->
-    <div class="section">
-        <div class="agency-actions">
-            <h3 class="actions-title">
-                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                Agency Investigation Actions
-            </h3>
-              <div class="actions-grid">
-                @if($inquiry->InquiryStatus === 'Under Investigation')
-                    <form method="POST" action="{{ route('agency.inquiries.update-status', $inquiry->InquiryID) }}" style="display: contents;">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="status" value="Verified as True">
-                        <input type="hidden" name="reason" value="Investigation completed - verified as true">
-                        <button type="submit" class="btn btn-success">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            Mark as Verified True
-                        </button>
-                    </form>
-                    
-                    <form method="POST" action="{{ route('agency.inquiries.update-status', $inquiry->InquiryID) }}" style="display: contents;">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="status" value="Identified as Fake">
-                        <input type="hidden" name="reason" value="Investigation completed - identified as fake">
-                        <button type="submit" class="btn btn-warning">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.888-.833-2.664 0L4.15 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                            </svg>
-                            Mark as Fake
-                        </button>
-                    </form>
-                    
-                    <form method="POST" action="{{ route('agency.inquiries.update-status', $inquiry->InquiryID) }}" style="display: contents;">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="status" value="Rejected">
-                        <input type="hidden" name="reason" value="Investigation completed - inquiry rejected">
-                        <button type="submit" class="btn btn-danger">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            Reject Inquiry
-                        </button>
-                    </form>
-                @else
-                    <div style="padding: 20px; text-align: center; color: #6b7280; background: #f9fafb; border-radius: 6px;">
-                        <p><strong>Investigation Status: {{ $inquiry->InquiryStatus }}</strong></p>
-                        <p>This inquiry has been completed. No further actions are available.</p>
-                    </div>
-                @endif
-            </div>
-
-            <!-- Agency Comment Section -->
-            <div class="comment-section">
-                <form method="POST" action="{{ route('agency.inquiries.add-comment', $inquiry->InquiryID) }}">
-                    @csrf
-                    <label for="comment" style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Add Investigation Notes</label>
-                    <textarea name="comment" id="comment" class="comment-input" placeholder="Add notes about your investigation progress, findings, or updates..."></textarea>
-                    <button type="submit" class="btn btn-primary" style="margin-top: 8px;">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                        </svg>
-                        Add Comment
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <!-- Inquiry History & Tracking -->
     <div class="section">

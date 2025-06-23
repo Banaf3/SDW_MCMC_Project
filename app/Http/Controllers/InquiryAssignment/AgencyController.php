@@ -287,4 +287,51 @@ class AgencyController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Download evidence file for Agency staff
+     */
+    public function downloadEvidence($id, $fileIndex)
+    {
+        try {
+            // Get current agency staff ID from session
+            $staffId = session('user_id');
+            
+            if (!$staffId || session('user_type') !== 'agency') {
+                abort(403, 'Unauthorized. Agency access required.');
+            }
+
+            // Get the agency ID for the current staff member
+            $agencyStaff = \App\Models\AgencyStaff::find($staffId);
+            
+            if (!$agencyStaff) {
+                abort(404, 'Agency staff not found.');
+            }
+
+            $inquiry = Inquiry::findOrFail($id);
+
+            // Verify this inquiry is assigned to the current agency
+            if ($inquiry->AgencyID !== $agencyStaff->AgencyID) {
+                abort(403, 'This inquiry is not assigned to your agency.');
+            }
+
+            $evidence = $inquiry->InquiryEvidence ? json_decode($inquiry->InquiryEvidence, true) : [];
+            
+            if (!isset($evidence['files'][$fileIndex])) {
+                abort(404, 'File not found');
+            }
+            
+            $file = $evidence['files'][$fileIndex];
+            $filePath = storage_path('app/public/' . $file['path']);
+            
+            if (!file_exists($filePath)) {
+                abort(404, 'File not found on disk');
+            }
+            
+            return response()->download($filePath, $file['original_name']);
+            
+        } catch (\Exception $e) {
+            abort(500, 'Error downloading file: ' . $e->getMessage());
+        }
+    }
 }

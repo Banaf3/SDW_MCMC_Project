@@ -271,7 +271,7 @@
             opacity: 0;
             transition: all 0.4s ease;
         }        .inquiry-meta.show {
-            max-height: 600px; /* Increased for more content */
+            max-height: 1000px; /* Increased significantly for evidence files */
             opacity: 1;
             margin-top: 1rem;
         }
@@ -329,21 +329,44 @@
             border-radius: 6px;
             padding: 0.75rem;
             margin-top: 0.5rem;
-        }
-
-        .evidence-item .meta-label {
+        }        .evidence-item .meta-label {
             color: #0066cc;
             font-weight: 700;
+        }        
+          .evidence-item .meta-value {
+            max-height: none;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
         }
-
-        .evidence-file {
-            display: inline-block;
+          .evidence-file {
+            display: block;
             background: #fff;
-            padding: 0.25rem 0.5rem;
-            margin: 0.125rem;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
             border-radius: 4px;
             border: 1px solid #b3d9ff;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            box-sizing: border-box;
+        }        .evidence-link {
+            color: #0066cc;
+            text-decoration: none;
+            display: block;
+            align-items: flex-start;
+            gap: 0.5rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            white-space: normal;
+        }
+
+        .evidence-link:hover {
+            color: #004499;
+            text-decoration: underline;
         }
 
         .evidence-text {
@@ -946,18 +969,19 @@
                                         @endif
                                     </span>
                                 </div>
-                                
-                                <!-- Evidence Information -->
-                                @if($inquiry['evidenceData'])
-                                <div class="meta-item evidence-item">
-                                    <span class="meta-label">Evidence Files:</span>
+                                  <!-- Evidence Information -->
+                                @if($inquiry['evidenceData'])                                <div class="meta-item evidence-item">
+                                    <span class="meta-label">Evidence Files ({{ isset($inquiry['evidenceData']['files']) && is_array($inquiry['evidenceData']['files']) ? count($inquiry['evidenceData']['files']) : 1 }}):</span>
                                     <div class="meta-value">
                                         @if(isset($inquiry['evidenceData']['files']) && is_array($inquiry['evidenceData']['files']))
-                                            @foreach($inquiry['evidenceData']['files'] as $file)
-                                                <span class="evidence-file">
-                                                    📎 {{ $file['name'] ?? 'Unknown file' }} 
-                                                    <small>({{ ucfirst($file['type'] ?? 'file') }})</small>
-                                                </span>
+                                            @foreach($inquiry['evidenceData']['files'] as $index => $file)
+                                                <div class="evidence-file">
+                                                    <a href="{{ route('mcmc.inquiries.download-evidence', ['id' => $inquiry['InquiryID'], 'fileIndex' => $index]) }}" 
+                                                       target="_blank" class="evidence-link">
+                                                        📎 {{ $file['name'] ?? $file['original_name'] ?? 'Unknown file' }} 
+                                                        <small>({{ ucfirst($file['type'] ?? 'file') }})</small>
+                                                    </a>
+                                                </div>
                                             @endforeach
                                         @else
                                             <span class="evidence-text">{{ $inquiry['evidence'] }}</span>

@@ -305,7 +305,7 @@
 
     <!-- Filters -->
     <div class="filters-section">
-        <form method="GET" action="{{ route('agency.inquiries.assigned') }}">
+        <form method="GET" action="{{ route('agency.inquiries.list') }}">
             <div class="filters-grid">
                 <div class="filter-group">
                     <label class="filter-label">Status</label>
@@ -353,7 +353,7 @@
                         </svg>
                         Filter
                     </button>
-                    <a href="{{ route('agency.inquiries.assigned') }}" class="btn btn-secondary">Clear</a>
+                    <a href="{{ route('agency.inquiries.list') }}" class="btn btn-secondary">Clear</a>
                 </div>
             </div>
         </form>
@@ -389,46 +389,6 @@
                             </svg>
                             View Details
                         </a>
-                          @if($inquiry->InquiryStatus === 'Under Investigation')
-                            <form method="POST" action="{{ route('agency.inquiries.update-status', $inquiry->InquiryID) }}" style="display: inline;">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="status" value="Verified as True">
-                                <input type="hidden" name="reason" value="Investigation completed - verified as true">
-                                <button type="submit" class="btn btn-success">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    Mark as Verified
-                                </button>
-                            </form>
-                            
-                            <form method="POST" action="{{ route('agency.inquiries.update-status', $inquiry->InquiryID) }}" style="display: inline;">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="status" value="Identified as Fake">
-                                <input type="hidden" name="reason" value="Investigation completed - identified as fake">
-                                <button type="submit" class="btn btn-warning">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.888-.833-2.664 0L4.15 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                    </svg>
-                                    Mark as Fake
-                                </button>
-                            </form>
-                            
-                            <form method="POST" action="{{ route('agency.inquiries.update-status', $inquiry->InquiryID) }}" style="display: inline;">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="status" value="Rejected">
-                                <input type="hidden" name="reason" value="Investigation completed - inquiry rejected">
-                                <button type="submit" class="btn btn-secondary">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                    Reject
-                                </button>
-                            </form>
-                        @endif
                     </div>
                 </div>
             @endforeach

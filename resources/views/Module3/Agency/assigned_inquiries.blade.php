@@ -261,10 +261,8 @@
             overflow: hidden;
             opacity: 0;
             transition: all 0.4s ease;
-        }
-
-        .inquiry-meta.show {
-            max-height: 200px;
+        }        .inquiry-meta.show {
+            max-height: 1000px; /* Increased significantly for evidence files */
             opacity: 1;
             margin-top: 1rem;
         }
@@ -1752,12 +1750,59 @@
             font-weight: bold;
             color: #1e3c72;
             display: block;
-        }
-
-        .stat-label {
+        }        .stat-label {
             color: #666;
             font-size: 0.9rem;
             margin-top: 5px;
+        }        /* Evidence Files Styling */
+        .evidence-item {
+            grid-column: 1 / -1; /* Span full width for better file display */
+            background: #e8f4fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+        }.evidence-item .meta-label {
+            color: #0066cc;
+            font-weight: 700;
+        }        .evidence-item .meta-value {
+            max-height: none;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }        .evidence-file {
+            display: block;
+            background: #fff;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-radius: 4px;
+            border: 1px solid #b3d9ff;
+            font-size: 0.85rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            box-sizing: border-box;
+        }        .evidence-link {
+            color: #0066cc;
+            text-decoration: none;
+            display: block;
+            align-items: flex-start;
+            gap: 0.5rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            white-space: normal;
+        }
+
+        .evidence-link:hover {
+            color: #004499;
+            text-decoration: underline;
+        }
+
+        .evidence-text {
+            color: #0066cc;
+            font-style: normal;
         }
     </style>
 </head>
@@ -1844,18 +1889,19 @@
                                     <span class="meta-label">MCMC Comment:</span>
                                     <span class="meta-value">{{ $inquiry['mcmcComment'] }}</span>
                                 </div>
-                                
-                                <!-- Evidence Information -->
-                                @if($inquiry['evidenceData'])
-                                <div class="meta-item evidence-item">
-                                    <span class="meta-label">Evidence Files:</span>
+                                  <!-- Evidence Information -->
+                                @if($inquiry['evidenceData'])                                <div class="meta-item evidence-item">
+                                    <span class="meta-label">Evidence Files ({{ isset($inquiry['evidenceData']['files']) && is_array($inquiry['evidenceData']['files']) ? count($inquiry['evidenceData']['files']) : 1 }}):</span>
                                     <div class="meta-value">
                                         @if(isset($inquiry['evidenceData']['files']) && is_array($inquiry['evidenceData']['files']))
-                                            @foreach($inquiry['evidenceData']['files'] as $file)
-                                                <span class="evidence-file">
-                                                    📎 {{ $file['name'] ?? 'Unknown file' }} 
-                                                    <small>({{ ucfirst($file['type'] ?? 'file') }})</small>
-                                                </span>
+                                            @foreach($inquiry['evidenceData']['files'] as $index => $file)
+                                                <div class="evidence-file">
+                                                    <a href="{{ route('agency.inquiries.download-evidence', ['id' => $inquiry['InquiryID'], 'fileIndex' => $index]) }}" 
+                                                       target="_blank" class="evidence-link">
+                                                        📎 {{ $file['name'] ?? $file['original_name'] ?? 'Unknown file' }} 
+                                                        <small>({{ ucfirst($file['type'] ?? 'file') }})</small>
+                                                    </a>
+                                                </div>
                                             @endforeach
                                         @else
                                             <span class="evidence-text">{{ $inquiry['evidence'] }}</span>

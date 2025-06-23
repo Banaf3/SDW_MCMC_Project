@@ -228,4 +228,38 @@ class MCMCController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Download evidence file for MCMC staff
+     */
+    public function downloadEvidence($id, $fileIndex)
+    {
+        try {
+            // Get current admin ID from session
+            $adminId = session('user_id');
+            
+            if (!$adminId || session('user_type') !== 'admin') {
+                abort(403, 'Unauthorized. Admin access required.');
+            }
+
+            $inquiry = Inquiry::findOrFail($id);
+            $evidence = $inquiry->InquiryEvidence ? json_decode($inquiry->InquiryEvidence, true) : [];
+            
+            if (!isset($evidence['files'][$fileIndex])) {
+                abort(404, 'File not found');
+            }
+            
+            $file = $evidence['files'][$fileIndex];
+            $filePath = storage_path('app/public/' . $file['path']);
+            
+            if (!file_exists($filePath)) {
+                abort(404, 'File not found on disk');
+            }
+            
+            return response()->download($filePath, $file['original_name']);
+            
+        } catch (\Exception $e) {
+            abort(500, 'Error downloading file: ' . $e->getMessage());
+        }
+    }
 }

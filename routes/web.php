@@ -91,6 +91,7 @@ Route::middleware(['web'])->group(function () {
     Route::get('/mcmc/inquiries/unassigned', [MCMCController::class, 'unassignedInquiries'])->name('mcmc.unassigned.inquiries');
     Route::post('/mcmc/inquiries/{inquiryId}/assign', [MCMCController::class, 'assignInquiry'])->name('mcmc.inquiries.assign');
     Route::get('/mcmc/inquiries/{inquiryId}/details', [MCMCController::class, 'getInquiryDetails'])->name('mcmc.inquiries.details');
+    Route::get('/mcmc/inquiries/{id}/evidence/{fileIndex}', [MCMCController::class, 'downloadEvidence'])->name('mcmc.inquiries.download-evidence');
     
     Route::get('/mcmc/inquiries/assigned', function () {
         return view('welcome');
@@ -128,10 +129,10 @@ Route::middleware(['web'])->group(function () {
     // Agency inquiry routes
     Route::get('/agency/inquiries/assigned', [InquiryAssignmentAgencyController::class, 'assignedInquiries'])->name('agency.inquiries.assigned'); // Module 3
     Route::post('/agency/inquiries/{id}/reject', [InquiryAssignmentAgencyController::class, 'rejectInquiry'])->name('agency.inquiries.reject'); // Module 3
+    Route::get('/agency/inquiries/{id}/evidence/{fileIndex}', [InquiryAssignmentAgencyController::class, 'downloadEvidence'])->name('agency.inquiries.download-evidence'); // Module 3
     Route::get('/agency/inquiries/list', [AssignedInquiriesController::class, 'index'])->name('agency.inquiries.list'); // Module 2
     Route::get('/agency/inquiries/{inquiryId}', [AssignedInquiriesController::class, 'show'])->name('agency.inquiries.show');
-    Route::put('/agency/inquiries/{inquiryId}/status', [AssignedInquiriesController::class, 'updateStatus'])->name('agency.inquiries.update-status');
-    Route::post('/agency/inquiries/{inquiryId}/comment', [AssignedInquiriesController::class, 'addComment'])->name('agency.inquiries.add-comment');
+    Route::get('/agency/inquiries/detail/{inquiryId}/evidence/{fileIndex}', [AssignedInquiriesController::class, 'downloadEvidence'])->name('agency.inquiries.detail.download-evidence'); // Module 2
     Route::get('/agency/reports', [AssignedInquiriesController::class, 'generateReport'])->name('agency.reports');
     
     // Agency-specific profile routes
