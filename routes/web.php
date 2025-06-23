@@ -131,6 +131,9 @@ Route::middleware(['web'])->group(function () {
     Route::get('/public/inquiries', [PublicInquiriesController::class, 'index'])->name('public.inquiries.index');
     Route::get('/public/inquiries/{id}', [PublicInquiriesController::class, 'show'])->name('public.inquiries.show');
     
+    // Module 4 - Public User Progress Tracking
+    Route::get('/public/progress/track', [InquiryProgressTrackingInquiryController::class, 'index'])->name('public.progress.track');
+    
     // Agency inquiry routes
     Route::get('/agency/inquiries/assigned', [InquiryAssignmentAgencyController::class, 'assignedInquiries'])->name('agency.inquiries.assigned'); // Module 3
     Route::post('/agency/inquiries/{id}/reject', [InquiryAssignmentAgencyController::class, 'rejectInquiry'])->name('agency.inquiries.reject'); // Module 3

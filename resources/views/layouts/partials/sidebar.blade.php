@@ -48,33 +48,13 @@
                     </ul>
                 </li>
 
-                <!-- 3. Assignment Status -->
-                <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('assignment-status')">
-                        <span>Assignment Status</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
-                    </a>
-                    <ul class="submenu" id="assignment-status">
-                        <li><a href="#">View Agency Assignment</a></li>
-                        <li><a href="#">Assignment History</a></li>
-                    </ul>
-                </li>
 
-                <!-- 4. Progress Tracking -->
+
+                <!-- 4. Progress Tracking - Direct Link -->
                 <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('progress-tracking')">
+                    <a href="{{ route('public.progress.track') }}" class="nav-toggle" style="justify-content: flex-start;">
                         <span>Progress Tracking</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
                     </a>
-                    <ul class="submenu" id="progress-tracking">
-                        <li><a href="#">Track Inquiry Status</a></li>
-                        <li><a href="#">Status History</a></li>
-                        <li><a href="#">Dashboard</a></li>
-                    </ul>
                 </li>
             @endif
 
@@ -182,22 +162,79 @@
     transition: transform 0.3s ease;
 }
 
-.nav-toggle.open .nav-arrow {
+.nav-toggle.active .nav-arrow {
     transform: rotate(180deg);
+}
+
+/* Ensure submenu styling works */
+.submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background-color: rgba(0, 0, 0, 0.2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.submenu.expanded {
+    max-height: 200px;
+}
+
+.submenu li {
+    margin: 0;
+}
+
+.submenu a {
+    display: block;
+    padding: 0.5rem 2rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.submenu a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: #45c649;
+    color: white;
 }
 </style>
 
 <script>
-function toggleSubmenu(menuId) {
-    const submenu = document.getElementById(menuId);
-    if (submenu) {
-        submenu.classList.toggle('open');
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure toggleSubmenu function exists and works
+    window.toggleSubmenu = function(menuId) {
+        const submenu = document.getElementById(menuId);
+        if (!submenu) return;
         
-        // Toggle the arrow for the parent link
-        const toggle = submenu.previousElementSibling;
-        if (toggle && toggle.classList.contains('nav-toggle')) {
-            toggle.classList.toggle('open');
+        const toggleBtn = submenu.previousElementSibling;
+        
+        // Toggle expanded class
+        const isExpanded = submenu.classList.contains('expanded');
+        
+        // Close all other submenus first
+        document.querySelectorAll('.submenu.expanded').forEach(menu => {
+            if (menu.id !== menuId) {
+                menu.classList.remove('expanded');
+            }
+        });
+        
+        document.querySelectorAll('.nav-toggle.active').forEach(btn => {
+            if (btn !== toggleBtn) {
+                btn.classList.remove('active');
+            }
+        });
+        
+        // Toggle current submenu
+        if (isExpanded) {
+            submenu.classList.remove('expanded');
+            if (toggleBtn) toggleBtn.classList.remove('active');
+        } else {
+            submenu.classList.add('expanded');
+            if (toggleBtn) toggleBtn.classList.add('active');
         }
-    }
-}
+    };
+});
 </script>

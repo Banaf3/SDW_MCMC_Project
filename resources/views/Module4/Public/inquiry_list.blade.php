@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VeriTrack - My Inquiries</title>
-    <style>
+@extends('layouts.app')
+
+@section('title', 'My Inquiries - VeriTrack')
+
+@section('styles')
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -16,171 +15,6 @@
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             color: #333;
-        }
-
-        /* Main Container */
-        .main-container { 
-            display: flex; 
-            min-height: 100vh;
-            padding-top: 80px; /* Account for fixed header */
-        }
-
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            margin-left: 250px; /* Account for sidebar width */
-            padding: 20px;
-        }
-
-        /* Header Styles */
-        .header { 
-            background: linear-gradient(135deg, #4c6ef5 0%, #45c649 100%);
-            color: white; 
-            padding: 0.75rem 0; 
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-container { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            max-width: 100%; 
-            margin: 0 auto; 
-            padding: 0 2rem; 
-        }
-        
-        .logo h1 { 
-            font-size: 1.5rem; 
-            font-weight: 600;
-            letter-spacing: -0.5px;
-        }
-        
-        /* Header User Info */
-        .header-user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .header-user-info .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .user-details {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-        
-        .user-details .user-name {
-            font-weight: 600;
-            margin-bottom: 0.125rem;
-            color: white;
-            font-size: 0.9rem;
-        }
-        
-        .user-details .user-role {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Sidebar Styles */        
-        .sidebar { 
-            width: 250px; 
-            background: linear-gradient(180deg, #495057 0%, #343a40 100%);
-            color: white; 
-            padding: 1.5rem 0;
-            position: fixed;
-            left: 0;
-            top: 60px;
-            bottom: 0;
-            overflow-y: auto;
-            z-index: 999;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .sidebar-nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-section h3 {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #adb5bd;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-        
-        .nav-item .nav-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #e9ecef;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .nav-item .nav-toggle:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .nav-arrow {
-            transition: transform 0.2s ease;
-        }
-        
-        .nav-item.active .nav-arrow {
-            transform: rotate(180deg);
-        }
-        
-        .submenu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background-color: rgba(0, 0, 0, 0.2);
-        }
-        
-        .submenu.show {
-            max-height: 300px;
-        }
-        
-        .submenu li a {
-            display: block;
-            padding: 0.5rem 3rem;
-            color: #ced4da;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-        }
-        
-        .submenu li a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding-left: 3.25rem;
         }
 
         /* Main Content */
@@ -407,10 +241,31 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .status-rejected {
-            background: #e2e3e5;
-            color: #383d41;
-            border: 2px solid #d6d8db;
+        .status-rejected-by-agency {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-under-review {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-submitted {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-discarded {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         }
@@ -517,26 +372,20 @@
             }
         }
     </style>
-</head>
-<body>
-    <!-- Include Header -->
-    @include('layouts.partials.header')
-    
-    <div class="main-container">
-        <!-- Include Sidebar -->
-        @include('layouts.partials.sidebar')
-        
-        <div class="content-area">
-            <!-- Main Content -->
-            <div class="main-content">
-                <h1 class="page-title">My Inquiries</h1>
+@endsection
 
-            <!-- Total Inquiries Summary -->
-            <div class="stats-summary">                <div class="stat-card">
-                    <span class="stat-number">{{ $totalInquiries }}</span>
-                    <span class="stat-label">Total Inquiries</span>
-                </div>
+@section('content')
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="page-title">My Inquiries</h1>
+
+        <!-- Total Inquiries Summary -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <span class="stat-number">{{ $totalInquiries }}</span>
+                <span class="stat-label">Total Inquiries</span>
             </div>
+        </div>
 
             <!-- Filter Section -->
             <div class="filter-section">
@@ -549,10 +398,13 @@
                         <label for="statusFilter">Status</label>
                         <select class="form-control" id="statusFilter">
                             <option value="">All Statuses</option>
+                            <option value="submitted">Submitted</option>
+                            <option value="under-review">Under Review</option>
                             <option value="under-investigation">Under Investigation</option>
                             <option value="verified-as-true">Verified as True</option>
                             <option value="identified-as-fake">Identified as Fake</option>
-                            <option value="rejected">Rejected</option>
+                            <option value="rejected-by-agency">Rejected by Agency</option>
+                            <option value="discarded">Discarded</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -606,7 +458,9 @@
             </div>
         </div>
     </div>
+@endsection
 
+@section('scripts')
     <script>
         // Filter functionality
         function filterInquiries() {
@@ -748,7 +602,4 @@
             }
         }
     </script>
-        </div>
-    </div>
-</body>
-</html>
+@endsection
