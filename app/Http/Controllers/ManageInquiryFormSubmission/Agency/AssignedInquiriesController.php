@@ -138,68 +138,6 @@ class AssignedInquiriesController extends Controller
     }
 
     /**
-     * Generate agency inquiry report (within ManageInquiryFormSubmission context)
-     */    public function generateReport(Request $request)
-    {
-        $agencyId = session('agency_id');
-        
-        // Temporary: If no agency_id in session, use agency ID 1 for testing
-        if (!$agencyId) {
-            $agencyId = 1;
-            session(['agency_id' => $agencyId]);
-        }
-
-        // Date range for report
-        $startDate = $request->input('start_date', Carbon::now()->subMonths(3)->format('Y-m-d'));
-        $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
-
-        // Get agency information
-        $agency = Agency::find($agencyId);
-
-        // Only include inquiries with allowed statuses within ManageInquiryFormSubmission
-        $allowedStatuses = ['Under Investigation', 'Verified as True', 'Identified as Fake', 'Rejected'];
-
-        // Get inquiry statistics (only for allowed statuses)
-        $inquiriesQuery = Inquiry::where('AgencyID', $agencyId)
-            ->whereIn('InquiryStatus', $allowedStatuses)
-            ->whereBetween('SubmitionDate', [$startDate, $endDate]);
-
-        $totalInquiries = $inquiriesQuery->count();
-        $statusBreakdown = $inquiriesQuery->groupBy('InquiryStatus')
-            ->selectRaw('InquiryStatus, COUNT(*) as count')
-            ->get();
-
-        // Monthly trend (only for allowed statuses)
-        $monthlyTrend = [];
-        $currentDate = Carbon::parse($startDate);
-        $endDateCarbon = Carbon::parse($endDate);
-
-        while ($currentDate->lte($endDateCarbon)) {
-            $monthCount = Inquiry::where('AgencyID', $agencyId)
-                ->whereIn('InquiryStatus', $allowedStatuses)
-                ->whereYear('SubmitionDate', $currentDate->year)
-                ->whereMonth('SubmitionDate', $currentDate->month)
-                ->count();
-
-            $monthlyTrend[] = [
-                'month' => $currentDate->format('M Y'),
-                'count' => $monthCount
-            ];
-
-            $currentDate->addMonth();
-        }
-
-        return view('ManageInquiryFormSubmission.Agency.inquiry-report', compact(
-            'agency',
-            'totalInquiries',
-            'statusBreakdown',
-            'monthlyTrend',
-            'startDate',
-            'endDate'
-        ));
-    }
-
-    /**
      * Download evidence file for an inquiry
      */
     public function downloadEvidence($inquiryId, $fileIndex)

@@ -133,7 +133,6 @@ Route::middleware(['web'])->group(function () {
     Route::get('/agency/inquiries/list', [AssignedInquiriesController::class, 'index'])->name('agency.inquiries.list'); // Module 2
     Route::get('/agency/inquiries/{inquiryId}', [AssignedInquiriesController::class, 'show'])->name('agency.inquiries.show');
     Route::get('/agency/inquiries/detail/{inquiryId}/evidence/{fileIndex}', [AssignedInquiriesController::class, 'downloadEvidence'])->name('agency.inquiries.detail.download-evidence'); // Module 2
-    Route::get('/agency/reports', [AssignedInquiriesController::class, 'generateReport'])->name('agency.reports');
     
     // Agency-specific profile routes
     Route::post('/agency/profile/update', [User_Controller::class, 'updateProfile'])->name('agency.profile.update');

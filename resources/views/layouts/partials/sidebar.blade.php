@@ -148,7 +148,6 @@
                     </a>
                     <ul class="submenu" id="inquiry-access">
                         <li><a href="{{ route('agency.inquiries.list') }}">Assigned Inquiries</a></li>
-                        <li><a href="{{ route('agency.reports') }}">Investigation Reports</a></li>
                     </ul>
                 </li>
 
