@@ -70,9 +70,8 @@
                         </svg>
                     </a>
                     <ul class="submenu" id="user-management">
-                        <li><a href="{{ route('admin.agency.register') }}">Register Agency Staff</a></li>
-                        <li><a href="{{ route('admin.agency.management') }}">Manage Agencies</a></li>
-                        <li><a href="#">User Reports</a></li>
+                        <li><a href="{{ route('admin.users.management') }}">View User Info</a></li>
+                        <li><a href="{{ route('admin.agency.register') }}">Agency & Staff Management</a></li>
                     </ul>
                 </li>
 

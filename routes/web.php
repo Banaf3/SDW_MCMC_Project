@@ -73,11 +73,13 @@ Route::post('/password/update', [User_Controller::class, 'updatePassword'])->nam
 
 // Admin routes (agency staff registration)
 Route::middleware(['web'])->group(function () {
-    Route::get('/admin/agency/register', [User_Controller::class, 'showAgencyRegistrationForm'])->name('admin.agency.register');
+    // Admin Agency Management Routes (Merged Page)
+    Route::get('/admin/agency/register', [User_Controller::class, 'showAgencyManagement'])->name('admin.agency.register'); // Redirect to merged page
     Route::post('/admin/agency/register', [User_Controller::class, 'registerAgencyStaff'])->name('admin.agency.register.store');
     Route::get('/admin/agency/management', [User_Controller::class, 'showAgencyManagement'])->name('admin.agency.management');
     Route::post('/admin/agency/create', [User_Controller::class, 'createAgency'])->name('admin.agency.create');
     
+<<<<<<< HEAD
     // MCMC Admin inquiry management routes
     Route::get('/admin/inquiries/new', [InquiryManagementController::class, 'viewNewInquiries'])->name('admin.inquiries.new');
     Route::get('/admin/inquiries/previous', [InquiryManagementController::class, 'viewPreviousInquiries'])->name('admin.inquiries.previous');
@@ -101,6 +103,18 @@ Route::middleware(['web'])->group(function () {
     Route::get('/mcmc/inquiry/{id}/evidence/{fileIndex}', [InquiryProgressTrackingInquiryController::class, 'downloadEvidence'])->name('mcmc.inquiry.download-evidence');
     Route::get('/mcmc/inquiry/{id}/agency-docs/{fileIndex}', [InquiryProgressTrackingInquiryController::class, 'downloadAgencySupportingDoc'])->name('mcmc.inquiry.download-agency-docs');
     Route::get('/mcmc/reports', [InquiryProgressTrackingInquiryController::class, 'reports'])->name('mcmc.reports');
+=======
+    // User Management routes (Admin only)
+    Route::get('/admin/users/management', [User_Controller::class, 'showUserManagement'])->name('admin.users.management');
+    Route::get('/admin/users/details', [User_Controller::class, 'getUserDetails'])->name('admin.users.details');
+    Route::delete('/admin/users/delete', [User_Controller::class, 'deleteUser'])->name('admin.users.delete');
+    Route::post('/admin/users/delete', [User_Controller::class, 'deleteUser'])->name('admin.users.delete.post');
+    
+    // MCMC Admin inquiry management routes (placeholders)
+    Route::get('/mcmc/inquiries/unassigned', function () {
+        return view('welcome');
+    })->name('mcmc.unassigned.inquiries');
+>>>>>>> Majed
     
     Route::get('/mcmc/inquiries/assigned', function () {
         return view('welcome');
