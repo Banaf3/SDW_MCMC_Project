@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Inquiry;
 use App\Models\Agency;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class InquiryController extends Controller
 {    public function index()
@@ -78,7 +79,7 @@ class InquiryController extends Controller
                     ]
                 ]
             ]);
-        }        return view('Module4.Public.inquiry_list', [
+        }        return view('InquiryProgressTracking.PublicUser.inquiry_list', [
             'inquiries' => $inquiries,
             'totalInquiries' => count($inquiries),
             'currentUserId' => $currentUserId // Pass current user ID to view
@@ -294,10 +295,10 @@ class InquiryController extends Controller
 
         // Check if this is MCMC view request by checking the route path
         if (request()->is('mcmc-inquiry-detail/*')) {
-            return view('Module4-MCMC.InquiryDetail', ['inquiry' => $inquiryData]);
+            return view('InquiryProgressTracking.MCMC.InquiryDetail', ['inquiry' => $inquiryData]);
         }
 
-        return view('Module4.Public.inquiry_detail', ['inquiry' => $inquiryData]);
+        return view('InquiryProgressTracking.PublicUser.inquiry_detail', ['inquiry' => $inquiryData]);
     }
     public function allInquiries()
     {
@@ -345,7 +346,7 @@ class InquiryController extends Controller
         // Calculate agency performance metrics
         $agencyPerformance = $this->calculateAgencyPerformance();
 
-        return view('Module4-MCMC.inquiryList', [
+        return view('InquiryProgressTracking.MCMC.inquiryList', [
             'inquiries' => $inquiries,
             'totalInquiries' => count($inquiries),
             'statusCounts' => $statusCounts,
@@ -370,7 +371,7 @@ class InquiryController extends Controller
             }
             
             // Debug logging
-            \Log::info('Reports data:', [
+            Log::info('Reports data:', [
                 'agencies_count' => $agencies->count(),
                 'agency_names' => $agencies->pluck('AgencyName')->toArray(),
                 'performance_keys' => array_keys($agencyPerformance),
@@ -386,7 +387,7 @@ class InquiryController extends Controller
                 'Rejected' => Inquiry::where('InquiryStatus', 'Rejected')->count(),
             ];
 
-            return view('Module4-MCMC.Report', [
+            return view('InquiryProgressTracking.MCMC.Report', [
                 'agencies' => $agencies,
                 'agencyPerformance' => $agencyPerformance,
                 'totalInquiries' => $totalInquiries,
@@ -394,13 +395,13 @@ class InquiryController extends Controller
                 'currentUserId' => 1 // For notification system
             ]);
         } catch (\Exception $e) {
-            \Log::error('Reports method error: ' . $e->getMessage());
+            Log::error('Reports method error: ' . $e->getMessage());
             
             // Fallback: Create minimal sample data
             $agencies = collect([]);
             $agencyPerformance = $this->generateSampleAgencyData();
             
-            return view('Module4-MCMC.Report', [
+            return view('InquiryProgressTracking.MCMC.Report', [
                 'agencies' => $agencies,
                 'agencyPerformance' => $agencyPerformance,
                 'totalInquiries' => 50,
@@ -513,7 +514,7 @@ class InquiryController extends Controller
             'updatedAt' => $inquiry->updated_at->format('F j, Y - H:i')
         ];
 
-        return view('Module4-MCMC.InquiryDetail', ['inquiry' => $inquiryData]);
+        return view('InquiryProgressTracking.MCMC.InquiryDetail', ['inquiry' => $inquiryData]);
     }
 
     public function publicShow($id)
@@ -605,7 +606,7 @@ class InquiryController extends Controller
             ];
         }
         
-        return view('Module4.Public.inquiry_detail', ['inquiry' => $inquiryData]);
+        return view('InquiryProgressTracking.PublicUser.inquiry_detail', ['inquiry' => $inquiryData]);
     }
 
     private function calculateAgencyPerformance()
@@ -710,7 +711,7 @@ class InquiryController extends Controller
             return $agencyStats;
             
         } catch (\Exception $e) {
-            \Log::error('calculateAgencyPerformance error: ' . $e->getMessage());
+            Log::error('calculateAgencyPerformance error: ' . $e->getMessage());
             return [];
         }
     }

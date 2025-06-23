@@ -68,7 +68,7 @@ class AgencyController extends Controller
             'search' => $request->search ?? ''
         ];
 
-        return view('Module4-Agency.InquiryAssigned', compact(
+        return view('InquiryProgressTracking.Agency.InquiryAssigned', compact(
             'inquiries',
             'totalInquiries',
             'filteredCount',
@@ -108,7 +108,7 @@ class AgencyController extends Controller
             'SubmitionDate' => $inquiry->SubmitionDate ? $inquiry->SubmitionDate->format('F j, Y') : 'N/A',
         ];
 
-        return view('Module4-Agency.InquiryEdit', ['inquiry' => $inquiryData]);
+        return view('InquiryProgressTracking.Agency.InquiryEdit', ['inquiry' => $inquiryData]);
     }    public function updateInquiryStatus(Request $request, $id)
     {
         try {

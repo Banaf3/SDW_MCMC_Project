@@ -1,156 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VeriTrack - Agency Performance Reports</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+@extends('layouts.app')
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            color: #333;
-        }
+@section('title', 'Agency Performance Reports - MCMC Portal')
 
-        /* Header Styles */
-        .header { 
-            background: linear-gradient(135deg, #4c6ef5 0%, #45c649 100%);
-            color: white; 
-            padding: 0.75rem 0; 
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-container { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            max-width: 100%; 
-            margin: 0 auto; 
-            padding: 0 2rem; 
-        }
-        
-        .logo h1 { 
-            font-size: 1.5rem; 
-            font-weight: 600;
-            letter-spacing: -0.5px;
-        }
-        
-        /* Header User Info */
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .header-user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .header-user-info .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .user-details {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .user-details .user-name {
-            font-weight: 600;
-            margin-bottom: 0.125rem;
-            color: white;
-            font-size: 0.9rem;
-        }
-        
-        .user-details .user-role {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .dropdown-arrow {
-            margin-left: 0.5rem;
-        }
-
-        /* Notification Styles */
-        .notification-container {
-            position: relative;
-            cursor: pointer;
-        }
-
-        .notification-bell {
-            position: relative;
-            padding: 8px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            transition: background 0.3s ease;
-        }
-
-        .notification-bell:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        /* Main Container */
-        .main-container { 
-            display: flex; 
-            min-height: 100vh;
-            padding-top: 80px; /* Account for fixed header */
-        }
-
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            margin-left: 250px; /* Account for sidebar width */
-            padding: 20px;
-        }
-
-        /* Page Title */
+@section('styles')
+<style>
+        /* Page-specific styles for MCMC Reports */
         .page-title {
-            font-size: 2.5rem;
-            color: white;
+            font-size: 2rem;
             margin-bottom: 30px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            font-weight: 700;
+            color: #1e3c72;
+            border-bottom: 3px solid #2a5298;
+            padding-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 15px;
@@ -414,28 +274,8 @@
             color: #721c24;
         }
 
-        /* Sidebar Styles */        
-        .sidebar { 
-            width: 250px; 
-            background: linear-gradient(180deg, #495057 0%, #343a40 100%);
-            color: white; 
-            padding: 1.5rem 0;
-            position: fixed;
-            left: 0;
-            top: 60px;
-            bottom: 0;
-            overflow-y: auto;
-            z-index: 999;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-
         /* Responsive Design */
         @media (max-width: 768px) {
-            .content-area {
-                margin-left: 0;
-                padding: 10px;
-            }
-
             .reports-filters {
                 grid-template-columns: 1fr;
             }
@@ -444,28 +284,20 @@
                 grid-template-columns: 1fr;
             }
         }
-    </style>
-</head>
-<body>
-    <!-- Include Header -->
-    @include('layouts.partials.header')
-    
-    <div class="main-container">
-        <!-- Include Sidebar -->
-        @include('layouts.partials.sidebar')
-        
-        <div class="content-area">
-            <!-- Main Content -->
-            <div class="main-content">
-                <h1 class="page-title">
-                    <a href="/all-inquiries" class="back-button">
-                        <span>←</span> Back to Inquiries
-                    </a>
-                    📊 Agency Performance Reports
-                </h1>
+</style>
+@endsection
 
-                <!-- Agency Performance Reports Section -->
-                <div class="reports-section">
+@section('content')
+<div class="container">
+    <h1 class="page-title">
+        <a href="{{ route('mcmc.progress.monitor') }}" class="back-button">
+            <span>←</span> Back to Inquiries
+        </a>
+        📊 Agency Performance Reports
+    </h1>
+
+    <!-- Agency Performance Reports Section -->
+    <div class="reports-section">
                     <div class="section-header">
                         <h2 class="section-title">
                             <span class="section-icon">📈</span>
@@ -613,8 +445,8 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>    <script>
+    
+    <script>
         // Reports functionality
         function generateReports() {
             console.log('=== generateReports() called ===');
@@ -978,5 +810,11 @@
             generateReports();
         }, 500);
     </script>
-</body>
-</html>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+// Additional scripts if needed
+</script>
+@endsection
