@@ -11,7 +11,7 @@ use App\Models\Agency;
 use App\Models\AgencyStaff;
 use Illuminate\Support\Str;
 
-class Admin_Cntroller extends Controller
+class Admin_Controller extends Controller
 {
     /**
      * ====================================
@@ -255,104 +255,4 @@ class Admin_Cntroller extends Controller
      * ====================================
      * AGENCY STAFF MANAGEMENT METHODS (Admin creates agency accounts)
      * ====================================
-     */
-    
-    /**
-     * Show agency registration form (Admin only)
-     */
-    public function showAgencyRegistrationForm()
-    {
-        if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can access the agency registration page.');
-        }
-        
-        $agencies = Agency::all();
-        return view('Module01.MCMC_Admin.agency-registration', compact('agencies'));
-    }    /**
-     * Register new agency staff (Admin only)
-     */
-    public function registerAgency(Request $request)
-    {
-        // Use the same logic as registerAgencyStaff
-        return $this->registerAgencyStaff($request);
-    }
-    
-    /**
-     * Register new agency staff (Admin only)
-     */
-    public function registerAgencyStaff(Request $request)
-    {
-        if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can register agency staff.');
-        }
-          $request->validate([
-            'staff_name' => 'required|string|max:255',
-            'agency_id' => 'required|exists:agencies,AgencyID',
-            'staff_phone' => 'required|string|max:20',
-        ]);
-        
-        $agency = Agency::findOrFail($request->agency_id);
-        
-        // Generate unique username using the model method
-        $username = AgencyStaff::generateUniqueUsername($request->staff_name, $request->agency_id);
-        
-        // Generate temporary password
-        $tempPassword = 'temp' . random_int(1000, 9999);
-        
-        // Create agency staff with username (email is optional)
-        AgencyStaff::create([
-            'StaffName' => $request->staff_name,
-            'Username' => $username,
-            'Password' => Hash::make($tempPassword),
-            'staffPhoneNum' => $request->staff_phone,
-            'AgencyID' => $request->agency_id,
-            'password_change_required' => true, // Force password change on first login
-            'staffEmail' => null, // Optional - can be added later by staff
-        ]);
-        
-        $successMessage = "Agency staff registered successfully!\n";
-        $successMessage .= "Username: {$username}\n";
-        $successMessage .= "Temporary Password: {$tempPassword}\n";
-        $successMessage .= "Agency: {$agency->AgencyName}\n";
-        $successMessage .= "Note: Staff must change password on first login and can add email in profile.";
-        
-        return redirect()->back()->with('success', $successMessage);
-    }
-    
-    /**
-     * Show agency management page
-     */
-    public function showAgencyManagement()
-    {
-        if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can access agency management.');
-        }
-        
-        $agencies = Agency::with('staff')->get();
-        return view('Module01.MCMC_Admin.agency-management', compact('agencies'));
-    }
-    
-    /**
-     * Create new agency
-     */
-    public function createAgency(Request $request)
-    {
-        if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can create agencies.');
-        }
-        
-        $request->validate([
-            'agency_name' => 'required|string|max:255',
-            'agency_address' => 'required|string|max:500',
-            'agency_phone' => 'required|string|max:20',
-        ]);
-        
-        Agency::create([
-            'AgencyName' => $request->agency_name,
-            'AgencyAddress' => $request->agency_address,
-            'AgencyPhoneNum' => $request->agency_phone,
-        ]);
-        
-        return redirect()->back()->with('success', 'Agency created successfully!');
-    }
-}
+     */}

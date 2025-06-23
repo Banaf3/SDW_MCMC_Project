@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use App\Models\PublicUser;
 use App\Models\AgencyStaff;
 use App\Models\Administrator;
+use App\Models\Agency;
 
 class User_Controller extends Controller
 {
@@ -29,7 +30,8 @@ class User_Controller extends Controller
     {
         return view('Module01.login');
     }
-      /**
+    
+    /**
      * Handle user login (Public Users, Agency Staff & Administrators)
      */
     public function login(Request $request)
@@ -47,105 +49,185 @@ class User_Controller extends Controller
         $user = $this->attemptAuthentication($loginField, $password, $request);
         
         if ($user) {
-            return $user; // Returns redirect response
+            return $this->redirectAfterLogin($user['type'], $user['data']);
         }
-        
-        return back()->with('error', 'Invalid credentials.')->withInput();
-    }    /**
-     * Attempt authentication for all user types with smart detection
-     */
-    private function attemptAuthentication($loginField, $password, $request)
-    {
-        // Check if input looks like email (contains @)
-        $isEmail = filter_var($loginField, FILTER_VALIDATE_EMAIL);
-        
-        // Strategy 1: Try Admin authentication (prioritize username, then email)
-        $admin = null;
-        if (!$isEmail) {
-            // Try username first for non-email inputs
-            $admin = Administrator::findByUsername($loginField);
-        }
-        if (!$admin && $isEmail) {
-            // Try email if username failed or input is email format
-            $admin = Administrator::findByEmail($loginField);
-        }
-        if ($admin && Hash::check($password, $admin->Password)) {
-            return $this->createUserSession($admin, 'admin', $request);
-        }
-        
-        // Strategy 2: Try Agency Staff authentication (prioritize username, then email)
-        $staff = null;
-        if (!$isEmail) {
-            // Try username first for non-email inputs
-            $staff = AgencyStaff::findByUsername($loginField);
-        }
-        if (!$staff && $isEmail) {
-            // Try email if username failed or input is email format
-            $staff = AgencyStaff::findByEmail($loginField);
-        }
-        if ($staff && Hash::check($password, $staff->Password)) {
-            // Check if password change is required (first login)
-            if ($staff->password_change_required) {
-                $this->createUserSession($staff, 'agency', $request);
-                return redirect()->route('password.change')
-                    ->with('warning', 'Welcome! For security reasons, you must change your password before continuing.');
-            }
-            return $this->createUserSession($staff, 'agency', $request);
-        }
-        
-        // Strategy 3: Try Public User authentication (email only)
-        if ($isEmail) {
-            $publicUser = PublicUser::findForLogin($loginField);
-            if ($publicUser && Hash::check($password, $publicUser->Password)) {
-                return $this->createUserSession($publicUser, 'public', $request);
-            }
-        }
-        
-        return null; // Authentication failed
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->withInput();
     }
 
     /**
-     * Create user session and redirect
+     * Attempt authentication across all user types
      */
-    private function createUserSession($user, $userType, $request)
+    private function attemptAuthentication($loginField, $password, $request)
+    {
+        // Try administrators first (if email contains @admin.com or direct admin match)
+        if (strpos($loginField, '@admin.com') !== false || filter_var($loginField, FILTER_VALIDATE_EMAIL) === false) {
+            $admin = $this->tryAdminAuthentication($loginField, $password);
+            if ($admin) {
+                $this->setUserSession($admin, 'admin');
+                return ['type' => 'admin', 'data' => $admin];
+            }
+        }
+
+        // Try agency staff authentication (if email contains @agency.com or looks like agency email)
+        if (strpos($loginField, '@agency.com') !== false || filter_var($loginField, FILTER_VALIDATE_EMAIL)) {
+            $agencyStaff = $this->tryAgencyAuthentication($loginField, $password);
+            if ($agencyStaff) {
+                $this->setUserSession($agencyStaff, 'agency');
+                return ['type' => 'agency', 'data' => $agencyStaff];
+            }
+        }
+
+        // Try public user authentication (email format)
+        if (filter_var($loginField, FILTER_VALIDATE_EMAIL)) {
+            $publicUser = $this->tryPublicAuthentication($loginField, $password);
+            if ($publicUser) {
+                $this->setUserSession($publicUser, 'public');
+                return ['type' => 'public', 'data' => $publicUser];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Try administrator authentication
+     */
+    private function tryAdminAuthentication($loginField, $password)
+    {
+        // Try by email first, then by username
+        $admin = Administrator::where('AdminEmail', $loginField)
+                              ->orWhere('Username', $loginField)
+                              ->first();
+
+        if ($admin && Hash::check($password, $admin->Password)) {
+            return $admin;
+        }
+
+        return null;
+    }
+
+    /**
+     * Try agency staff authentication
+     */
+    private function tryAgencyAuthentication($loginField, $password)
+    {
+        // Try by email first, then by username
+        $staff = AgencyStaff::where('staffEmail', $loginField)
+                           ->orWhere('Username', $loginField)
+                           ->first();
+
+        if ($staff && Hash::check($password, $staff->Password)) {
+            return $staff;
+        }
+
+        return null;
+    }
+
+    /**
+     * Try public user authentication
+     */
+    private function tryPublicAuthentication($loginField, $password)
+    {
+        $user = PublicUser::where('UserEmail', $loginField)->first();
+
+        if ($user && Hash::check($password, $user->Password)) {
+            return $user;
+        }
+
+        return null;
+    }
+
+    /**
+     * Set user session data and track login history
+     */
+    private function setUserSession($user, $type)
+    {
+        $sessionData = [
+            'user_type' => $type,
+            'is_logged_in' => true,
+        ];
+
+        // Track login history
+        $this->trackLoginHistory($user, $type);
+
+        switch ($type) {
+            case 'admin':
+                $sessionData['user_id'] = $user->AdminID;
+                $sessionData['user_name'] = $user->AdminName;
+                $sessionData['user_email'] = $user->AdminEmail;
+                $sessionData['user_role'] = $user->AdminRole;
+                break;
+            case 'agency':
+                $sessionData['user_id'] = $user->StaffID;
+                $sessionData['user_name'] = $user->StaffName;
+                $sessionData['user_email'] = $user->staffEmail;
+                $sessionData['agency_id'] = $user->AgencyID;
+                $sessionData['password_change_required'] = $user->password_change_required ?? false;
+                break;
+            case 'public':
+                $sessionData['user_id'] = $user->UserID;
+                $sessionData['user_name'] = $user->UserName;
+                $sessionData['user_email'] = $user->UserEmail;
+                break;
+        }
+
+        session($sessionData);
+    }
+
+    /**
+     * Track user login history
+     */
+    private function trackLoginHistory($user, $type)
+    {
+        try {
+            // Get current login history
+            $loginHistory = $user->LoginHistory ? json_decode($user->LoginHistory, true) : [];
+            
+            // Add new login entry
+            $newLogin = [
+                'timestamp' => now()->toISOString(),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ];
+            
+            // Keep only last 10 login records
+            array_unshift($loginHistory, $newLogin);
+            $loginHistory = array_slice($loginHistory, 0, 10);
+            
+            // Update the user's login history
+            $user->update(['LoginHistory' => json_encode($loginHistory)]);
+            
+        } catch (\Exception $e) {
+            // Silently fail if login history tracking fails
+            \Log::warning('Failed to track login history for user: ' . $user->getKey());
+        }
+    }
+
+    /**
+     * Redirect user after successful login
+     */
+    private function redirectAfterLogin($userType, $userData)
     {
         switch ($userType) {
             case 'admin':
-                $request->session()->put('user_id', $user->AdminID);
-                $request->session()->put('user_type', 'admin');
-                $request->session()->put('user_name', $user->AdminName);
-                $request->session()->put('user_email', $user->AdminEmail);
-                $request->session()->put('username', $user->Username);
-                break;
-                
+                return redirect('/dashboard')->with('success', 'Welcome back, ' . $userData->AdminName . '!');
             case 'agency':
-                $request->session()->put('user_id', $user->StaffID);
-                $request->session()->put('user_type', 'agency');
-                $request->session()->put('user_name', $user->StaffName);
-                $request->session()->put('user_email', $user->staffEmail);
-                $request->session()->put('username', $user->Username);
-                break;
-                
+                // Check if password change is required
+                if ($userData->password_change_required) {
+                    return redirect()->route('password.change')
+                                   ->with('warning', 'Please change your password to continue.');
+                }
+                return redirect('/dashboard')->with('success', 'Welcome back, ' . $userData->StaffName . '!');
             case 'public':
-                $request->session()->put('user_id', $user->UserID);
-                $request->session()->put('user_type', 'public');
-                $request->session()->put('user_name', $user->UserName);
-                $request->session()->put('user_email', $user->UserEmail);
-                // Public users don't have usernames
-                break;
+                return redirect('/dashboard')->with('success', 'Welcome back, ' . $userData->UserName . '!');
+            default:
+                return redirect('/login');
         }
-        
-        return redirect()->intended('/dashboard');
     }
-    
-    /**
-     * Show user registration form (Public Users only)
-     */
-    public function showRegistrationForm()
-    {
-        return view('Module01.Public_user.register');
-    }
-    
+
     /**
      * Handle user registration (Public Users only)
      */
@@ -190,13 +272,38 @@ class User_Controller extends Controller
         $request->session()->regenerateToken();
         return redirect('/login');
     }
+
+    /**
+     * Show user registration form
+     */
+    public function showRegistrationForm()
+    {
+        return view('Module01.register');
+    }
+
+    /**
+     * Show agency login form
+     */
+    public function showAgencyLoginForm()
+    {
+        return view('Module01.Agency.login');
+    }
+
+    /**
+     * Handle agency login
+     */
+    public function agencyLogin(Request $request)
+    {
+        return $this->login($request); // Use the same login method
+    }
     
     /**
      * ====================================
      * USER PROFILE MANAGEMENT METHODS
      * ====================================
      */
-      /**
+    
+    /**
      * Show user profile editing form
      */
     public function editProfile(Request $request)
@@ -233,7 +340,8 @@ class User_Controller extends Controller
         
         return view($viewPath, ['user' => $formattedUser]);
     }
-      /**
+    
+    /**
      * Update user profile
      */
     public function updateProfile(Request $request)
@@ -295,11 +403,69 @@ class User_Controller extends Controller
     }
     
     /**
+     * Update user data based on user type
+     */
+    private function updateUserData($user, $userType, $request, $profilePicPath = null)
+    {
+        $updateData = [];
+        
+        // Handle profile picture
+        if ($profilePicPath) {
+            $updateData['ProfilePic'] = $profilePicPath;
+        }
+        
+        // Handle common fields based on user type
+        switch ($userType) {
+            case 'public':
+                if ($request->filled('name')) {
+                    $updateData['UserName'] = $request->name;
+                }
+                if ($request->filled('phone')) {
+                    $updateData['UserPhoneNum'] = $request->phone;
+                }
+                if ($request->filled('address')) {
+                    $updateData['Useraddress'] = $request->address;
+                }
+                break;
+                
+            case 'agency':
+                if ($request->filled('name')) {
+                    $updateData['StaffName'] = $request->name;
+                }
+                if ($request->filled('email')) {
+                    $updateData['staffEmail'] = $request->email;
+                }
+                if ($request->filled('phone')) {
+                    $updateData['staffPhoneNum'] = $request->phone;
+                }
+                break;
+                
+            case 'admin':
+                if ($request->filled('name')) {
+                    $updateData['AdminName'] = $request->name;
+                }
+                if ($request->filled('phone')) {
+                    $updateData['AdminPhoneNum'] = $request->phone;
+                }
+                if ($request->filled('address')) {
+                    $updateData['AdminAddress'] = $request->address;
+                }
+                break;
+        }
+        
+        // Update the user if there's data to update
+        if (!empty($updateData)) {
+            $user->update($updateData);
+        }
+    }
+
+    /**
      * ====================================
      * USER PASSWORD MANAGEMENT METHODS
      * ====================================
      */
-      /**
+    
+    /**
      * Show password change form
      */
     public function editPassword(Request $request)
@@ -326,7 +492,8 @@ class User_Controller extends Controller
         
         return view($viewPath);
     }
-      /**
+    
+    /**
      * Update user password
      */
     public function updatePassword(Request $request)
@@ -351,7 +518,7 @@ class User_Controller extends Controller
         }
         
         // Get the password field name based on user type
-        $passwordField = $userType === 'public' ? 'Password' : 'Password';
+        $passwordField = 'Password';
         
         // Check current password
         if (!Hash::check($request->current_password, $user->$passwordField)) {
@@ -459,14 +626,17 @@ class User_Controller extends Controller
     {
         return view('Module01.recovery');
     }
-      /**
+    
+    /**
      * Send password reset link email
      */
     public function sendResetLinkEmail(Request $request)
     {
         $request->validate(['email' => 'required|email']);
         
-        $email = $request->email;        // Check if user exists (in any of the user tables)
+        $email = $request->email;
+        
+        // Check if user exists (in any of the user tables)
         $user = null;
         $userType = null;
         
@@ -504,16 +674,20 @@ class User_Controller extends Controller
         
         // Delete existing password reset records for this email
         DB::table('password_resets')->where('email', $email)->delete();
-          // Insert new password reset record
+        
+        // Insert new password reset record
         DB::table('password_resets')->insert([
             'email' => $email,
             'token' => $token, // Store plain token for easier lookup
             'created_at' => now(),
         ]);
-          // For demo purposes, redirect directly to reset page instead of sending email
+        
+        // For demo purposes, redirect directly to reset page instead of sending email
         return redirect()->route('password.reset', ['token' => $token])
                         ->with('success', 'Password reset request processed. Please enter your new password below.');
-    }    /**
+    }
+    
+    /**
      * Show password reset form
      */
     public function showResetForm($token)
@@ -539,7 +713,8 @@ class User_Controller extends Controller
             'email' => $passwordReset->email
         ]);
     }
-      /**
+    
+    /**
      * Reset password
      */
     public function resetPassword(Request $request)
@@ -553,19 +728,23 @@ class User_Controller extends Controller
         $email = $request->email;
         $token = $request->token;
         $password = $request->password;
-          // Find the password reset record
+        
+        // Find the password reset record
         $passwordReset = DB::table('password_resets')
             ->where('email', $email)
             ->where('token', $token)
             ->first();
-          if (!$passwordReset) {
+        
+        if (!$passwordReset) {
             return back()->withErrors(['email' => 'Invalid password reset token.']);
         }
         
         // Check if token is not expired (24 hours)
         if (Carbon::parse($passwordReset->created_at)->addHours(24)->isPast()) {
             return back()->withErrors(['token' => 'Password reset token has expired.']);
-        }// Find and update the user's password
+        }
+        
+        // Find and update the user's password
         $userUpdated = false;
         
         // Check administrators
@@ -573,24 +752,14 @@ class User_Controller extends Controller
         if ($admin) {
             $admin->update(['Password' => Hash::make($password)]);
             $userUpdated = true;
-        }
-        
-        // Check agency staff
-        if (!$userUpdated) {
-            $staff = AgencyStaff::where('staffEmail', $email)->first();
-            if ($staff) {
-                $staff->update(['Password' => Hash::make($password)]);
-                $userUpdated = true;
-            }
-        }
-        
-        // Check public users
-        if (!$userUpdated) {
-            $publicUser = PublicUser::where('UserEmail', $email)->first();
-            if ($publicUser) {
-                $publicUser->update(['Password' => Hash::make($password)]);
-                $userUpdated = true;
-            }
+        } elseif ($staff = AgencyStaff::where('staffEmail', $email)->first()) {
+            // Check agency staff
+            $staff->update(['Password' => Hash::make($password)]);
+            $userUpdated = true;
+        } elseif ($publicUser = PublicUser::where('UserEmail', $email)->first()) {
+            // Check public users
+            $publicUser->update(['Password' => Hash::make($password)]);
+            $userUpdated = true;
         }
         
         if (!$userUpdated) {
@@ -605,163 +774,450 @@ class User_Controller extends Controller
 
     /**
      * ====================================
-     * AGENCY STAFF REGISTRATION METHODS (Admin Only)
+     * AGENCY MANAGEMENT METHODS (Admin Only)
      * ====================================
      */
     
     /**
-     * Show agency registration form (Admin only)
+     * Show agency and staff management page (Admin only)
      */
-    public function showAgencyRegistrationForm()
+    public function showAgencyManagement(Request $request)
     {
         if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can access the agency registration page.');
+            return redirect('/login')->with('error', 'Only administrators can access the agency management page.');
         }
         
-        $agencies = \App\Models\Agency::all();
-        return view('Module01.MCMC_Admin.agency-registration', compact('agencies'));
-    }
-    
-    /**
-     * Register new agency staff (Admin only) - with username system
-     */
-    public function registerAgencyStaff(Request $request)
-    {
-        if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can register agency staff.');
-        }
-          $request->validate([
-            'staff_name' => 'nullable|string|max:255',  // Name is now optional
-            'agency_id' => 'required|exists:agencies,AgencyID',
-            'staff_phone' => 'nullable|string|max:20',  // Phone is now optional
-            'staff_email' => 'required|email|max:255|unique:agency_staff,staffEmail', // Email is now required
-        ]);
+        // Get all agencies for dropdowns and management
+        $agencies = Agency::orderBy('AgencyName')->get();
         
-        $agency = \App\Models\Agency::findOrFail($request->agency_id);
+        // Get all agency staff with their agencies
+        $agencyStaff = AgencyStaff::with('agency')->orderBy('created_at', 'desc')->get();
         
-        // Generate unique username using the model method
-        $username = AgencyStaff::generateUniqueUsername($request->staff_name, $request->agency_id);
-        
-        // Generate secure temporary password
-        $tempPassword = 'Staff' . random_int(10000, 99999) . '!';
-          // Create agency staff with username system
-        $staff = AgencyStaff::create([
-            'StaffName' => $request->staff_name ?: 'Agency Staff', // Default name if not provided
-            'Username' => $username,
-            'Password' => Hash::make($tempPassword),
-            'staffEmail' => $request->staff_email, // Required now
-            'staffPhoneNum' => $request->staff_phone ?: '0000000000', // Default phone if not provided
-            'AgencyID' => $request->agency_id,
-            'password_change_required' => true, // Force password change on first login
-        ]);
-        
-        // Store credentials for display
-        $credentials = [
-            'staff_name' => $request->staff_name ?: 'Agency Staff',
-            'agency_name' => $agency->AgencyName,
-            'username' => $username,
-            'email' => $request->staff_email,
-            'password' => $tempPassword,
-            'login_url' => route('login'),
+        // Calculate stats
+        $stats = [
+            'total_agencies' => $agencies->count(),
+            'total_staff' => $agencyStaff->count(),
+            'active_agencies' => $agencies->where('deleted_at', null)->count(),
+            'recent_registrations' => $agencyStaff->where('created_at', '>=', Carbon::now()->subDays(30))->count(),
         ];
         
-        return redirect()->back()->with([
-            'success' => 'Agency staff registered successfully with username: ' . $username,
-            'new_staff_credentials' => $credentials
-        ]);
+        return view('Module01.MCMC_Admin.agency-staff-management', compact(
+            'agencies', 
+            'agencyStaff', 
+            'stats'
+        ));
     }
     
     /**
-     * Alias for registerAgencyStaff to maintain backward compatibility
-     */
-    public function registerAgency(Request $request)
-    {
-        return $this->registerAgencyStaff($request);
-    }
-    
-    /**
-     * ====================================
-     * ADMINISTRATOR CREATION METHODS
-     * ====================================
-     */
-    
-    /**
-     * Create new administrator account with username system
-     */
-    public function createAdministrator(Request $request)
-    {
-        if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can create other administrator accounts.');
-        }
-        
-        $request->validate([
-            'admin_name' => 'required|string|max:255',
-            'admin_email' => 'required|email|max:255|unique:administrators,AdminEmail',
-            'admin_phone' => 'required|string|max:20',
-            'admin_address' => 'nullable|string|max:500',
-            'admin_role' => 'required|string|in:Super Admin,Admin,Moderator',
-        ]);
-        
-        // Generate unique username using the model method
-        $username = Administrator::generateUniqueUsername($request->admin_name);
-        
-        // Generate secure temporary password
-        $tempPassword = 'Admin' . random_int(10000, 99999) . '!';
-        
-        // Create administrator with username system
-        $admin = Administrator::create([
-            'AdminName' => $request->admin_name,
-            'Username' => $username,
-            'AdminEmail' => $request->admin_email,
-            'Password' => Hash::make($tempPassword),
-            'AdminRole' => $request->admin_role,
-            'AdminPhoneNum' => $request->admin_phone,
-            'AdminAddress' => $request->admin_address,
-        ]);
-        
-        // Store credentials for display
-        $credentials = [
-            'admin_name' => $request->admin_name,
-            'username' => $username,
-            'email' => $request->admin_email,
-            'password' => $tempPassword,
-            'role' => $request->admin_role,
-            'login_url' => route('admin.login'),
-        ];
-        
-        return redirect()->back()->with([
-            'success' => 'Administrator created successfully with username: ' . $username,
-            'new_admin_credentials' => $credentials
-        ]);
-    }
-
-    /**
-     * Create new agency (Admin only)
+     * Create a new agency (Admin only)
      */
     public function createAgency(Request $request)
     {
         if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can create agencies.');
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
         
         $request->validate([
-            'agency_name' => 'required|string|max:255',
-            'agency_email' => 'required|email|unique:agencies,AgencyEmail',
-            'agency_phone' => 'required|string|max:20',
+            'agency_name' => 'required|string|max:255|unique:agencies,AgencyName',
             'agency_type' => 'required|string|max:100',
+            'agency_email' => 'nullable|email|max:255',
+            'agency_phone' => 'nullable|string|max:20',
             'agency_address' => 'nullable|string|max:500',
+            'agency_description' => 'nullable|string|max:1000',
         ]);
         
-        \App\Models\Agency::create([
-            'AgencyName' => $request->agency_name,
-            'AgencyEmail' => $request->agency_email,
-            'AgencyPhoneNum' => $request->agency_phone,
-            'AgencyType' => $request->agency_type,
-            'AgencyAddress' => $request->agency_address,
-        ]);
+        try {
+            $agency = Agency::create([
+                'AgencyName' => $request->agency_name,
+                'AgencyType' => $request->agency_type,
+                'AgencyEmail' => $request->agency_email,
+                'AgencyPhoneNum' => $request->agency_phone,
+                'AgencyAddress' => $request->agency_address,
+                'AgencyDescription' => $request->agency_description,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
+            return redirect()->back()->with('success', 'Agency created successfully!');
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Failed to create agency. Please try again.'])->withInput();
+        }
+    }
+    
+    /**
+     * Register agency staff (Admin only) - Enhanced version
+     */
+    public function registerAgencyStaff(Request $request)
+    {
+        if (!session('user_type') || session('user_type') !== 'admin') {
+            return redirect('/login')->with('error', 'Unauthorized access');
+        }
         
-        return redirect()->route('admin.agency.management')
-                         ->with('success', 'Agency created successfully!');
+        $request->validate([
+            'staff_name' => 'required|string|max:255',
+            'agency_id' => 'required|exists:agencies,AgencyID',
+            'staff_email' => 'nullable|email|max:255|unique:agency_staff,staffEmail',
+            'staff_phone' => 'nullable|string|max:20',
+            'staff_role' => 'nullable|string|max:100',
+        ]);
+
+        try {
+            // Get agency details
+            $agency = Agency::find($request->agency_id);
+            
+            // Generate unique username and password
+            $baseUsername = strtolower(str_replace(' ', '', $request->staff_name));
+            $username = $baseUsername;
+            $counter = 1;
+            
+            // Ensure username is unique
+            while (AgencyStaff::where('Username', $username)->exists()) {
+                $username = $baseUsername . $counter;
+                $counter++;
+            }
+            
+            // Generate random password
+            $password = $this->generateRandomPassword();
+            
+            // Create agency staff user
+            $staff = AgencyStaff::create([
+                'StaffName' => $request->staff_name,
+                'AgencyID' => $request->agency_id,
+                'staffEmail' => $request->staff_email,
+                'staffPhoneNum' => $request->staff_phone,
+                'StaffRole' => $request->staff_role ?? 'Staff',
+                'Username' => $username,
+                'Password' => Hash::make($password),
+                'password_change_required' => true, // Force password change on first login
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
+            // Store credentials in session for display
+            session()->flash('new_staff_credentials', [
+                'staff_name' => $request->staff_name,
+                'agency_name' => $agency->AgencyName,
+                'username' => $username,
+                'email' => $request->staff_email ?? 'Not provided',
+                'password' => $password,
+                'login_url' => url('/login'),
+            ]);
+            
+            return redirect()->back()->with('success', 'Agency staff registered successfully! Please note down the login credentials.');
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Failed to register staff member. Please try again.'])->withInput();
+        }
+    }
+    
+    /**
+     * Generate a random password
+     */
+    private function generateRandomPassword($length = 12)
+    {
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+        $password = '';
+        
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        
+        return $password;
+    }
+
+    /**
+     * ====================================
+     * ADMIN USER MANAGEMENT METHODS
+     * ====================================
+     */
+    
+    /**
+     * Show user management page (Admin only)
+     */
+    public function showUserManagement(Request $request)
+    {
+        if (!session('user_type') || session('user_type') !== 'admin') {
+            return redirect('/login')->with('error', 'Only administrators can access the user management page.');
+        }
+        
+        // Get search and filter parameters
+        $search = $request->get('search', '');
+        $userType = $request->get('user_type', 'all');
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        
+        // Get user data with search and filters
+        $administrators = $this->getFilteredUsers('administrators', $search, $sortBy, $sortOrder);
+        $agencyStaff = $this->getFilteredUsers('agency_staff', $search, $sortBy, $sortOrder);
+        $publicUsers = $this->getFilteredUsers('public_users', $search, $sortBy, $sortOrder);
+        
+        // Calculate summary statistics
+        $stats = [
+            'total_users' => $administrators->count() + $agencyStaff->count() + $publicUsers->count(),
+            'total_admins' => $administrators->count(),
+            'total_staff' => $agencyStaff->count(),
+            'total_public' => $publicUsers->count(),
+            'recent_registrations' => $this->getRecentRegistrations(),
+        ];
+        
+        return view('Module01.MCMC_Admin.user-management', compact(
+            'administrators', 
+            'agencyStaff', 
+            'publicUsers', 
+            'stats',
+            'search',
+            'userType',
+            'sortBy',
+            'sortOrder'
+        ));
+    }
+    
+    /**
+     * Get filtered users based on search criteria
+     */
+    private function getFilteredUsers($table, $search, $sortBy, $sortOrder)
+    {
+        $query = null;
+        
+        switch ($table) {
+            case 'administrators':
+                $query = Administrator::query();
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('AdminName', 'LIKE', "%{$search}%")
+                          ->orWhere('AdminEmail', 'LIKE', "%{$search}%")
+                          ->orWhere('Username', 'LIKE', "%{$search}%");
+                    });
+                }
+                break;
+                
+            case 'agency_staff':
+                $query = AgencyStaff::with('agency');
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('StaffName', 'LIKE', "%{$search}%")
+                          ->orWhere('staffEmail', 'LIKE', "%{$search}%")
+                          ->orWhere('Username', 'LIKE', "%{$search}%");
+                    });
+                }
+                break;
+                
+            case 'public_users':
+                $query = PublicUser::query();
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('UserName', 'LIKE', "%{$search}%")
+                          ->orWhere('UserEmail', 'LIKE', "%{$search}%")
+                          ->orWhere('UserPhoneNum', 'LIKE', "%{$search}%");
+                    });
+                }
+                break;
+        }
+        
+        if ($query) {
+            // Apply sorting based on user type
+            switch ($table) {
+                case 'administrators':
+                    switch ($sortBy) {
+                        case 'name':
+                            $query->orderBy('AdminName', $sortOrder);
+                            break;
+                        case 'email':
+                            $query->orderBy('AdminEmail', $sortOrder);
+                            break;
+                        default:
+                            $query->orderBy('created_at', $sortOrder);
+                    }
+                    break;
+                    
+                case 'agency_staff':
+                    switch ($sortBy) {
+                        case 'name':
+                            $query->orderBy('StaffName', $sortOrder);
+                            break;
+                        case 'email':
+                            $query->orderBy('staffEmail', $sortOrder);
+                            break;
+                        default:
+                            $query->orderBy('created_at', $sortOrder);
+                    }
+                    break;
+                    
+                case 'public_users':
+                    switch ($sortBy) {
+                        case 'name':
+                            $query->orderBy('UserName', $sortOrder);
+                            break;
+                        case 'email':
+                            $query->orderBy('UserEmail', $sortOrder);
+                            break;
+                        default:
+                            $query->orderBy('created_at', $sortOrder);
+                    }
+                    break;
+            }
+            
+            return $query->get();
+        }
+        
+        return collect([]);
+    }
+    
+    /**
+     * Get recent registrations count (last 30 days)
+     */
+    private function getRecentRegistrations()
+    {
+        $thirtyDaysAgo = Carbon::now()->subDays(30);
+        
+        $recentAdmins = Administrator::where('created_at', '>=', $thirtyDaysAgo)->count();
+        $recentStaff = AgencyStaff::where('created_at', '>=', $thirtyDaysAgo)->count();
+        $recentPublic = PublicUser::where('created_at', '>=', $thirtyDaysAgo)->count();
+        
+        return $recentAdmins + $recentStaff + $recentPublic;
+    }
+    
+    /**
+     * Get user details for modal view
+     */
+    public function getUserDetails(Request $request)
+    {
+        if (!session('user_type') || session('user_type') !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        $userId = $request->get('user_id');
+        $userType = $request->get('user_type');
+        
+        try {
+            switch ($userType) {
+                case 'admin':
+                    $user = Administrator::find($userId);
+                    if (!$user) {
+                        return response()->json(['error' => 'User not found'], 404);
+                    }
+                    $userData = [
+                        'id' => $user->AdminID,
+                        'name' => $user->AdminName,
+                        'email' => $user->AdminEmail,
+                        'username' => $user->Username,
+                        'phone' => $user->AdminPhoneNum,
+                        'address' => $user->AdminAddress,
+                        'role' => $user->AdminRole,
+                        'created_at' => $user->created_at,
+                        'updated_at' => $user->updated_at,
+                        'login_history' => $user->LoginHistory ? json_decode($user->LoginHistory, true) : [],
+                        'profile_pic' => null,
+                        'type' => 'Administrator'
+                    ];
+                    break;
+                    
+                case 'agency':
+                    $user = AgencyStaff::with('agency')->find($userId);
+                    if (!$user) {
+                        return response()->json(['error' => 'User not found'], 404);
+                    }
+                    $userData = [
+                        'id' => $user->StaffID,
+                        'name' => $user->StaffName,
+                        'email' => $user->staffEmail,
+                        'username' => $user->Username,
+                        'phone' => $user->staffPhoneNum,
+                        'agency' => $user->agency->AgencyName ?? 'Unknown',
+                        'created_at' => $user->created_at,
+                        'updated_at' => $user->updated_at,
+                        'login_history' => $user->LoginHistory ? json_decode($user->LoginHistory, true) : [],
+                        'profile_pic' => $user->ProfilePic,
+                        'password_change_required' => $user->password_change_required,
+                        'type' => 'Agency Staff'
+                    ];
+                    break;
+                    
+                case 'public':
+                    $user = PublicUser::find($userId);
+                    if (!$user) {
+                        return response()->json(['error' => 'User not found'], 404);
+                    }
+                    $userData = [
+                        'id' => $user->UserID,
+                        'name' => $user->UserName,
+                        'email' => $user->UserEmail,
+                        'phone' => $user->UserPhoneNum,
+                        'address' => $user->Useraddress,
+                        'created_at' => $user->created_at,
+                        'updated_at' => $user->updated_at,
+                        'login_history' => $user->LoginHistory ? json_decode($user->LoginHistory, true) : [],
+                        'profile_pic' => $user->ProfilePic,
+                        'type' => 'Public User'
+                    ];
+                    break;
+                    
+                default:
+                    return response()->json(['error' => 'Invalid user type'], 400);
+            }
+            
+            return response()->json(['user' => $userData]);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve user details'], 500);
+        }
+    }
+    
+    /**
+     * Soft delete user (Admin only)
+     */
+    public function deleteUser(Request $request)
+    {
+        if (!session('user_type') || session('user_type') !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        $userId = $request->get('user_id');
+        $userType = $request->get('user_type');
+        $reason = $request->get('reason', 'Deleted by administrator');
+        
+        try {
+            switch ($userType) {
+                case 'admin':
+                    $user = Administrator::find($userId);
+                    // Prevent self-deletion
+                    if ($user && $user->AdminID == session('user_id')) {
+                        return response()->json(['error' => 'Cannot delete your own account'], 400);
+                    }
+                    break;
+                    
+                case 'agency':
+                    $user = AgencyStaff::find($userId);
+                    break;
+                    
+                case 'public':
+                    $user = PublicUser::find($userId);
+                    break;
+                    
+                default:
+                    return response()->json(['error' => 'Invalid user type'], 400);
+            }
+            
+            if (!$user) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+            
+            // Perform soft delete by adding deletion info
+            $user->update([
+                'deleted_at' => now(),
+                'deleted_by' => session('user_id'),
+                'deletion_reason' => $reason
+            ]);
+            
+            return response()->json([
+                'success' => true, 
+                'message' => 'User deleted successfully'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete user'], 500);
+        }
     }
 
     /**
@@ -769,207 +1225,44 @@ class User_Controller extends Controller
      * HELPER METHODS
      * ====================================
      */
-      /**
-     * Get user data based on type
+
+    /**
+     * Get user data based on user ID and type
      */
     private function getUserData($userId, $userType)
     {
         switch ($userType) {
-            case 'agency':
-                return AgencyStaff::find($userId);
             case 'public':
                 return PublicUser::find($userId);
+            case 'agency':
+                return AgencyStaff::with('agency')->find($userId);
             case 'admin':
                 return Administrator::find($userId);
             default:
                 return null;
         }
     }
-      /**
-     * Format user data for consistent view usage
+
+    /**
+     * Format user data for display or editing
      */
     private function formatUserData($user, $userType)
     {
-        switch ($userType) {
-            case 'agency':
-                return [
-                    'id' => $user->StaffID,
-                    'name' => $user->StaffName,
-                    'username' => $user->Username,
-                    'email' => $user->staffEmail,
-                    'phone' => $user->staffPhoneNum,
-                    'address' => null, // Agency staff doesn't have address field
-                    'profile_pic' => $user->ProfilePic,
-                    'role' => 'Agency Staff'
-                ];            case 'public':
-                return [
-                    'id' => $user->UserID,
-                    'name' => $user->UserName,
-                    'username' => null, // Public users don't have usernames
-                    'email' => $user->UserEmail,
-                    'phone' => $user->UserPhoneNum,
-                    'address' => $user->Useraddress,
-                    'profile_pic' => $user->ProfilePic ?? null,
-                    'role' => 'Public User'
-                ];
-            case 'admin':
-                return [
-                    'id' => $user->AdminID,
-                    'name' => $user->AdminName,
-                    'username' => $user->Username,
-                    'email' => $user->AdminEmail,
-                    'phone' => $user->AdminPhoneNum,
-                    'address' => $user->AdminAddress,
-                    'profile_pic' => null, // Admin doesn't have profile pic field
-                    'role' => $user->AdminRole
-                ];
-            default:
-                return null;
-        }
-    }
-      /**
-     * Update user data based on type
-     */
-    private function updateUserData($user, $userType, $request, $profilePicPath)
-    {
-        $updateData = [];
+        $formatted = [
+            'id' => $user->UserID ?? $user->StaffID ?? $user->AdminID,
+            'name' => $user->UserName ?? $user->StaffName ?? $user->AdminName,
+            'email' => $user->UserEmail ?? $user->staffEmail ?? $user->AdminEmail,
+            'phone' => $user->UserPhoneNum ?? $user->staffPhoneNum ?? $user->AdminPhoneNum,
+            'address' => $user->Useraddress ?? $user->AdminAddress ?? null,
+            'role' => $user->AdminRole ?? 'N/A',
+            'created_at' => $user->created_at->format('Y-m-d H:i:s'),
+            'updated_at' => $user->updated_at->format('Y-m-d H:i:s'),
+            'login_history' => $user->LoginHistory ? json_decode($user->LoginHistory, true) : [],
+            'profile_pic' => $user->ProfilePic ?? null,
+            'password_change_required' => $user->password_change_required ?? false,
+            'type' => ucfirst($userType)
+        ];
         
-        switch ($userType) {
-            case 'agency':
-                if ($request->filled('name')) {
-                    $updateData['StaffName'] = $request->name;
-                }
-                if ($request->filled('email')) {
-                    $updateData['staffEmail'] = $request->email;
-                }
-                if ($request->filled('phone')) {
-                    $updateData['staffPhoneNum'] = $request->phone;
-                }
-                if ($profilePicPath) {
-                    $updateData['ProfilePic'] = $profilePicPath;
-                }
-                break;
-                  case 'public':
-                if ($request->filled('name')) {
-                    $updateData['UserName'] = $request->name;
-                }
-                if ($request->filled('phone')) {
-                    $updateData['UserPhoneNum'] = $request->phone;
-                }
-                if ($request->filled('address')) {
-                    $updateData['Useraddress'] = $request->address;
-                }
-                if ($profilePicPath) {
-                    $updateData['ProfilePic'] = $profilePicPath;
-                }
-                break;
-                
-            case 'admin':
-                if ($request->filled('name')) {
-                    $updateData['AdminName'] = $request->name;
-                }
-                if ($request->filled('phone')) {
-                    $updateData['AdminPhoneNum'] = $request->phone;
-                }
-                if ($request->filled('address')) {
-                    $updateData['AdminAddress'] = $request->address;
-                }
-                // Admin profile pictures are not implemented yet
-                break;
-        }
-        
-        if (!empty($updateData)) {
-            $user->update($updateData);
-        }
-    }
-    
-    /**
-     * Show agency login form
-     */
-    public function showAgencyLoginForm()
-    {
-        return view('Module01.Agency.login');
-    }
-    
-    /**
-     * Handle agency staff login
-     */
-    public function agencyLogin(Request $request)
-    {
-        // This method can use the same logic as the regular login method
-        // since it handles both public users and agency staff
-        return $this->login($request);
-    }
-    
-    /**
-     * Show agency profile edit form
-     */
-    public function editAgencyProfile(Request $request)
-    {
-        $userId = session('user_id');
-        $userType = session('user_type');
-        
-        if (!$userId || $userType !== 'agency') {
-            return redirect()->route('login')->with('error', 'Agency access required.');
-        }
-        
-        $user = $this->getUserData($userId, $userType);
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'User not found.');
-        }
-        
-        $formattedUser = $this->formatUserData($user, $userType);
-        return view('Module01.Agency.edit-profile', ['user' => $formattedUser]);
-    }
-    
-    /**
-     * Update agency profile
-     */
-    public function updateAgencyProfile(Request $request)
-    {
-        // Use the same logic as updateProfile but ensure it's for agency users
-        $userType = session('user_type');
-        if ($userType !== 'agency') {
-            return redirect()->route('login')->with('error', 'Agency access required.');
-        }
-        
-        return $this->updateProfile($request);
-    }
-    
-    /**
-     * Show agency password change form
-     */
-    public function showChangePasswordForm()
-    {
-        $userId = session('user_id');
-        $userType = session('user_type');
-        
-        if (!$userId || $userType !== 'agency') {
-            return redirect()->route('login')->with('error', 'Agency access required.');
-        }
-        
-        return view('Module01.Agency.change-password');
-    }
-    
-    /**
-     * Handle agency password change
-     */
-    public function changePassword(Request $request)
-    {
-        // Use the same logic as updateForcedPassword for agency staff
-        return $this->updateForcedPassword($request);
-    }
-    
-    /**
-     * Show agency management page (Admin only)
-     */
-    public function showAgencyManagement()
-    {
-        if (!session('user_type') || session('user_type') !== 'admin') {
-            return redirect('/login')->with('error', 'Only administrators can access the agency management page.');
-        }
-        
-        $agencies = \App\Models\Agency::all();
-        return view('Module01.MCMC_Admin.agency-management', compact('agencies'));
+        return $formatted;
     }
 }

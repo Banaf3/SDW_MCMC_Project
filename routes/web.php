@@ -54,10 +54,17 @@ Route::post('/password/change', [User_Controller::class, 'updateForcedPassword']
 
 // Admin routes (agency staff registration)
 Route::middleware(['web'])->group(function () {
-    Route::get('/admin/agency/register', [User_Controller::class, 'showAgencyRegistrationForm'])->name('admin.agency.register');
+    // Admin Agency Management Routes (Merged Page)
+    Route::get('/admin/agency/register', [User_Controller::class, 'showAgencyManagement'])->name('admin.agency.register'); // Redirect to merged page
     Route::post('/admin/agency/register', [User_Controller::class, 'registerAgencyStaff'])->name('admin.agency.register.store');
     Route::get('/admin/agency/management', [User_Controller::class, 'showAgencyManagement'])->name('admin.agency.management');
     Route::post('/admin/agency/create', [User_Controller::class, 'createAgency'])->name('admin.agency.create');
+    
+    // User Management routes (Admin only)
+    Route::get('/admin/users/management', [User_Controller::class, 'showUserManagement'])->name('admin.users.management');
+    Route::get('/admin/users/details', [User_Controller::class, 'getUserDetails'])->name('admin.users.details');
+    Route::delete('/admin/users/delete', [User_Controller::class, 'deleteUser'])->name('admin.users.delete');
+    Route::post('/admin/users/delete', [User_Controller::class, 'deleteUser'])->name('admin.users.delete.post');
     
     // MCMC Admin inquiry management routes (placeholders)
     Route::get('/mcmc/inquiries/unassigned', function () {

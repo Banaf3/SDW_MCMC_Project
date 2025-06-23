@@ -21,6 +21,8 @@ class Agency extends Model
         'AgencyEmail',
         'AgencyPhoneNum',
         'AgencyType',
+        'AgencyAddress',
+        'AgencyDescription',
     ];
 
     /**
