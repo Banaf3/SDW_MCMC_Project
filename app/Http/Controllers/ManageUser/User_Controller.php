@@ -138,9 +138,7 @@ class User_Controller extends Controller
         }
 
         return null;
-    }
-
-    /**
+    }    /**
      * Set user session data and track login history
      */
     private function setUserSession($user, $type)
@@ -217,7 +215,7 @@ class User_Controller extends Controller
             case 'agency':
                 // Check if password change is required
                 if ($userData->password_change_required) {
-                    return redirect()->route('password.change')
+                    return redirect()->route('agency.password.change.forced')
                                    ->with('warning', 'Please change your password to continue.');
                 }
                 return redirect('/dashboard')->with('success', 'Welcome back, ' . $userData->StaffName . '!');
@@ -271,30 +269,6 @@ class User_Controller extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');
-    }
-
-    /**
-     * Show user registration form
-     */
-    public function showRegistrationForm()
-    {
-        return view('Module01.register');
-    }
-
-    /**
-     * Show agency login form
-     */
-    public function showAgencyLoginForm()
-    {
-        return view('Module01.Agency.login');
-    }
-
-    /**
-     * Handle agency login
-     */
-    public function agencyLogin(Request $request)
-    {
-        return $this->login($request); // Use the same login method
     }
     
     /**
@@ -702,8 +676,7 @@ class User_Controller extends Controller
                            ->withErrors(['token' => 'Invalid password reset token.']);
         }
         
-        // Check if token is not expired (24 hours)
-        if (Carbon::parse($passwordReset->created_at)->addHours(24)->isPast()) {
+        // Check if token is not expired (24 hours)        if (Carbon::parse($passwordReset->created_at)->addHours(24)->isPast()) {
             return redirect()->route('password.request')
                            ->withErrors(['token' => 'Password reset token has expired.']);
         }
@@ -713,7 +686,7 @@ class User_Controller extends Controller
             'email' => $passwordReset->email
         ]);
     }
-    
+
     /**
      * Reset password
      */
@@ -743,8 +716,7 @@ class User_Controller extends Controller
         if (Carbon::parse($passwordReset->created_at)->addHours(24)->isPast()) {
             return back()->withErrors(['token' => 'Password reset token has expired.']);
         }
-        
-        // Find and update the user's password
+          // Find and update the user's password
         $userUpdated = false;
         
         // Check administrators
@@ -865,9 +837,21 @@ class User_Controller extends Controller
         try {
             // Get agency details
             $agency = Agency::find($request->agency_id);
+              // Generate unique username based on staff name
+            $staffNameParts = explode(' ', trim($request->staff_name));
+            $firstName = strtolower($staffNameParts[0]);
+            $lastName = isset($staffNameParts[1]) ? strtolower($staffNameParts[1]) : '';
             
-            // Generate unique username and password
-            $baseUsername = strtolower(str_replace(' ', '', $request->staff_name));
+            // Create base username using first name + last name or just first name
+            if ($lastName) {
+                $baseUsername = $firstName . '.' . $lastName;
+            } else {
+                $baseUsername = $firstName;
+            }
+            
+            // Remove any special characters and ensure it's clean
+            $baseUsername = preg_replace('/[^a-z0-9.]/', '', $baseUsername);
+            
             $username = $baseUsername;
             $counter = 1;
             
@@ -893,8 +877,7 @@ class User_Controller extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            
-            // Store credentials in session for display
+              // Store credentials in session for display (showing that email was sent)
             session()->flash('new_staff_credentials', [
                 'staff_name' => $request->staff_name,
                 'agency_name' => $agency->AgencyName,
@@ -902,9 +885,10 @@ class User_Controller extends Controller
                 'email' => $request->staff_email ?? 'Not provided',
                 'password' => $password,
                 'login_url' => url('/login'),
+                'email_sent' => true, // Flag to show email sent message
             ]);
             
-            return redirect()->back()->with('success', 'Agency staff registered successfully! Please note down the login credentials.');
+            return redirect()->back()->with('success', 'Agency staff registered successfully! Login credentials have been sent to the staff member\'s email address.');
             
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => 'Failed to register staff member. Please try again.'])->withInput();
@@ -931,8 +915,7 @@ class User_Controller extends Controller
      * ADMIN USER MANAGEMENT METHODS
      * ====================================
      */
-    
-    /**
+      /**
      * Show user management page (Admin only)
      */
     public function showUserManagement(Request $request)
@@ -946,11 +929,13 @@ class User_Controller extends Controller
         $userType = $request->get('user_type', 'all');
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
-        
-        // Get user data with search and filters
+          // Get user data with search and filters (exclude deleted users)
         $administrators = $this->getFilteredUsers('administrators', $search, $sortBy, $sortOrder);
         $agencyStaff = $this->getFilteredUsers('agency_staff', $search, $sortBy, $sortOrder);
         $publicUsers = $this->getFilteredUsers('public_users', $search, $sortBy, $sortOrder);
+        
+        // Get all agencies for reports dropdown
+        $agencies = Agency::orderBy('AgencyName')->get();
         
         // Calculate summary statistics
         $stats = [
@@ -965,6 +950,7 @@ class User_Controller extends Controller
             'administrators', 
             'agencyStaff', 
             'publicUsers', 
+            'agencies',
             'stats',
             'search',
             'userType',
@@ -1015,53 +1001,20 @@ class User_Controller extends Controller
                 break;
         }
         
-        if ($query) {
-            // Apply sorting based on user type
-            switch ($table) {
-                case 'administrators':
-                    switch ($sortBy) {
-                        case 'name':
-                            $query->orderBy('AdminName', $sortOrder);
-                            break;
-                        case 'email':
-                            $query->orderBy('AdminEmail', $sortOrder);
-                            break;
-                        default:
-                            $query->orderBy('created_at', $sortOrder);
-                    }
-                    break;
-                    
-                case 'agency_staff':
-                    switch ($sortBy) {
-                        case 'name':
-                            $query->orderBy('StaffName', $sortOrder);
-                            break;
-                        case 'email':
-                            $query->orderBy('staffEmail', $sortOrder);
-                            break;
-                        default:
-                            $query->orderBy('created_at', $sortOrder);
-                    }
-                    break;
-                    
-                case 'public_users':
-                    switch ($sortBy) {
-                        case 'name':
-                            $query->orderBy('UserName', $sortOrder);
-                            break;
-                        case 'email':
-                            $query->orderBy('UserEmail', $sortOrder);
-                            break;
-                        default:
-                            $query->orderBy('created_at', $sortOrder);
-                    }
-                    break;
-            }
-            
-            return $query->get();
+        // Apply sorting
+        $validSortColumns = [
+            'administrators' => ['AdminName', 'AdminEmail', 'created_at', 'AdminRole'],
+            'agency_staff' => ['StaffName', 'staffEmail', 'created_at', 'AgencyID'],
+            'public_users' => ['UserName', 'UserEmail', 'created_at']
+        ];
+        
+        if (in_array($sortBy, $validSortColumns[$table])) {
+            $query->orderBy($sortBy, $sortOrder);
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
         
-        return collect([]);
+        return $query->get();
     }
     
     /**
@@ -1094,9 +1047,6 @@ class User_Controller extends Controller
             switch ($userType) {
                 case 'admin':
                     $user = Administrator::find($userId);
-                    if (!$user) {
-                        return response()->json(['error' => 'User not found'], 404);
-                    }
                     $userData = [
                         'id' => $user->AdminID,
                         'name' => $user->AdminName,
@@ -1107,7 +1057,7 @@ class User_Controller extends Controller
                         'role' => $user->AdminRole,
                         'created_at' => $user->created_at,
                         'updated_at' => $user->updated_at,
-                        'login_history' => $user->LoginHistory ? json_decode($user->LoginHistory, true) : [],
+                        'login_history' => $user->LoginHistory ?? [],
                         'profile_pic' => null,
                         'type' => 'Administrator'
                     ];
@@ -1115,9 +1065,6 @@ class User_Controller extends Controller
                     
                 case 'agency':
                     $user = AgencyStaff::with('agency')->find($userId);
-                    if (!$user) {
-                        return response()->json(['error' => 'User not found'], 404);
-                    }
                     $userData = [
                         'id' => $user->StaffID,
                         'name' => $user->StaffName,
@@ -1127,7 +1074,7 @@ class User_Controller extends Controller
                         'agency' => $user->agency->AgencyName ?? 'Unknown',
                         'created_at' => $user->created_at,
                         'updated_at' => $user->updated_at,
-                        'login_history' => $user->LoginHistory ? json_decode($user->LoginHistory, true) : [],
+                        'login_history' => $user->LoginHistory ?? [],
                         'profile_pic' => $user->ProfilePic,
                         'password_change_required' => $user->password_change_required,
                         'type' => 'Agency Staff'
@@ -1136,9 +1083,6 @@ class User_Controller extends Controller
                     
                 case 'public':
                     $user = PublicUser::find($userId);
-                    if (!$user) {
-                        return response()->json(['error' => 'User not found'], 404);
-                    }
                     $userData = [
                         'id' => $user->UserID,
                         'name' => $user->UserName,
@@ -1147,52 +1091,10 @@ class User_Controller extends Controller
                         'address' => $user->Useraddress,
                         'created_at' => $user->created_at,
                         'updated_at' => $user->updated_at,
-                        'login_history' => $user->LoginHistory ? json_decode($user->LoginHistory, true) : [],
+                        'login_history' => $user->LoginHistory ?? [],
                         'profile_pic' => $user->ProfilePic,
                         'type' => 'Public User'
                     ];
-                    break;
-                    
-                default:
-                    return response()->json(['error' => 'Invalid user type'], 400);
-            }
-            
-            return response()->json(['user' => $userData]);
-            
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to retrieve user details'], 500);
-        }
-    }
-    
-    /**
-     * Soft delete user (Admin only)
-     */
-    public function deleteUser(Request $request)
-    {
-        if (!session('user_type') || session('user_type') !== 'admin') {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-        
-        $userId = $request->get('user_id');
-        $userType = $request->get('user_type');
-        $reason = $request->get('reason', 'Deleted by administrator');
-        
-        try {
-            switch ($userType) {
-                case 'admin':
-                    $user = Administrator::find($userId);
-                    // Prevent self-deletion
-                    if ($user && $user->AdminID == session('user_id')) {
-                        return response()->json(['error' => 'Cannot delete your own account'], 400);
-                    }
-                    break;
-                    
-                case 'agency':
-                    $user = AgencyStaff::find($userId);
-                    break;
-                    
-                case 'public':
-                    $user = PublicUser::find($userId);
                     break;
                     
                 default:
@@ -1203,20 +1105,147 @@ class User_Controller extends Controller
                 return response()->json(['error' => 'User not found'], 404);
             }
             
-            // Perform soft delete by adding deletion info
-            $user->update([
-                'deleted_at' => now(),
-                'deleted_by' => session('user_id'),
-                'deletion_reason' => $reason
+            return response()->json(['user' => $userData]);
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve user details'], 500);
+        }
+    }    /**
+     * Delete user permanently (Admin only)
+     */    public function deleteUser(Request $request)
+    {
+        // Log all request data for debugging
+        \Log::info("=== DELETE USER REQUEST START ===");
+        \Log::info("Delete user request received", [
+            'session_user_type' => session('user_type'),
+            'session_user_id' => session('user_id'),
+            'request_method' => $request->method(),
+            'request_all' => $request->all(),
+            'request_json' => $request->json() ? $request->json()->all() : null,
+            'content_type' => $request->header('Content-Type'),
+            'headers' => $request->headers->all(),
+            'raw_body' => $request->getContent()
+        ]);
+
+        if (!session('user_type') || session('user_type') !== 'admin') {
+            \Log::warning("Unauthorized delete attempt", [
+                'session_user_type' => session('user_type'),
+                'session' => session()->all()
             ]);
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+          // Try to get data from different sources (form data or JSON)
+        $userId = $request->input('user_id') ?? $request->json('user_id');
+        $userType = $request->input('user_type') ?? $request->json('user_type');
+        $reason = $request->input('reason') ?? $request->json('reason') ?? 'Deleted by administrator';
+        
+        \Log::info("Parsed delete request data", [
+            'user_id' => $userId,
+            'user_type' => $userType,
+            'reason' => $reason
+        ]);
+        
+        if (!$userId || !$userType) {
+            \Log::error("Missing required parameters", [
+                'user_id' => $userId,
+                'user_type' => $userType
+            ]);
+            return response()->json(['error' => 'User ID and type are required'], 400);
+        }
+        
+        try {
+            $user = null;
+            
+            switch ($userType) {
+                case 'admin':
+                    $user = Administrator::find($userId);
+                    \Log::info("Looking for admin user", [
+                        'user_id' => $userId,
+                        'found' => $user ? true : false,
+                        'user_data' => $user ? $user->toArray() : null
+                    ]);
+                    // Prevent self-deletion
+                    if ($user && $user->AdminID == session('user_id')) {
+                        \Log::warning("Attempted self-deletion", [
+                            'user_id' => $userId,
+                            'session_user_id' => session('user_id')
+                        ]);
+                        return response()->json(['error' => 'Cannot delete your own account'], 400);
+                    }
+                    break;
+                    
+                case 'agency':
+                    $user = AgencyStaff::find($userId);
+                    \Log::info("Looking for agency user", [
+                        'user_id' => $userId,
+                        'found' => $user ? true : false,
+                        'user_data' => $user ? $user->toArray() : null
+                    ]);
+                    break;
+                    
+                case 'public':
+                    $user = PublicUser::find($userId);
+                    \Log::info("Looking for public user", [
+                        'user_id' => $userId,
+                        'found' => $user ? true : false,
+                        'user_data' => $user ? $user->toArray() : null
+                    ]);
+                    break;
+                    
+                default:
+                    \Log::error("Invalid user type", ['user_type' => $userType]);
+                    return response()->json(['error' => 'Invalid user type'], 400);
+            }
+            
+            if (!$user) {
+                \Log::warning("User not found for deletion", [
+                    'user_id' => $userId,
+                    'user_type' => $userType
+                ]);
+                return response()->json(['error' => 'User not found'], 404);
+            }
+            
+            $userName = $user->AdminName ?? $user->StaffName ?? $user->UserName;
+            
+            // Log deletion before removing user
+            \Log::info("About to delete user", [
+                'deleted_user_id' => $userId,
+                'deleted_user_type' => $userType,
+                'deleted_user_name' => $userName,
+                'deleted_by_admin_id' => session('user_id'),
+                'reason' => $reason,
+                'timestamp' => now()
+            ]);
+            
+            // Permanently delete the user
+            $deleted = $user->delete();
+            
+            \Log::info("User deletion result", [
+                'user_id' => $userId,
+                'user_type' => $userType,
+                'deletion_result' => $deleted,
+                'user_exists_after_delete' => $userType === 'admin' ? Administrator::find($userId) !== null : 
+                                             ($userType === 'agency' ? AgencyStaff::find($userId) !== null : 
+                                              PublicUser::find($userId) !== null)
+            ]);
+            
+            \Log::info("=== DELETE USER REQUEST END ===");
             
             return response()->json([
                 'success' => true, 
-                'message' => 'User deleted successfully'
+                'message' => 'User deleted successfully',
+                'deleted_user' => $userName
             ]);
             
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete user'], 500);
+            \Log::error("Failed to delete user", [
+                'user_id' => $userId,
+                'user_type' => $userType,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json(['error' => 'Failed to delete user: ' . $e->getMessage()], 500);
         }
     }
 
@@ -1257,7 +1286,7 @@ class User_Controller extends Controller
             'role' => $user->AdminRole ?? 'N/A',
             'created_at' => $user->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $user->updated_at->format('Y-m-d H:i:s'),
-            'login_history' => $user->LoginHistory ? json_decode($user->LoginHistory, true) : [],
+            'login_history' => $user->LoginHistory ?? [],
             'profile_pic' => $user->ProfilePic ?? null,
             'password_change_required' => $user->password_change_required ?? false,
             'type' => ucfirst($userType)
