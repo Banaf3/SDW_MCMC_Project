@@ -24,14 +24,14 @@ return new class extends Migration
             $table->string('ResolvedSupportingDocs', 255)->nullable();
             $table->text('AgencyRejectionComment')->nullable();
 
-            $table->unsignedBigInteger('AgencyID');
+            $table->unsignedBigInteger('AgencyID')->nullable();
             $table->unsignedBigInteger('AdminID');
             $table->unsignedBigInteger('UserID');
 
             $table->timestamps();
 
             // Foreign Keys
-            $table->foreign('AgencyID')->references('AgencyID')->on('agencies')->onDelete('cascade');
+            $table->foreign('AgencyID')->references('AgencyID')->on('agencies')->onDelete('set null');
             $table->foreign('AdminID')->references('AdminID')->on('administrators')->onDelete('cascade');
             $table->foreign('UserID')->references('UserID')->on('public_users')->onDelete('cascade');
         });

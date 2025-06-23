@@ -1999,7 +1999,7 @@
             }
             
             try {
-                const response = await fetch(`/agency/reject-inquiry/${currentInquiryId}`, {
+                const response = await fetch(`/agency/inquiries/${currentInquiryId}/reject`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

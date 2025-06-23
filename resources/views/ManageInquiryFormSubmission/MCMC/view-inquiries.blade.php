@@ -291,6 +291,7 @@
                             Review Details
                         </a>
                         
+                        @if($inquiry->InquiryStatus === 'Submitted')
                         <form method="POST" action="{{ route('admin.inquiries.update-status', $inquiry->InquiryID) }}" style="display: inline;">
                             @csrf
                             @method('PUT')
@@ -302,6 +303,7 @@
                                 Approve for Review
                             </button>
                         </form>
+                        @endif
                         
                         <form method="POST" action="{{ route('admin.inquiries.discard', $inquiry->InquiryID) }}" style="display: inline;">
                             @csrf

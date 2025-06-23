@@ -38,10 +38,11 @@ class MCMCController extends Controller
                              ->orWhere('AgencyID', 0);
                 })
                 // OR rejected by agency (regardless of AgencyID state)
-                ->orWhere('InquiryStatus', 'Rejected by Agency');
-            })
+                ->orWhere('InquiryStatus', 'Rejected by Agency');            })
+            // Exclude inquiries with "Submitted" and "Discarded" statuses
+            ->whereNotIn('InquiryStatus', ['Submitted', 'Discarded'])
             ->orderBy('SubmitionDate', 'desc')
-            ->get()            ->map(function ($inquiry) {
+            ->get()->map(function ($inquiry) {
                 // Calculate more user-friendly time pending
                 $submittedAt = Carbon::parse($inquiry->SubmitionDate);
                 $now = Carbon::now();

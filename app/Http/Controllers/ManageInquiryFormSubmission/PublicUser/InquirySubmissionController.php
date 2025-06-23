@@ -82,12 +82,12 @@ class InquirySubmissionController extends Controller
             $inquiry = Inquiry::create([
                 'InquiryTitle' => $request->input('inquiry_title'),
                 'InquiryDescription' => $request->input('inquiry_description'),
-                'InquiryStatus' => 'Pending Review',
+                'InquiryStatus' => 'Submitted',
                 'SubmitionDate' => now()->toDateString(), // Use date format for date column
                 'InquiryEvidence' => json_encode($evidence),
                 'UserID' => $userId,
                 'AdminID' => 1, // Default admin ID
-                'AgencyID' => 1, // Default agency ID
+                'AgencyID' => null, // Unassigned - MCMC will assign later
             ]);
             
             Log::info('Inquiry saved successfully:', ['id' => $inquiry->InquiryID]);

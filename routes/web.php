@@ -89,6 +89,8 @@ Route::middleware(['web'])->group(function () {
     
     // MCMC Admin inquiry management routes
     Route::get('/mcmc/inquiries/unassigned', [MCMCController::class, 'unassignedInquiries'])->name('mcmc.unassigned.inquiries');
+    Route::post('/mcmc/inquiries/{inquiryId}/assign', [MCMCController::class, 'assignInquiry'])->name('mcmc.inquiries.assign');
+    Route::get('/mcmc/inquiries/{inquiryId}/details', [MCMCController::class, 'getInquiryDetails'])->name('mcmc.inquiries.details');
     
     Route::get('/mcmc/inquiries/assigned', function () {
         return view('welcome');
@@ -125,6 +127,7 @@ Route::middleware(['web'])->group(function () {
     
     // Agency inquiry routes
     Route::get('/agency/inquiries/assigned', [InquiryAssignmentAgencyController::class, 'assignedInquiries'])->name('agency.inquiries.assigned'); // Module 3
+    Route::post('/agency/inquiries/{id}/reject', [InquiryAssignmentAgencyController::class, 'rejectInquiry'])->name('agency.inquiries.reject'); // Module 3
     Route::get('/agency/inquiries/list', [AssignedInquiriesController::class, 'index'])->name('agency.inquiries.list'); // Module 2
     Route::get('/agency/inquiries/{inquiryId}', [AssignedInquiriesController::class, 'show'])->name('agency.inquiries.show');
     Route::put('/agency/inquiries/{inquiryId}/status', [AssignedInquiriesController::class, 'updateStatus'])->name('agency.inquiries.update-status');

@@ -250,11 +250,9 @@ class AgencyController extends Controller
                 'rejection_reason' => $request->reason,
                 'rejection_comments' => $request->comments,
                 'rejection_date' => \Carbon\Carbon::now()->toDateTimeString()
-            ];
-
-            // Update the inquiry - remove assignment and set status
+            ];            // Update the inquiry - remove agency assignment and set status
             $inquiry->AgencyID = null;  // Remove agency assignment
-            $inquiry->AdminID = null;   // Remove admin assignment
+            // Keep AdminID as is - don't set to null since it has NOT NULL constraint
             $inquiry->InquiryStatus = 'Rejected by Agency';
             $inquiry->AgencyRejectionComment = json_encode($rejectionData);
             $inquiry->save();

@@ -1160,7 +1160,7 @@
             }
             
             try {
-                const response = await fetch(`/mcmc/assign-inquiry/${currentInquiryId}`, {
+                const response = await fetch(`/mcmc/inquiries/${currentInquiryId}/assign`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1177,19 +1177,36 @@
                 if (result.success) {
                     // Show success message
                     document.getElementById('successText').textContent = result.message;
-                    document.getElementById('successMessage').classList.add('show');
-                    
-                    // Remove the assigned inquiry card from the UI
+                    document.getElementById('successMessage').classList.add('show');                    // Remove the assigned inquiry card from the UI
                     const inquiryCard = document.querySelector(`[data-inquiry-id="${currentInquiryId}"]`);
                     if (inquiryCard) {
+                        // Get the priority of the removed inquiry for stats update
+                        const priorityClass = inquiryCard.getAttribute('data-priority') || 'Normal';
+                        
                         inquiryCard.remove();
-                    }
-                    
-                    // Update stats
-                    const statNumber = document.querySelector('.stat-number');
-                    if (statNumber) {
-                        const currentCount = parseInt(statNumber.textContent);
-                        statNumber.textContent = currentCount - 1;
+                        
+                        // Update total count
+                        const totalStatNumber = document.querySelector('.stat-card:first-child .stat-number');
+                        if (totalStatNumber) {
+                            const currentCount = parseInt(totalStatNumber.textContent);
+                            totalStatNumber.textContent = Math.max(0, currentCount - 1);
+                        }
+                        
+                        // Update priority-specific count
+                        let prioritySelector = '';
+                        if (priorityClass === 'High') {
+                            prioritySelector = '.stat-card.priority-high .stat-number';
+                        } else if (priorityClass === 'Medium') {
+                            prioritySelector = '.stat-card.priority-medium .stat-number';
+                        } else {
+                            prioritySelector = '.stat-card.priority-normal .stat-number';
+                        }
+                        
+                        const priorityStatNumber = document.querySelector(prioritySelector);
+                        if (priorityStatNumber) {
+                            const currentPriorityCount = parseInt(priorityStatNumber.textContent);
+                            priorityStatNumber.textContent = Math.max(0, currentPriorityCount - 1);
+                        }
                     }
                     
                     // Close modal
