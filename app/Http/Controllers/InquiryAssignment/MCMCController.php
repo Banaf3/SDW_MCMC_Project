@@ -106,12 +106,11 @@ class MCMCController extends Controller
 
         // Get all available agencies for assignment dropdown
         $agencies = Agency::orderBy('AgencyName')->get();        // Calculate priority-based stats
-        $totalUnassigned = $unassignedInquiries->count();
-        $highPriorityCount = $unassignedInquiries->where('priority', 'High')->count();
+        $totalUnassigned = $unassignedInquiries->count();        $highPriorityCount = $unassignedInquiries->where('priority', 'High')->count();
         $mediumPriorityCount = $unassignedInquiries->where('priority', 'Medium')->count();
         $normalPriorityCount = $unassignedInquiries->where('priority', 'Normal')->count();
 
-        return view('Module3.MCMC.unassigned_inquiries', [
+        return view('InquiryAssignment.MCMC.unassigned_inquiries', [
             'unassignedInquiries' => $unassignedInquiries,
             'agencies' => $agencies,
             'totalUnassigned' => $totalUnassigned,

@@ -131,15 +131,13 @@ class AgencyController extends Controller
         $normalPriorityCount = $inquiries->where('priority', 'Normal')->count();
 
         // Get count of filtered inquiries
-        $filteredCount = $inquiries->count();
-
-        // Pass current filter values to maintain state
+        $filteredCount = $inquiries->count();        // Pass current filter values to maintain state
         $currentFilters = [
             'status' => $request->status ?? '',
             'search' => $request->search ?? ''
         ];
 
-        return view('Module3.Agency.assigned_inquiries', [
+        return view('InquiryAssignment.Agency.assigned_inquiries', [
             'assignedInquiries' => $inquiries,
             'totalInquiries' => $totalInquiries,
             'highPriorityCount' => $highPriorityCount,

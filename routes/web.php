@@ -151,6 +151,12 @@ Route::middleware(['web'])->group(function () {
     Route::post('/agency/inquiry/update/{id}', [InquiryProgressTrackingAgencyController::class, 'updateInquiry'])->name('agency.inquiry.update'); // Module 4
     Route::post('/agency/inquiry/status/{id}', [InquiryProgressTrackingAgencyController::class, 'updateInquiryStatus'])->name('agency.inquiry.status.update'); // Module 4
     
+    // Notification routes
+    Route::get('/notifications', [\App\Http\Controllers\InquiryProgressTracking\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\InquiryProgressTracking\NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{id}/mark-read', [\App\Http\Controllers\InquiryProgressTracking\NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\InquiryProgressTracking\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    
     // Agency-specific profile routes
     Route::post('/agency/profile/update', [User_Controller::class, 'updateProfile'])->name('agency.profile.update');
     Route::get('/agency/password/change', [User_Controller::class, 'editPassword'])->name('agency.password.change');
@@ -171,4 +177,24 @@ Route::get('/test-admin-login', function (Request $request) {
     $request->session()->put('user_email', 'admin@admin.com');
     
     return redirect()->route('dashboard')->with('success', 'Test admin session created');
+});
+
+// Test route for creating sample notifications (REMOVE IN PRODUCTION)
+Route::get('/test-notification/{userId}', function (Request $request, $userId) {
+    // Create a sample notification
+    $notificationData = [
+        'inquiry_id' => 1,
+        'inquiry_title' => 'Test Inquiry for Notifications',
+        'old_status' => 'Under Investigation',
+        'new_status' => 'Verified as True',
+        'message' => "Your inquiry 'Test Inquiry for Notifications' status has been changed from 'Under Investigation' to 'Verified as True'",
+        'timestamp' => now()->format('Y-m-d H:i:s'),
+        'read' => false
+    ];
+    
+    $userNotifications = session()->get("user_notifications_{$userId}", []);
+    $userNotifications[] = $notificationData;
+    session()->put("user_notifications_{$userId}", $userNotifications);
+    
+    return "Test notification created for user {$userId}";
 });
