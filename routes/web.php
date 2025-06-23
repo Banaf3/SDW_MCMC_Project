@@ -15,6 +15,8 @@ use App\Http\Controllers\ManageInquiryFormSubmission\PublicUser\PublicInquiriesC
 use App\Http\Controllers\ManageInquiryFormSubmission\MCMC\InquiryManagementController;
 use App\Http\Controllers\InquiryAssignment\MCMCController;
 use App\Http\Controllers\InquiryAssignment\AgencyController as InquiryAssignmentAgencyController;
+use App\Http\Controllers\InquiryProgressTracking\AgencyController as InquiryProgressTrackingAgencyController;
+use App\Http\Controllers\InquiryProgressTracking\InquiryController as InquiryProgressTrackingInquiryController;
 use App\Http\Controllers\ManageInquiryFormSubmission\Agency\AssignedInquiriesController;
 use App\Http\Controllers\ManageUser\User_Controller;
 
@@ -93,6 +95,9 @@ Route::middleware(['web'])->group(function () {
     Route::get('/mcmc/inquiries/{inquiryId}/details', [MCMCController::class, 'getInquiryDetails'])->name('mcmc.inquiries.details');
     Route::get('/mcmc/inquiries/{id}/evidence/{fileIndex}', [MCMCController::class, 'downloadEvidence'])->name('mcmc.inquiries.download-evidence');
     
+    // MCMC Progress Monitoring - Module 4
+    Route::get('/mcmc/progress/monitor', [InquiryProgressTrackingInquiryController::class, 'allInquiries'])->name('mcmc.progress.monitor');
+    
     Route::get('/mcmc/inquiries/assigned', function () {
         return view('welcome');
     })->name('mcmc.assigned.inquiries');
@@ -133,6 +138,10 @@ Route::middleware(['web'])->group(function () {
     Route::get('/agency/inquiries/list', [AssignedInquiriesController::class, 'index'])->name('agency.inquiries.list'); // Module 2
     Route::get('/agency/inquiries/{inquiryId}', [AssignedInquiriesController::class, 'show'])->name('agency.inquiries.show');
     Route::get('/agency/inquiries/detail/{inquiryId}/evidence/{fileIndex}', [AssignedInquiriesController::class, 'downloadEvidence'])->name('agency.inquiries.detail.download-evidence'); // Module 2
+    Route::get('/agency/progress/update', [InquiryProgressTrackingAgencyController::class, 'assignedInquiries'])->name('agency.progress.update'); // Module 4
+    Route::get('/agency/inquiry/edit/{id}', [InquiryProgressTrackingAgencyController::class, 'editInquiry'])->name('agency.inquiry.edit'); // Module 4
+    Route::post('/agency/inquiry/update/{id}', [InquiryProgressTrackingAgencyController::class, 'updateInquiry'])->name('agency.inquiry.update'); // Module 4
+    Route::post('/agency/inquiry/status/{id}', [InquiryProgressTrackingAgencyController::class, 'updateInquiryStatus'])->name('agency.inquiry.status.update'); // Module 4
     
     // Agency-specific profile routes
     Route::post('/agency/profile/update', [User_Controller::class, 'updateProfile'])->name('agency.profile.update');

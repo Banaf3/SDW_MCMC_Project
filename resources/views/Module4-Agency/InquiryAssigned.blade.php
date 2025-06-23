@@ -1,196 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VeriTrack - Assigned Inquiries</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+@extends('layouts.app')
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            color: #333;
-        }
+@section('title', 'Update Progress - Agency Portal')
 
-        /* Main Container */
-        .main-container { 
-            display: flex; 
-            min-height: 100vh;
-            padding-top: 80px; /* Account for fixed header */
-        }
-
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            margin-left: 250px; /* Account for sidebar width */
-            padding: 20px;
-        }
-
-        /* Header Styles */
-        .header { 
-            background: linear-gradient(135deg, #4c6ef5 0%, #45c649 100%);
-            color: white; 
-            padding: 0.75rem 0; 
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-container { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            max-width: 100%; 
-            margin: 0 auto; 
-            padding: 0 2rem; 
-        }
-        
-        .logo h1 { 
-            font-size: 1.5rem; 
-            font-weight: 600;
-            letter-spacing: -0.5px;
-        }
-        
-        /* Header User Info */
-        .header-user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .header-user-info .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .user-details {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-        
-        .user-details .user-name {
-            font-weight: 600;
-            margin-bottom: 0.125rem;
-            color: white;
-            font-size: 0.9rem;
-        }
-        
-        .user-details .user-role {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Agency Sidebar Styles */        
-        .sidebar { 
-            width: 250px; 
-            background: linear-gradient(180deg, #495057 0%, #343a40 100%);
-            color: white; 
-            padding: 1.5rem 0;
-            position: fixed;
-            left: 0;
-            top: 60px;
-            bottom: 0;
-            overflow-y: auto;
-            z-index: 999;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .sidebar-nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-section h3 {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #adb5bd;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-        
-        .nav-item .nav-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #e9ecef;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .nav-item .nav-toggle:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .nav-arrow {
-            transition: transform 0.2s ease;
-        }
-        
-        .nav-item.active .nav-arrow {
-            transform: rotate(180deg);
-        }
-        
-        .submenu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background-color: rgba(0, 0, 0, 0.2);
-        }
-        
-        .submenu.show {
-            max-height: 300px;
-        }
-        
-        .submenu li a {
-            display: block;
-            padding: 0.5rem 3rem;
-            color: #ced4da;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-        }
-        
-        .submenu li a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding-left: 3.25rem;
-        }
-
-        /* Main Content */
-        .main-content {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
+@section('styles')
+<style>
 
         .page-title {
             font-size: 2rem;
@@ -490,58 +303,11 @@
                 grid-template-columns: 1fr;
             }
         }
-    </style>
-</head>
-<body>
-    <!-- Include Header -->
-    @include('layouts.partials.header')
-    
-    <div class="main-container">
-        <!-- Agency Sidebar -->
-        <div class="sidebar">
-            <nav class="sidebar-nav">
-                <ul>
-                    <li class="nav-section">
-                        <h3>Agency Dashboard</h3>
-                    </li>
-                    <li class="nav-item">
-                        <div class="nav-toggle">
-                            <span>📊 Overview</span>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <div class="nav-toggle">
-                            <span>📋 Inquiry Management</span>
-                            <span class="nav-arrow">▼</span>
-                        </div>
-                        <ul class="submenu">
-                            <li><a href="/agency/inquiries/assigned">Assigned Inquiries</a></li>
-                            <li><a href="/agency/inquiries/in-progress">In Progress</a></li>
-                            <li><a href="/agency/inquiries/completed">Completed</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <div class="nav-toggle">
-                            <span>📈 Reports</span>
-                            <span class="nav-arrow">▼</span>
-                        </div>
-                        <ul class="submenu">
-                            <li><a href="/agency/reports/monthly">Monthly Reports</a></li>
-                            <li><a href="/agency/reports/performance">Performance</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <div class="nav-toggle">
-                            <span>⚙️ Settings</span>
-                        </div>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-        
-        <div class="content-area">            <!-- Main Content -->
-            <div class="main-content">
-                <h1 class="page-title">Assigned Inquiries</h1>
+</style>
+@endsection
+
+@section('content')
+<h1 class="page-title">Update Progress</h1>
 
                 <!-- Success/Info Messages -->
                 @if(session('success'))
@@ -617,14 +383,11 @@
                             <p class="inquiry-content">{{ Str::limit($inquiry['description'] ?? 'No description available', 150) }}</p>
                             <div class="inquiry-meta">
                                 <div class="meta-item">
-                                    <span class="meta-label">Type:</span> {{ $inquiry['type'] ?? 'General' }}
-                                </div>
-                                <div class="meta-item">
                                     <span class="meta-label">Submitted By:</span> {{ $inquiry['submittedBy'] ?? 'Unknown' }}
                                 </div>
                             </div>                            <div class="inquiry-actions">
                                 <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry['status'] ?? 'pending')) }}">{{ $inquiry['status'] ?? 'Pending' }}</span>
-                                <a href="{{ route('agency.inquiry.edit', $inquiry['InquiryID'] ?? 1) }}" class="btn btn-success">Edit Inquiry</a>
+                                <a href="{{ route('agency.inquiry.edit', $inquiry['InquiryID'] ?? 1) }}" class="btn btn-success">Update Progress</a>
                             </div>
                         </div>
                         @endforeach
@@ -640,25 +403,4 @@
                         </div>
                     @endif
                 </div>
-            </div>
-        </div>
-    </div>    <script>
-        // Sidebar toggle functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const navToggles = document.querySelectorAll('.nav-toggle');
-            
-            navToggles.forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    const navItem = this.parentElement;
-                    const submenu = navItem.querySelector('.submenu');
-                    
-                    if (submenu) {
-                        navItem.classList.toggle('active');
-                        submenu.classList.toggle('show');
-                    }
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+@endsection

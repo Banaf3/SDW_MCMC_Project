@@ -12,8 +12,18 @@ class AgencyController extends Controller
 {
     public function assignedInquiries(Request $request)
     {
-        // Start with base query
+        // Get the current agency ID from session (assuming agency authentication)
+        $agencyId = session('agency_id');
+        
+        // Temporary: If no agency_id in session, use agency ID 1 for testing
+        if (!$agencyId) {
+            $agencyId = 1; // Default to first agency for testing
+            session(['agency_id' => $agencyId]); // Set it in session for subsequent requests
+        }
+
+        // Start with base query - filter by agency ID
         $query = Inquiry::with(['assignedAgency', 'user'])
+            ->where('AgencyID', $agencyId)
             ->orderBy('created_at', 'desc');
 
         // Apply status filter if provided
@@ -39,7 +49,6 @@ class AgencyController extends Controller
                     'id' => $inquiry->reference_number ?? 'VT-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
                     'title' => $inquiry->InquiryTitle ?? 'No Title',
                     'description' => $inquiry->InquiryDescription ?? 'No description available',
-                    'type' => $inquiry->type ?? 'General',
                     'status' => $inquiry->InquiryStatus ?? 'Pending',
                     'submittedBy' => $inquiry->user->UserName ?? 'Unknown User',
                     'submittedDate' => $inquiry->SubmitionDate ? $inquiry->SubmitionDate->format('F j, Y') : 'N/A',
@@ -47,8 +56,8 @@ class AgencyController extends Controller
                 ];
             });
 
-        // Get total count of all inquiries (unfiltered)
-        $totalInquiries = Inquiry::count();
+        // Get total count of all inquiries for this agency (unfiltered)
+        $totalInquiries = Inquiry::where('AgencyID', $agencyId)->count();
 
         // Get count of filtered inquiries
         $filteredCount = $inquiries->count();
@@ -67,11 +76,21 @@ class AgencyController extends Controller
         ));
     }    public function editInquiry($id)
     {
+        // Get the current agency ID from session
+        $agencyId = session('agency_id');
+        
+        // Temporary: If no agency_id in session, use agency ID 1 for testing
+        if (!$agencyId) {
+            $agencyId = 1;
+        }
+
         // Debug: Log the ID being accessed
         Log::info('Edit Inquiry accessed with ID: ' . $id);
         
-        // Get the inquiry from database
-        $inquiry = Inquiry::with(['assignedAgency', 'user'])->findOrFail($id);
+        // Get the inquiry from database - ensure it belongs to the current agency
+        $inquiry = Inquiry::with(['assignedAgency', 'user'])
+            ->where('AgencyID', $agencyId)
+            ->findOrFail($id);
         
         // Debug: Log the inquiry found
         Log::info('Inquiry found: ' . json_encode($inquiry->toArray()));
@@ -93,13 +112,21 @@ class AgencyController extends Controller
     }    public function updateInquiryStatus(Request $request, $id)
     {
         try {
+            // Get the current agency ID from session
+            $agencyId = session('agency_id');
+            
+            // Temporary: If no agency_id in session, use agency ID 1 for testing
+            if (!$agencyId) {
+                $agencyId = 1;
+            }
+
             // Validate the request
             $request->validate([
                 'InquiryStatus' => 'required|in:Under Investigation,Verified as True,Identified as Fake,Rejected',
             ]);
 
-            // Find the inquiry
-            $inquiry = Inquiry::findOrFail($id);
+            // Find the inquiry - ensure it belongs to the current agency
+            $inquiry = Inquiry::where('AgencyID', $agencyId)->findOrFail($id);
             
             // Store the old status for notification
             $oldStatus = $inquiry->InquiryStatus;
@@ -149,6 +176,14 @@ class AgencyController extends Controller
     }    public function updateInquiry(Request $request, $id)
     {
         try {
+            // Get the current agency ID from session
+            $agencyId = session('agency_id');
+            
+            // Temporary: If no agency_id in session, use agency ID 1 for testing
+            if (!$agencyId) {
+                $agencyId = 1;
+            }
+
             // Log the incoming request
             Log::info('Update inquiry request', [
                 'inquiry_id' => $id,
@@ -162,8 +197,8 @@ class AgencyController extends Controller
                 'ResolvedSupportingDocs.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // 10MB max
             ]);
 
-            // Find the inquiry
-            $inquiry = Inquiry::findOrFail($id);
+            // Find the inquiry - ensure it belongs to the current agency
+            $inquiry = Inquiry::where('AgencyID', $agencyId)->findOrFail($id);
             
             // Store the old status for notification
             $oldStatus = $inquiry->InquiryStatus;
@@ -212,7 +247,7 @@ class AgencyController extends Controller
                 'new_status' => $newStatus
             ]);
 
-            return redirect()->route('agency.inquiries.assigned')
+            return redirect()->route('agency.progress.update')
                            ->with('success', 'Inquiry updated successfully!');
 
         } catch (\Illuminate\Validation\ValidationException $e) {

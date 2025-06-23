@@ -118,20 +118,11 @@
                     </a>
                 </li>
 
-                <!-- 4. Monitor Progress -->
+                <!-- 4. Monitor Progress - Direct Link -->
                 <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('monitor-progress')">
+                    <a href="{{ route('mcmc.progress.monitor') }}" class="nav-toggle" style="justify-content: flex-start;">
                         <span>Monitor Progress</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
                     </a>
-                    <ul class="submenu" id="monitor-progress">
-                        <li><a href="#">Track Agency Progress</a></li>
-                        <li><a href="#">Performance Reports</a></li>
-                        <li><a href="#">Visual Analytics</a></li>
-                        <li><a href="#">System Overview</a></li>
-                    </ul>
                 </li>
             @endif
 
@@ -158,19 +149,11 @@
                     </a>
                 </li>
 
-                <!-- 4. Investigation Updates -->
+                <!-- 4. Update Progress - Direct Link -->
                 <li class="nav-item">
-                    <a href="#" class="nav-toggle" onclick="toggleSubmenu('investigation-updates')">
-                        <span>Investigation Updates</span>
-                        <svg class="nav-arrow" width="12" height="12" fill="currentColor">
-                            <path d="M4 6l4 4 4-4H4z"/>
-                        </svg>
+                    <a href="{{ route('agency.progress.update') }}" class="nav-toggle" style="justify-content: flex-start;">
+                        <span>Update Progress</span>
                     </a>
-                    <ul class="submenu" id="investigation-updates">
-                        <li><a href="#">Update Status</a></li>
-                        <li><a href="#">Investigation Details</a></li>
-                        <li><a href="#">MCMC Communication</a></li>
-                    </ul>
                 </li>
             @endif
         </ul>

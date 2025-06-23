@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Inquiry;
 use App\Models\Agency;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class InquiryController extends Controller
-{    public function index()
+{
+    public function index()
     {
         // For demo purposes, we'll use user ID 3 which has notifications
         // In a real app, this would come from authentication
@@ -79,12 +81,16 @@ class InquiryController extends Controller
                     ]
                 ]
             ]);
-        }        return view('Module4.Public.inquiry_list', [
+        }
+        
+        return view('Module4.Public.inquiry_list', [
             'inquiries' => $inquiries,
             'totalInquiries' => count($inquiries),
             'currentUserId' => $currentUserId // Pass current user ID to view
         ]);
-    }    public function show($id, Request $request = null)
+    }
+    
+    public function show($id, Request $request = null)
     {
         try {
             $inquiry = Inquiry::with(['assignedAgency', 'administrator', 'assignedStaff', 'user'])
@@ -300,59 +306,94 @@ class InquiryController extends Controller
 
         return view('Module4.Public.inquiry_detail', ['inquiry' => $inquiryData]);
     }
-    public function allInquiries()
+    
+    public function allInquiries(Request $request)
     {
-        // Get all inquiries from database (no user filtering)
-        $inquiries = Inquiry::with(['timeline', 'assignedAgency', 'administrator', 'user'])
-            ->orderBy('SubmitionDate', 'desc')
-            ->get()
-            ->map(function ($inquiry) {
-                return [
-                    'id' => $inquiry->InquiryID,
-                    'title' => $inquiry->InquiryTitle,
-                    'status' => $inquiry->InquiryStatus,
-                    'type' => 'Social Media Post',
-                    'submittedDate' => $inquiry->SubmitionDate->format('F j, Y'),
-                    'submittedDateISO' => $inquiry->SubmitionDate->format('Y-m-d'),
-                    'assignedTo' => $inquiry->assignedAgency->AgencyName ?? 'Unassigned',
-                    'submittedBy' => $inquiry->user->UserName ?? 'Unknown User',
-                    'description' => $inquiry->InquiryDescription,
-                    'notes' => $inquiry->AdminComment,
-                    'conclusion' => $inquiry->ResolvedExplanation,
-                    'reference_number' => 'VT-' . $inquiry->SubmitionDate->format('Y') . '-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
-                    'timeline' => $inquiry->timeline->map(function ($log) {
-                        return [
-                            'date' => $log->ActionDate->format('F j, Y - H:i'),
-                            'event' => $log->Action
-                        ];
-                    })
-                ];
-            });
-
-        // Calculate status counts
-        $statusCounts = [
-            'Under Investigation' => 0,
-            'Verified as True' => 0,
-            'Identified as Fake' => 0,
-            'Rejected' => 0
-        ];
-
-        foreach ($inquiries as $inquiry) {
-            if (isset($statusCounts[$inquiry['status']])) {
-                $statusCounts[$inquiry['status']]++;
-            }
+        // Check if user is admin
+        if (session('user_type') !== 'admin') {
+            return redirect()->route('login')->with('error', 'Access denied. Admin privileges required.');
         }
 
-        // Calculate agency performance metrics
-        $agencyPerformance = $this->calculateAgencyPerformance();
+        try {
+            // Get all inquiries from database with filters - MCMC should see ALL inquiries
+            $query = Inquiry::with(['timeline', 'assignedAgency', 'administrator', 'user']); // No status filtering - show everything
 
-        return view('Module4-MCMC.inquiryList', [
-            'inquiries' => $inquiries,
-            'totalInquiries' => count($inquiries),
-            'statusCounts' => $statusCounts,
-            'agencyPerformance' => $agencyPerformance,
-            'currentUserId' => 1 // For notification system
-        ]);
+            // Apply filters if provided
+            if ($request->has('status') && !empty($request->status)) {
+                $query->where('InquiryStatus', $request->status);
+            }
+
+            if ($request->has('agency') && !empty($request->agency)) {
+                $query->where('AgencyID', $request->agency);
+            }
+
+            if ($request->has('search') && !empty($request->search)) {
+                $searchTerm = $request->search;
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('InquiryTitle', 'LIKE', '%' . $searchTerm . '%')
+                      ->orWhere('InquiryDescription', 'LIKE', '%' . $searchTerm . '%')
+                      ->orWhere('InquiryID', 'LIKE', '%' . $searchTerm . '%');
+                });
+            }
+
+            $inquiries = $query->orderBy('updated_at', 'desc')
+                ->get()
+                ->map(function ($inquiry) {
+                    return [
+                        'InquiryID' => $inquiry->InquiryID,
+                        'id' => $inquiry->reference_number ?? 'VT-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
+                        'title' => $inquiry->InquiryTitle ?? 'No Title',
+                        'status' => $inquiry->InquiryStatus ?? 'Pending',
+                        'submittedDate' => $inquiry->SubmitionDate ? $inquiry->SubmitionDate->format('F j, Y') : 'N/A',
+                        'lastUpdated' => $inquiry->updated_at ? $inquiry->updated_at->format('F j, Y') : 'N/A',
+                        'agency' => $inquiry->assignedAgency->AgencyName ?? 'Unassigned',
+                        'agencyId' => $inquiry->AgencyID,
+                        'submittedBy' => $inquiry->user->UserName ?? 'Unknown User',
+                        'description' => $inquiry->InquiryDescription ?? 'No description available',
+                        'notes' => $inquiry->AdminComment,
+                        'conclusion' => $inquiry->ResolvedExplanation,
+                        'priority' => $inquiry->InquiryPriority ?? 'Normal',
+                        'reference_number' => 'VT-' . ($inquiry->SubmitionDate ? $inquiry->SubmitionDate->format('Y') : date('Y')) . '-' . str_pad($inquiry->InquiryID, 6, '0', STR_PAD_LEFT),
+                        'timeline' => $inquiry->timeline->map(function ($log) {
+                            return [
+                                'date' => $log->ActionDate->format('F j, Y - H:i'),
+                                'event' => $log->Action
+                            ];
+                        })
+                    ];
+                });
+
+            // Calculate status counts for statistics - include ALL inquiries
+            $totalInquiries = Inquiry::count();
+            $underInvestigation = Inquiry::where('InquiryStatus', 'Under Investigation')->count();
+            $verifiedAsTrue = Inquiry::where('InquiryStatus', 'Verified as True')->count();
+            $identifiedAsFake = Inquiry::where('InquiryStatus', 'Identified as Fake')->count();
+
+            // Get agencies for filter dropdown
+            $agencies = Agency::orderBy('AgencyName')->get();
+
+            // Get current filter values to maintain state
+            $currentFilters = [
+                'status' => $request->status ?? '',
+                'agency' => $request->agency ?? '',
+                'search' => $request->search ?? ''
+            ];
+
+            return view('Module4-MCMC.inquiryList', [
+                'inquiries' => $inquiries,
+                'totalInquiries' => $totalInquiries,
+                'underInvestigation' => $underInvestigation,
+                'verifiedAsTrue' => $verifiedAsTrue,
+                'identifiedAsFake' => $identifiedAsFake,
+                'agencies' => $agencies,
+                'currentFilters' => $currentFilters,
+                'currentUserId' => session('user_id', 1) // For notification system
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in InquiryController@allInquiries: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load inquiry progress data.');
+        }
     }
 
     public function reports()

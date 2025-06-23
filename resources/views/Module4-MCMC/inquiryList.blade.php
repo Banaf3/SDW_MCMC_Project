@@ -1,783 +1,467 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VeriTrack - All Inquiries</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+@extends('layouts.app')
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            color: #333;
-        }
+@section('title', 'Monitor Progress - MCMC Portal')
 
-        /* Header Styles */
-        .header { 
-            background: linear-gradient(135deg, #4c6ef5 0%, #45c649 100%);
-            color: white; 
-            padding: 0.75rem 0; 
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-container { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            max-width: 100%; 
-            margin: 0 auto; 
-            padding: 0 2rem; 
-        }
-        
-        .logo h1 { 
-            font-size: 1.5rem; 
-            font-weight: 600;
-            letter-spacing: -0.5px;
-        }
-        
-        /* Header User Info */
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+@section('styles')
+<style>
+    .page-title {
+        font-size: 2rem;
+        margin-bottom: 30px;
+        color: #1e3c72;
+        border-bottom: 3px solid #2a5298;
+        padding-bottom: 10px;
+    }
 
-        .header-user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .header-user-info .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .user-details {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .user-details .user-name {
-            font-weight: 600;
-            margin-bottom: 0.125rem;
-            color: white;
-            font-size: 0.9rem;
-        }
-        
-        .user-details .user-role {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
+    /* Statistics Summary */
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
 
-        .dropdown-arrow {
-            margin-left: 0.5rem;
-        }
+    .stat-card {
+        background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-        /* Notification Styles */
-        .notification-container {
-            position: relative;
-            cursor: pointer;
-        }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.35);
+    }
 
-        .notification-bell {
-            position: relative;
-            padding: 8px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            transition: background 0.3s ease;
-        }
+    .stat-number {
+        display: block;
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
 
-        .notification-bell:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
 
-        .notification-badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
+    /* Filter Section */
+    .filter-section {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
 
-        /* Main Container */
-        .main-container { 
-            display: flex; 
-            min-height: 100vh;
-            padding-top: 80px; /* Account for fixed header */
-        }
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        align-items: end;
+    }
 
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            margin-left: 250px; /* Account for sidebar width */
-            padding: 20px;
-        }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
 
-        /* Page Title */
-        .page-title {
-            font-size: 2.5rem;
-            color: white;
-            margin-bottom: 30px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            font-weight: 700;
-        }
+    .form-group label {
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #495057;
+    }
 
-        /* Filter Section */
-        .filter-section {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(30, 60, 114, 0.1);
-            border: 1px solid #e9ecef;
-        }
+    .form-control {
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
 
+    .form-control:focus {
+        outline: none;
+        border-color: #2a5298;
+        box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+    }
+
+    /* Button Styles */
+    .btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #2a5298 0%, #1e3c72 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #1e3c72 0%, #2a5298 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(42, 82, 152, 0.3);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+
+    /* Inquiry Cards */
+    .inquiry-list {
+        display: grid;
+        gap: 25px;
+    }
+
+    .inquiry-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border-left: 5px solid #2a5298;
+    }
+
+    .inquiry-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .inquiry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .inquiry-info {
+        flex-grow: 1;
+    }
+
+    .inquiry-id {
+        font-size: 0.9rem;
+        color: #6c757d;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .inquiry-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .inquiry-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e3c72;
+        margin-bottom: 10px;
+        line-height: 1.3;
+    }
+
+    .inquiry-content {
+        color: #495057;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .inquiry-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .meta-item {
+        font-size: 0.9rem;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #1e3c72;
+    }
+
+    .inquiry-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }    .status-under-investigation {
+        background: #fff3cd;
+        color: #856404;
+        border: 2px solid #ffeaa7;
+    }
+
+    .status-under-review {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 2px solid #bee5eb;
+    }
+
+    .status-verified-as-true {
+        background: #d4edda;
+        color: #155724;
+        border: 2px solid #c3e6cb;
+    }
+
+    .status-identified-as-fake {
+        background: #f8d7da;
+        color: #721c24;
+        border: 2px solid #f5c6cb;
+    }    .status-rejected {
+        background: #e2e3e5;
+        color: #383d41;
+        border: 2px solid #d6d8db;
+    }
+
+    .status-rejected-by-agency {
+        background: #f8d7da;
+        color: #721c24;
+        border: 2px solid #f5c6cb;
+    }
+
+    .status-resolved {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 2px solid #bee5eb;
+    }    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+        border: 2px solid #ffeaa7;
+    }    .status-submitted {
+        background: #e2e3e5;
+        color: #383d41;
+        border: 2px solid #d6d8db;
+    }
+
+    .status-discarded {
+        background: #f8d7da;
+        color: #721c24;
+        border: 2px solid #f5c6cb;
+    }
+
+    /* View Details Button */
+    .btn-info {
+        background: linear-gradient(45deg, #17a2b8 0%, #138496 100%);
+        color: white;
+        font-size: 0.9rem;
+        padding: 8px 16px;
+    }
+
+    .btn-info:hover {
+        background: linear-gradient(45deg, #138496 0%, #17a2b8 100%);
+        transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
         .filter-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr auto;
-            gap: 20px;
-            align-items: end;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            color: #1e3c72;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .form-control {
-            padding: 12px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #2a5298;
-            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        /* Inquiry Cards */
-        .inquiries-container {
-            display: grid;
-            gap: 25px;
-        }
-
-        .inquiry-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(30, 60, 114, 0.1);
-            border: 2px solid #f8f9fa;
-            transition: all 0.3s ease;
-        }
-
-        .inquiry-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px rgba(30, 60, 114, 0.15);
-            border-color: #2a5298;
+            grid-template-columns: 1fr;
         }
 
         .inquiry-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .inquiry-id {
-            font-family: 'Courier New', monospace;
-            background: #1e3c72;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
-        .inquiry-date {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .inquiry-title {
-            font-size: 1.3rem;
-            color: #1e3c72;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .inquiry-content {
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .inquiry-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .meta-item {
-            font-size: 0.9rem;
-        }
-
-        .meta-label {
-            font-weight: 600;
-            color: #1e3c72;
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         .inquiry-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            align-items: stretch;
         }
 
-        /* Status Badges */
-        .status-badge {
-            padding: 10px 18px;
-            border-radius: 25px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            display: inline-block;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .status-badge:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
-        }
-
-        .status-under-investigation {
-            background: #fff3cd;
-            color: #856404;
-            border: 2px solid #ffeaa7;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .status-verified-as-true {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #c3e6cb;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .status-identified-as-fake {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #f5c6cb;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .status-rejected {
-            background: #e2e3e5;
-            color: #383d41;
-            border: 2px solid #d6d8db;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Stats Summary */
         .stats-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         }
+    }
+</style>
+@endsection
 
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-        }
+@section('content')
+<div class="container">
+    <h1 class="page-title">📊 Monitor Progress</h1>
 
-        .stat-card:hover {
-            border-color: #2a5298;
-            transform: translateY(-2px);
-        }
-
-        .stat-number {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #1e3c72;
-            display: block;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-
-        /* Status-specific stat cards */
-        .stat-card.under-investigation {
-            border-color: #ffeaa7;
-        }
-
-        .stat-card.under-investigation .stat-number {
-            color: #856404;
-        }
-
-        .stat-card.verified-true {
-            border-color: #c3e6cb;
-        }
-
-        .stat-card.verified-true .stat-number {
-            color: #155724;
-        }
-
-        .stat-card.identified-fake {
-            border-color: #f5c6cb;
-        }
-
-        .stat-card.identified-fake .stat-number {
-            color: #721c24;
-        }
-
-        .stat-card.rejected {
-            border-color: #d6d8db;
-        }
-
-        .stat-card.rejected .stat-number {
-            color: #383d41;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6c757d;
-        }
-
-        .empty-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .content-area {
-                margin-left: 0;
-                padding: 10px;
-            }
-
-            .filter-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .inquiry-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .inquiry-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .stats-summary {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-summary {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Sidebar Styles */        
-        .sidebar { 
-            width: 250px; 
-            background: linear-gradient(180deg, #495057 0%, #343a40 100%);
-            color: white; 
-            padding: 1.5rem 0;
-            position: fixed;
-            left: 0;
-            top: 60px;
-            bottom: 0;
-            overflow-y: auto;
-            z-index: 999;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .sidebar-nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-section h3 {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #adb5bd;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-        
-        .nav-item .nav-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #e9ecef;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .nav-item .nav-toggle:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .nav-arrow {
-            transition: transform 0.2s ease;
-        }
-        
-        .nav-item.active .nav-arrow {
-            transform: rotate(180deg);
-        }
-        
-        .submenu {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background-color: rgba(0, 0, 0, 0.2);
-        }
-        
-        .submenu.show {
-            max-height: 200px;
-        }
-        
-        .submenu li {
-            border-left: 3px solid transparent;
-        }
-        
-        .submenu a {
-            display: block;
-            padding: 0.625rem 2rem;
-            color: #ced4da;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-        }        .submenu a:hover,
-        .submenu a.active {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left-color: #4c6ef5;
-        }
-    </style>
-</head>
-<body>
-    <!-- Include Header -->
-    @include('layouts.partials.header')
-    
-    <div class="main-container">
-        <!-- Include Sidebar -->
-        @include('layouts.partials.sidebar')
-        
-        <div class="content-area">
-            <!-- Main Content -->
-            <div class="main-content">
-                <h1 class="page-title">All Inquiries</h1>                <!-- Stats Summary with Status Counts -->
-                <div class="stats-summary">
-                    <div class="stat-card">
-                        <span class="stat-number">{{ $totalInquiries ?? 0 }}</span>
-                        <span class="stat-label">Total Inquiries</span>
-                    </div>
-                    <div class="stat-card under-investigation">
-                        <span class="stat-number">{{ $statusCounts['Under Investigation'] ?? 0 }}</span>
-                        <span class="stat-label">Under Investigation</span>
-                    </div>
-                    <div class="stat-card verified-true">
-                        <span class="stat-number">{{ $statusCounts['Verified as True'] ?? 0 }}</span>
-                        <span class="stat-label">Verified as True</span>
-                    </div>
-                    <div class="stat-card identified-fake">
-                        <span class="stat-number">{{ $statusCounts['Identified as Fake'] ?? 0 }}</span>
-                        <span class="stat-label">Identified as Fake</span>
-                    </div>
-                    <div class="stat-card rejected">
-                        <span class="stat-number">{{ $statusCounts['Rejected'] ?? 0 }}</span>
-                        <span class="stat-label">Rejected</span>
-                    </div>                </div>
-
-                <!-- Reports Navigation -->
-                <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(30, 60, 114, 0.1); border: 1px solid #e9ecef; text-align: center;">
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px;">
-                        <span style="font-size: 2rem;">📊</span>
-                        <h3 style="color: #1e3c72; margin: 0; font-size: 1.5rem;">Agency Performance Analytics</h3>
-                    </div>
-                    <p style="color: #666; margin-bottom: 20px; font-size: 1rem;">
-                        Generate comprehensive reports on agency performance, resolution times, and inquiry analytics.
-                    </p>
-                    <a href="/reports" class="btn btn-primary" style="font-size: 1.1rem; padding: 15px 30px;">
-                        <span style="margin-right: 8px;">📈</span>
-                        View Performance Reports
-                    </a>
-                </div>
-
-                <!-- Filter Section -->
-                <div class="filter-section">
-                    <div class="filter-grid">
-                        <div class="form-group">
-                            <label for="searchInquiries">Search Inquiries</label>
-                            <input type="text" class="form-control" id="searchInquiries" placeholder="Search by ID, subject, or content...">
-                        </div>                        <div class="form-group">
-                            <label for="statusFilter">Status</label>
-                            <select class="form-control" id="statusFilter">
-                                <option value="">All Statuses</option>
-                                <option value="under-investigation">Under Investigation</option>
-                                <option value="verified-as-true">Verified as True</option>
-                                <option value="identified-as-fake">Identified as Fake</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                        </div>                        <div class="form-group">
-                            <label for="agencyFilter">Agency</label>
-                            <select class="form-control" id="agencyFilter">
-                                <option value="">All Agencies</option>
-                                <option value="cybersecurity-malaysia">CyberSecurity Malaysia</option>
-                                <option value="ministry-of-health-malaysia-(moh)">Ministry of Health Malaysia (MOH)</option>
-                                <option value="royal-malaysia-police-(pdrm)">Royal Malaysia Police (PDRM)</option>
-                                <option value="ministry-of-domestic-trade-and-consumer-affairs-(kpdn)">Ministry of Domestic Trade and Consumer Affairs (KPDN)</option>
-                                <option value="ministry-of-education-(moe)">Ministry of Education (MOE)</option>
-                                <option value="ministry-of-communications-and-digital-(kkd)">Ministry of Communications and Digital (KKD)</option>
-                                <option value="department-of-islamic-development-malaysia-(jakim)">Department of Islamic Development Malaysia (JAKIM)</option>
-                                <option value="election-commission-of-malaysia-(spr)">Election Commission of Malaysia (SPR)</option>
-                                <option value="malaysian-anti-corruption-commission-(macc-/-sprm)">Malaysian Anti-Corruption Commission (MACC / SPRM)</option>
-                                <option value="department-of-environment-malaysia-(doe)">Department of Environment Malaysia (DOE)</option>
-                                <option value="unassigned">Unassigned</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="dateFilter">Date Range</label>
-                            <select class="form-control" id="dateFilter">
-                                <option value="">All Time</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                                <option value="quarter">Last 3 Months</option>
-                            </select>
-                        </div>
-                        <div>
-                            <button class="btn btn-primary" onclick="filterInquiries()">Apply Filters</button>
-                        </div>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <button class="btn btn-secondary" onclick="clearFilters()">Clear All Filters</button>
-                    </div>
-                </div>
-
-                <!-- Inquiries List -->
-                <div class="inquiries-container" id="inquiriesList">
-                    @if(isset($inquiries) && count($inquiries) > 0)
-                        @foreach($inquiries as $inquiry)
-                        <div class="inquiry-card" data-status="{{ strtolower(str_replace(' ', '-', $inquiry['status'])) }}" data-date="{{ $inquiry['submittedDate'] }}" data-agency="{{ strtolower(str_replace(' ', '-', $inquiry['assignedTo'])) }}">
-                            <div class="inquiry-header">
-                                <span class="inquiry-id">ID: {{ $inquiry['id'] ?? 'N/A' }}</span>
-                                <span class="inquiry-date">Submitted: {{ $inquiry['submittedDate'] }}</span>
-                            </div>
-                            <h3 class="inquiry-title">{{ $inquiry['title'] }}</h3>
-                            <p class="inquiry-content">{{ Str::limit($inquiry['description'], 150) }}</p>
-                            <div class="inquiry-meta">
-                                <div class="meta-item">
-                                    <span class="meta-label">Type:</span> {{ $inquiry['type'] }}
-                                </div>
-                                <div class="meta-item">
-                                    <span class="meta-label">Assigned to:</span> {{ $inquiry['assignedTo'] }}
-                                </div>
-                                <div class="meta-item">
-                                    <span class="meta-label">Submitted by:</span> {{ $inquiry['submittedBy'] ?? 'Unknown User' }}
-                                </div>
-                            </div>                            <div class="inquiry-actions">
-                                <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry['status'])) }}">{{ $inquiry['status'] }}</span>
-                                <a href="/mcmc-inquiry-detail/{{ $inquiry['id'] }}" class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
-                        @endforeach
-                    @else
-                        <div class="empty-state">
-                            <div class="empty-icon">📋</div>
-                            <h3>No Inquiries Found</h3>
-                            <p>There are no inquiries in the system yet.</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
+    <!-- Statistics Summary -->
+    <div class="stats-summary">
+        <div class="stat-card">
+            <span class="stat-number">{{ $totalInquiries ?? 0 }}</span>
+            <span class="stat-label">Total Inquiries</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ $underInvestigation ?? 0 }}</span>
+            <span class="stat-label">Under Investigation</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ $verifiedAsTrue ?? 0 }}</span>
+            <span class="stat-label">Verified as True</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ $identifiedAsFake ?? 0 }}</span>
+            <span class="stat-label">Identified as Fake</span>
         </div>
     </div>
 
-    <script>        // Filter functionality
-        function filterInquiries() {
-            const searchTerm = document.getElementById('searchInquiries').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const agencyFilter = document.getElementById('agencyFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
-            
-            const cards = document.querySelectorAll('.inquiry-card');
-            let visibleCount = 0;
-            
-            // Get current date for date filtering
-            const today = new Date();
-            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - today.getDay()); // Start of current week (Sunday)
-            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            const startOfQuarter = new Date(today);
-            startOfQuarter.setMonth(today.getMonth() - 3);
-            
-            cards.forEach(card => {
-                const title = card.querySelector('.inquiry-title').textContent.toLowerCase();
-                const content = card.querySelector('.inquiry-content').textContent.toLowerCase();
-                const id = card.querySelector('.inquiry-id').textContent.toLowerCase();
-                const status = card.dataset.status;
-                const agency = card.dataset.agency;
-                const submittedDateStr = card.dataset.date;
-                
-                // Parse the submitted date
-                const submittedDate = new Date(submittedDateStr);
-                
-                const matchesSearch = searchTerm === '' || title.includes(searchTerm) || 
-                                    content.includes(searchTerm) || id.includes(searchTerm);
-                const matchesStatus = statusFilter === '' || status === statusFilter;
-                const matchesAgency = agencyFilter === '' || agency === agencyFilter;
-                
-                // Date filtering logic
-                let matchesDate = true;
-                if (dateFilter !== '') {
-                    switch (dateFilter) {
-                        case 'today':
-                            matchesDate = submittedDate >= startOfToday;
-                            break;
-                        case 'week':
-                            matchesDate = submittedDate >= startOfWeek;
-                            break;
-                        case 'month':
-                            matchesDate = submittedDate >= startOfMonth;
-                            break;
-                        case 'quarter':
-                            matchesDate = submittedDate >= startOfQuarter;
-                            break;
-                    }
-                }
-                
-                if (matchesSearch && matchesStatus && matchesAgency && matchesDate) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            // Update results count if needed
-            console.log(`Showing ${visibleCount} of ${cards.length} inquiries`);
-        }
-          function clearFilters() {
-            document.getElementById('searchInquiries').value = '';
-            document.getElementById('statusFilter').value = '';
-            document.getElementById('agencyFilter').value = '';
-            document.getElementById('dateFilter').value = '';
-            
-            // Show all cards
-            document.querySelectorAll('.inquiry-card').forEach(card => {
-                card.style.display = 'block';
-            });
-        }
-        
-        // Real-time search
-        document.getElementById('searchInquiries').addEventListener('input', filterInquiries);
-        document.getElementById('statusFilter').addEventListener('change', filterInquiries);
-        document.getElementById('agencyFilter').addEventListener('change', filterInquiries);
-        document.getElementById('dateFilter').addEventListener('change', filterInquiries);
-    </script>
-</body>
-</html>
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <form method="GET" action="{{ route('mcmc.progress.monitor') }}">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label for="status">Filter by Status</label>                    <select class="form-control" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="Submitted" {{ ($currentFilters['status'] ?? '') === 'Submitted' ? 'selected' : '' }}>Submitted</option>
+                        <option value="Under Review" {{ ($currentFilters['status'] ?? '') === 'Under Review' ? 'selected' : '' }}>Under Review</option>
+                        <option value="Under Investigation" {{ ($currentFilters['status'] ?? '') === 'Under Investigation' ? 'selected' : '' }}>Under Investigation</option>
+                        <option value="Verified as True" {{ ($currentFilters['status'] ?? '') === 'Verified as True' ? 'selected' : '' }}>Verified as True</option>
+                        <option value="Identified as Fake" {{ ($currentFilters['status'] ?? '') === 'Identified as Fake' ? 'selected' : '' }}>Identified as Fake</option>
+                        <option value="Rejected by Agency" {{ ($currentFilters['status'] ?? '') === 'Rejected by Agency' ? 'selected' : '' }}>Rejected by Agency</option>
+                        <option value="Discarded" {{ ($currentFilters['status'] ?? '') === 'Discarded' ? 'selected' : '' }}>Discarded</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="agency">Filter by Agency</label>
+                    <select class="form-control" id="agency" name="agency">
+                        <option value="">All Agencies</option>
+                        @if(isset($agencies))
+                            @foreach($agencies as $agency)
+                                <option value="{{ $agency->AgencyID }}" {{ ($currentFilters['agency'] ?? '') == $agency->AgencyID ? 'selected' : '' }}>
+                                    {{ $agency->AgencyName }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="search">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="Search by title, description, or ID..." 
+                           value="{{ $currentFilters['search'] ?? '' }}">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Inquiry List -->
+    <div class="inquiry-list">
+        @if(isset($inquiries) && $inquiries->count() > 0)
+            @foreach($inquiries as $inquiry)
+                <div class="inquiry-card">
+                    <div class="inquiry-header">
+                        <div class="inquiry-info">
+                            <div class="inquiry-id">{{ $inquiry['id'] ?? 'N/A' }}</div>
+                            <span class="inquiry-date">Last Updated: {{ $inquiry['lastUpdated'] ?? 'N/A' }}</span>
+                        </div>
+                        <h3 class="inquiry-title">{{ $inquiry['title'] ?? 'No Title' }}</h3>
+                    </div>
+                    <p class="inquiry-content">{{ Str::limit($inquiry['description'] ?? 'No description available', 150) }}</p>
+                    <div class="inquiry-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Agency:</span> {{ $inquiry['agency'] ?? 'Unknown' }}
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Submitted By:</span> {{ $inquiry['submittedBy'] ?? 'Unknown' }}
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Submitted Date:</span> {{ $inquiry['submittedDate'] ?? 'N/A' }}
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Priority:</span> {{ $inquiry['priority'] ?? 'Normal' }}
+                        </div>
+                    </div>
+                    <div class="inquiry-actions">
+                        <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry['status'] ?? 'pending')) }}">
+                            {{ $inquiry['status'] ?? 'Pending' }}
+                        </span>
+                        <button type="button" class="btn btn-info" onclick="viewInquiryDetails({{ $inquiry['InquiryID'] ?? 0 }})">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            @endforeach
+        @else
+            <div class="empty-state">
+                @if(isset($currentFilters) && ($currentFilters['status'] || $currentFilters['agency'] || $currentFilters['search']))
+                    <h3>No inquiries found matching your filters</h3>
+                    <p>Try adjusting your search criteria or clear the filters to see all inquiries.</p>
+                    <a href="{{ route('mcmc.progress.monitor') }}" class="btn btn-secondary">Clear Filters</a>
+                @else
+                    <h3>No assigned inquiries found</h3>
+                    <p>There are currently no inquiries assigned to agencies for tracking.</p>
+                @endif
+            </div>
+        @endif
+    </div>
+</div>
+
+<!-- Inquiry Details Modal (optional for future enhancement) -->
+<div id="inquiryModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="modalContent">
+            <!-- Inquiry details will be loaded here via AJAX -->
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+function viewInquiryDetails(inquiryId) {
+    // Simple alert for now - can be enhanced with modal later
+    alert('Viewing details for inquiry ID: ' + inquiryId + '\n\nThis feature can be enhanced with a detailed modal view.');
+    
+    // Future enhancement: Load inquiry details via AJAX
+    /*
+    fetch(`/mcmc/progress/inquiry/${inquiryId}/details`)
+        .then(response => response.json())
+        .then(data => {
+            // Display in modal
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error loading inquiry details:', error);
+        });
+    */
+}
+</script>
+@endsection

@@ -131,11 +131,6 @@
         background-color: #f8f9fa;
     }
 
-    .file-upload-area.dragover {
-        border-color: #28a745;
-        background-color: #d4edda;
-    }
-
     .upload-icon {
         font-size: 3rem;
         margin-bottom: 10px;
@@ -459,30 +454,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fileInput.addEventListener('change', function() {
             if (this.files.length > 0) {
                 const fileNames = Array.from(this.files).map(file => file.name).join(', ');
-                fileUploadArea.querySelector('.upload-text').textContent = `Selected: ${fileNames}`;
-            }
-        });
-
-        // Drag and drop functionality
-        fileUploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            fileUploadArea.classList.add('dragover');
-        });
-
-        fileUploadArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            fileUploadArea.classList.remove('dragover');
-        });
-
-        fileUploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            fileUploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            fileInput.files = files;
-            
-            if (files.length > 0) {
-                const fileNames = Array.from(files).map(file => file.name).join(', ');
                 fileUploadArea.querySelector('.upload-text').textContent = `Selected: ${fileNames}`;
             }
         });
