@@ -317,7 +317,10 @@
 
 @section('content')
 <div class="container">
-    <h1 class="page-title">📊 Monitor Progress</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 class="page-title">📊 Monitor Progress</h1>
+        <a href="{{ route('mcmc.reports') }}" class="btn btn-primary">📊 View Reports</a>
+    </div>
 
     <!-- Statistics Summary -->
     <div class="stats-summary">
@@ -412,9 +415,9 @@
                         <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry['status'] ?? 'pending')) }}">
                             {{ $inquiry['status'] ?? 'Pending' }}
                         </span>
-                        <button type="button" class="btn btn-info" onclick="viewInquiryDetails({{ $inquiry['InquiryID'] ?? 0 }})">
+                        <a href="{{ route('mcmc.inquiry.detail', $inquiry['id']) }}" class="btn btn-info">
                             View Details
-                        </button>
+                        </a>
                     </div>
                 </div>
             @endforeach
@@ -446,22 +449,5 @@
 
 @section('scripts')
 <script>
-function viewInquiryDetails(inquiryId) {
-    // Simple alert for now - can be enhanced with modal later
-    alert('Viewing details for inquiry ID: ' + inquiryId + '\n\nThis feature can be enhanced with a detailed modal view.');
-    
-    // Future enhancement: Load inquiry details via AJAX
-    /*
-    fetch(`/mcmc/progress/inquiry/${inquiryId}/details`)
-        .then(response => response.json())
-        .then(data => {
-            // Display in modal
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('Error loading inquiry details:', error);
-        });
-    */
-}
 </script>
 @endsection

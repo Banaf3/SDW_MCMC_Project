@@ -660,19 +660,9 @@
             
             container.innerHTML = '';
             
-            // Ensure we have data for all agencies
-            const allAgencies = [
-                'CyberSecurity Malaysia',
-                'Ministry of Health Malaysia (MOH)',
-                'Royal Malaysia Police (PDRM)',
-                'Ministry of Domestic Trade and Consumer Affairs (KPDN)',
-                'Ministry of Education (MOE)',
-                'Ministry of Communications and Digital (KKD)',
-                'Department of Islamic Development Malaysia (JAKIM)',
-                'Election Commission of Malaysia (SPR)',
-                'Malaysian Anti-Corruption Commission (MACC / SPRM)',
-                'Department of Environment Malaysia (DOE)'
-            ];
+            // Get agency names from the actual data passed from the controller
+            const allAgencies = Object.keys(data);
+            console.log('Available agencies from database:', allAgencies);
 
             // Filter agencies based on selection
             let agenciesToShow = allAgencies;
@@ -741,19 +731,9 @@
             tbody.innerHTML = '';
             console.log('Table body cleared');
             
-            // Ensure we have data for all agencies
-            const allAgencies = [
-                'CyberSecurity Malaysia',
-                'Ministry of Health Malaysia (MOH)',
-                'Royal Malaysia Police (PDRM)',
-                'Ministry of Domestic Trade and Consumer Affairs (KPDN)',
-                'Ministry of Education (MOE)',
-                'Ministry of Communications and Digital (KKD)',
-                'Department of Islamic Development Malaysia (JAKIM)',
-                'Election Commission of Malaysia (SPR)',
-                'Malaysian Anti-Corruption Commission (MACC / SPRM)',
-                'Department of Environment Malaysia (DOE)'
-            ];
+            // Get agency names from the actual data passed from the controller
+            const allAgencies = Object.keys(data);
+            console.log('Available agencies from database:', allAgencies);
             
             // Filter agencies based on selection
             let agenciesToShow = allAgencies;

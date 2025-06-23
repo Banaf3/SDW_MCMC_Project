@@ -451,7 +451,7 @@
                     </div>
                     <div class="inquiry-actions">
                         <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $inquiry['status'])) }}">{{ $inquiry['status'] }}</span>
-                        <a href="/inquiry-detail/{{ $inquiry['id'] }}" class="btn btn-primary">View Details</a>
+                        <a href="{{ route('public.inquiry.detail', $inquiry['id']) }}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>
                 @endforeach

@@ -474,6 +474,17 @@
             transform: translateY(-1px);
         }
 
+        .btn-primary {
+            background: linear-gradient(45deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #1e3c72 0%, #2a5298 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.3);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .content-area {
@@ -545,12 +556,16 @@
                                 <div class="meta-value-header">{{ $inquiry['submittedDate'] }}</div>
                             </div>
                             <div class="meta-item-header">
+                                <div class="meta-label-header">Submitted By</div>
+                                <div class="meta-value-header">{{ $inquiry['submittedBy'] ?? 'Unknown User' }}</div>
+                            </div>
+                            <div class="meta-item-header">
                                 <div class="meta-label-header">Assigned To</div>
                                 <div class="meta-value-header">{{ $inquiry['assignedTo'] }}</div>
                             </div>
                             <div class="meta-item-header">
-                                <div class="meta-label-header">Agency Type</div>
-                                <div class="meta-value-header">{{ $inquiry['agencyDescription'] }}</div>
+                                <div class="meta-label-header">Officer Name</div>
+                                <div class="meta-value-header">{{ $inquiry['officerName'] ?? 'Not assigned' }}</div>
                             </div>
                         </div>
                     </div>
@@ -654,7 +669,7 @@
 
                     <!-- Action Buttons -->
                     <div class="action-buttons">
-                        <a href="/inquiry_list" class="btn btn-secondary">← Back to My Inquiries</a>
+                        <a href="{{ route('mcmc.progress.monitor') }}" class="btn btn-secondary">← Back to My Inquiries</a>
                     </div>
                 </div>
             </div>

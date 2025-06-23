@@ -97,6 +97,10 @@ Route::middleware(['web'])->group(function () {
     
     // MCMC Progress Monitoring - Module 4
     Route::get('/mcmc/progress/monitor', [InquiryProgressTrackingInquiryController::class, 'allInquiries'])->name('mcmc.progress.monitor');
+    Route::get('/mcmc/inquiry/{id}', [InquiryProgressTrackingInquiryController::class, 'mcmcShow'])->name('mcmc.inquiry.detail');
+    Route::get('/mcmc/inquiry/{id}/evidence/{fileIndex}', [InquiryProgressTrackingInquiryController::class, 'downloadEvidence'])->name('mcmc.inquiry.download-evidence');
+    Route::get('/mcmc/inquiry/{id}/agency-docs/{fileIndex}', [InquiryProgressTrackingInquiryController::class, 'downloadAgencySupportingDoc'])->name('mcmc.inquiry.download-agency-docs');
+    Route::get('/mcmc/reports', [InquiryProgressTrackingInquiryController::class, 'reports'])->name('mcmc.reports');
     
     Route::get('/mcmc/inquiries/assigned', function () {
         return view('welcome');
@@ -133,6 +137,7 @@ Route::middleware(['web'])->group(function () {
     
     // Module 4 - Public User Progress Tracking
     Route::get('/public/progress/track', [InquiryProgressTrackingInquiryController::class, 'index'])->name('public.progress.track');
+    Route::get('/public/inquiry/{id}', [InquiryProgressTrackingInquiryController::class, 'publicShow'])->name('public.inquiry.detail');
     
     // Agency inquiry routes
     Route::get('/agency/inquiries/assigned', [InquiryAssignmentAgencyController::class, 'assignedInquiries'])->name('agency.inquiries.assigned'); // Module 3
